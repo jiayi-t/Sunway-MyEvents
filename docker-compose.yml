@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: myevents-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: myevents
+      POSTGRES_USER: myevents
+      POSTGRES_PASSWORD: myevents
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    driver: local
