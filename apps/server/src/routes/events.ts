@@ -7,9 +7,14 @@ const router = Router()
 // GET /api/events - get all events
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM events ORDER BY date ASC'
-    )
+    const result = await pool.query(`
+      SELECT
+        e.*,
+        u.name AS organizer_name
+      FROM events e
+      LEFT JOIN users u ON e.organizer_id = u.id
+      ORDER BY e.date ASC
+    `)
     res.json(result.rows)
   } catch {
     res.status(500).json({ error: 'Server error' })
@@ -19,7 +24,15 @@ router.get('/', async (req, res) => {
 // GET /api/events/:id - get single event
 router.get('/:id', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM events WHERE id = $1', [req.params.id])
+    const result = await pool.query(`
+      SELECT
+        e.*,
+        u.name AS organizer_name
+      FROM events e
+      LEFT JOIN users u ON e.organizer_id = u.id
+      WHERE e.id = $1
+    `, [req.params.id])
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found' })
     }
