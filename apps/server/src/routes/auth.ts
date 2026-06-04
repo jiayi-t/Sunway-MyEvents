@@ -25,7 +25,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, sunwayId: user.sunway_id, role: user.role },
+      { id: user.id, sunwayId: user.sunwayId, role: user.role },
       process.env.JWT_SECRET!,
       { expiresIn: jwtExpiresIn }
     )
@@ -33,7 +33,7 @@ router.post('/login', async (req, res) => {
     res.json({
       user: {
         id: user.id,
-        sunwayId: user.sunway_id,
+        sunwayId: user.sunwayId,
         name: user.name,
         role: user.role
       },
