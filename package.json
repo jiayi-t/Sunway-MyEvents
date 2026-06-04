@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Event Management and Recommendation System for Sunway Campus",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=apps/server\" \"npm run dev --workspace=apps/client\"",
     "dev:server": "npm run dev --workspace=apps/server",
@@ -12,5 +15,8 @@
   },
   "keywords": [],
   "author": "Tiong Jia Yi",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
 }
