@@ -1,14 +1,14 @@
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-primary px-4 py-6 text-center">
+    <footer className="mt-auto bg-white px-4 py-4 text-center">
       <div className="text-lg font-bold mb-2">
-        <span className="text-white">Sunway </span>
+        <span className="text-primary">Sunway </span>
         <span className="text-accent">MyEvents</span>
       </div>
 
-      <p className="text-blue-200 text-xs">© 2026 Sunway Education Group</p>
+      <p className="text-black text-xs">© 2026 Sunway Education Group</p>
 
-      <div className="mt-1 text-blue-200 text-xs">
+      <div className="mt-1 text-black text-xs">
         <div>Owned & Governed by Jeffrey Cheah Foundation (800946-T)</div>
         <div className="mt-1">
           <a
