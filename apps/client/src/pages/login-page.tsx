@@ -19,7 +19,7 @@ export default function LoginPage() {
       login(res.data.user, res.data.token)
 
       if (res.data.user.role === 'organizer') {
-        navigate('/dashboard')
+        navigate('/organizer/dashboard')
       } else {
         navigate('/')
       }

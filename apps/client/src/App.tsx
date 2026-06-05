@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/auth-context'
 import LoginPage from './pages/login-page'
 import HomePage from './pages/home-page'
+import OrganizerDashboard from './pages/organizer/organizer-dashboard'
+import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -22,6 +24,18 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/organizer/dashboard" 
+      element={
+        <ProtectedRoute>
+          <OrganizerDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/organizer/events" 
+      element={
+        <ProtectedRoute>
+          <OrganizerEventsPage />
+        </ProtectedRoute>
+      } />
     </Routes>
   )
 }
