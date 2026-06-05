@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-white px-4 py-4 text-center">
+    <footer className="mt-auto bg-white px-4 py-4 text-center border-t border-gray-200">
       <div className="text-lg font-bold mb-2">
         <span className="text-primary">Sunway </span>
         <span className="text-accent">MyEvents</span>

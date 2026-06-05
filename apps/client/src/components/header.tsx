@@ -14,7 +14,7 @@ export default function Header() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between bg-secondary shadow relative">
+    <header className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between bg-secondary shadow relative border-b border-gray-200">
       <div className="w-10" />
       <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
         <div className="pointer-events-auto">
@@ -60,6 +60,6 @@ export default function Header() {
           </div>
         )}
       </div>
-    </nav>
+    </header>
   )
 }
