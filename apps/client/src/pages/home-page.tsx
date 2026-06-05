@@ -38,6 +38,18 @@ const formatTime = (time?: string) =>
 const formatTimeRange = (start?: string, end?: string) =>
   start && end ? `${formatTime(start)} - ${formatTime(end)}` : 'Time TBA'
 
+const toImageUrl = (url?: string) => {
+  if (!url) return ''
+
+  // Server uploaded files
+  if (url.startsWith('/uploads/')) {
+    return `http://localhost:3001${url}`
+  }
+
+  // Public folder assets (seeded data) 
+  return url
+}
+
 export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([])
   const [filtered, setFiltered] = useState<Event[]>([])
@@ -179,9 +191,10 @@ export default function HomePage() {
                 >
                   <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
                     <img
-                      src={featured.image_url || '/SGT%20S7%20Poster.jpg'}
+                      src={toImageUrl(featured.image_url)}
                       alt={featured.name}
                       className="absolute inset-0 w-full h-full object-cover object-center"
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
                       <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
@@ -292,9 +305,10 @@ export default function HomePage() {
               style={{ width: '100px', aspectRatio: '4/5' }}
             >
               <img
-                src={event.image_url || '/SGT%20S7%20Poster.jpg'}
+                src={toImageUrl(event.image_url)}
                 alt={event.name}
                 className="w-full h-full object-cover object-center"
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
             </div>
 
