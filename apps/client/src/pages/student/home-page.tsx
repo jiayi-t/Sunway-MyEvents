@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from '../components/header'
-import api from '../services/api'
+import Header from '../../components/header'
+import api from '../../services/api'
 import { FaRegCalendarAlt, FaUsers, FaSearch, FaClock, FaMapMarkerAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 interface Event {

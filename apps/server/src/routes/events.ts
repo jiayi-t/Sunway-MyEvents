@@ -10,7 +10,8 @@ router.get('/', async (req, res) => {
     const result = await pool.query(`
       SELECT
         e.*,
-        u.name AS organizer_name
+        u.name AS organizer_name,
+        u.image_url AS organizer_image_url
       FROM events e
       LEFT JOIN users u ON e.organizer_id = u.id
       ORDER BY e.date ASC
@@ -27,7 +28,8 @@ router.get('/:id', async (req, res) => {
     const result = await pool.query(`
       SELECT
         e.*,
-        u.name AS organizer_name
+        u.name AS organizer_name,
+        u.image_url AS organizer_image_url
       FROM events e
       LEFT JOIN users u ON e.organizer_id = u.id
       WHERE e.id = $1
@@ -37,6 +39,19 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Event not found' })
     }
     res.json(result.rows[0])
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/:id/registration-status
+router.get('/:id/registration-status', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
+      [req.user!.id, req.params.id]
+    )
+    res.json({ registered: result.rows.length > 0 })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
