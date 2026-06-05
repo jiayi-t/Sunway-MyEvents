@@ -118,7 +118,7 @@ export default function HomePage() {
     <div className="bg-surface">
       <Header />
 
-      // Hero Section
+      {/* Hero Section */}
       <div className="bg-primary px-4 pt-4 pb-3">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-white font-bold text-xl mb-3">
@@ -159,7 +159,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      // Featured Events
+      {/* Featured Events */}
       {!searchApplied && (
         <div className="px-10 pt-3 pb-10 bg-primary text-white">
           <h2 className="font-bold text-white mb-2 text-center">Featured Events</h2>
@@ -260,7 +260,7 @@ export default function HomePage() {
         </div>
       )}
 
-      // Category Filters
+      {/* Category Filters */}
       <div className="px-4 py-3 bg-card mt-2 overflow-x-auto">
         <div className="flex gap-2 w-max">
           {CATEGORIES.map(cat => (
@@ -279,7 +279,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      // Events List
+      {/* Events List */}
       <div className="px-4 py-3 space-y-3">
         {filtered.map(event => (
           <div
