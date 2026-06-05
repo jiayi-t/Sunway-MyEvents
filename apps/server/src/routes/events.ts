@@ -65,4 +65,29 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// POST /api/events - create event (organizer only)
+router.post('/', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Only organizers can create events' })
+  }
+
+  const {
+    name, description, date, start_time, end_time, venue, pricing,
+    category, capacity, registration_deadline, image_url
+  } = req.body
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO events
+       (name, description, date, start_time, end_time, venue, pricing, category, capacity, registration_deadline, image_url, organizer_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING *`,
+      [name, description, date, start_time, end_time, venue, pricing || 0, category, capacity, registration_deadline, image_url, req.user!.id]
+    )
+    res.status(201).json(result.rows[0])
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router

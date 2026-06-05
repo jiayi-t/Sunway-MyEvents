@@ -3,6 +3,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
 import eventRoutes from './routes/events'
+import path from 'path'
+import uploadsRoutes from './routes/uploads'
 
 dotenv.config()
 
@@ -15,6 +17,8 @@ app.use(express.json())
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/events', eventRoutes)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
+app.use('/api/uploads', uploadsRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
