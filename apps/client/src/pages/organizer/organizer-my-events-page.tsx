@@ -3,8 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import Header from '../../components/header'
 import api from '../../services/api'
-import { FaCloudUploadAlt, FaChartBar, FaQrcode } from 'react-icons/fa'
-import { FaRegCalendarAlt, FaClock, FaMapMarkerAlt } from 'react-icons/fa'
+import { 
+  FaCloudUploadAlt, 
+  FaChartBar, 
+  FaQrcode,
+  FaRegCalendarAlt, 
+  FaClock, 
+  FaMapMarkerAlt,
+  FaArrowLeft,
+} from 'react-icons/fa'
 
 type Tab = 'new' | 'upcoming' | 'past'
 
@@ -273,7 +280,9 @@ export default function OrganizerEventsPage() {
     <div className="min-h-screen bg-surface">
       <Header />
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/organizer/dashboard')} className="text-white text-xl">←</button>
+        <button onClick={() => navigate('/organizer/dashboard')} className="text-white">
+          <FaArrowLeft />
+        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">My Events</h1>
       </div>
 

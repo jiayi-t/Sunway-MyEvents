@@ -7,7 +7,7 @@ import {
   FaEnvelope,
   FaPlusSquare,
   FaCalendarAlt,
-  FaFolder,
+  FaRegClock,
   FaUsers,
   FaEye,
   FaChartLine,
@@ -98,7 +98,7 @@ export default function OrganizerDashboard() {
             aria-label="Past events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaFolder />
+              <FaRegClock />
             </div>
             <span className="text-xs text-foreground">Past</span>
           </button>
