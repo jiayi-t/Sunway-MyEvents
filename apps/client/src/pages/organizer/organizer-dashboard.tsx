@@ -52,8 +52,8 @@ export default function OrganizerDashboard() {
           </div>
 
           {/* Edit button */}
-          <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <FaPen className="text-white text-sm" />
+          <button className="w-8 h-8 rounded-full border border-accent flex items-center justify-center">
+            <FaPen className="text-accent text-xs" />
           </button>
         </div>
 
