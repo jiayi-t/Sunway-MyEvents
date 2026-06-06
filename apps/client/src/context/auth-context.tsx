@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 interface User {
   id: number
-  sunwayId: string
+  sunway_id: string
   name: string
   role: string
   image_url?: string | null

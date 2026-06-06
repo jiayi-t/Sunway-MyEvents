@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/auth-context'
 import LoginPage from './pages/login-page'
 import HomePage from './pages/student/home-page'
 import EventDetailPage from './pages/student/event-details-page'
+import StudentProfilePage from './pages/student/student-profile-page'
 import OrganizerDashboard from './pages/organizer/organizer-dashboard'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import Footer from './components/footer'
@@ -28,6 +29,13 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <EventDetailPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route path="/profile" 
+        element={
+          <ProtectedRoute>
+            <StudentProfilePage />
           </ProtectedRoute>
         } 
       />

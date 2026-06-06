@@ -40,6 +40,12 @@ export default function Header() {
               </div>
             )}
             <button
+              onClick={() => { navigate('/profile'); setMenuOpen(false) }}
+              className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+            >
+              My Profile
+            </button>
+            <button
               onClick={() => { navigate('/'); setMenuOpen(false) }}
               className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
             >
