@@ -5,7 +5,7 @@ Event Management and Recommendation System for Sunway Campus
 ## Technology Stack
 - **Frontend:** React.js + Vite + TypeScript
 - **Backend:** Node.js + Express.js + TypeScript
-- **Database:** PostgreSQL
+- **Database:** PostgreSQL (Docker)
 - **Auth:** JWT
 
 ## Getting Started
@@ -16,7 +16,20 @@ Event Management and Recommendation System for Sunway Campus
 
 ### Setup
 1. Clone the repository
-2. Start the database: `docker-compose up -d`
-3. Set up server environment: copy `apps/server/.env.sample` to `apps/server/.env` and fill in values
+2. Set up environment variables:
+   - Copy `.env.example` to `.env` and fill in database credentials
+   - Copy `apps/server/.env.example` to `apps/server/.env` and fill in values
+3. Start the database: `docker-compose up -d`
 4. Install dependencies: `npm install`
 5. Start development: `npm run dev`
+
+### Development URLs
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3001
+- API Health Check: http://localhost:3001/api/health
+
+### Test Accounts
+| Role | Student ID | Password |
+|------|-----------|----------|
+| Student | 22055313 | sunway123 |
+| Organizer | ssa | sunway123 |
