@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
 import eventRoutes from './routes/events'
+import registrationRoutes from './routes/registrations'
 import path from 'path'
 import uploadsRoutes from './routes/uploads'
 
@@ -17,6 +18,7 @@ app.use(express.json())
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/events', eventRoutes)
+app.use('/api/registrations', registrationRoutes)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/api/uploads', uploadsRoutes)
 

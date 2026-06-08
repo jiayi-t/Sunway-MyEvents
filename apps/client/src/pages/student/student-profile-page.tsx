@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
+import api from '../../services/api'
 import { useAuth } from '../../context/auth-context'
 import {
   FaPen,
@@ -8,9 +10,25 @@ import {
   FaRegBookmark
 } from 'react-icons/fa'
 
+interface Registration {
+  id: number
+  event_date: string
+}
+
 export default function StudentProfilePage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [registrations, setRegistrations] = useState<Registration[]>([])
+
+  useEffect(() => {
+    api.get('/registrations/my')
+      .then(res => setRegistrations(res.data))
+      .catch(() => {})
+  }, [])
+
+  const now = new Date()
+  const upcoming = registrations.filter(r => new Date(r.event_date) >= now)
+  const past = registrations.filter(r => new Date(r.event_date) < now)
 
   return (
     <div className="bg-surface">
@@ -33,11 +51,11 @@ export default function StudentProfilePage() {
 
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">0</p>
+                  <p className="text-white font-bold text-lg">{upcoming.length}</p>
                   <p className="text-blue-200 text-xs">Upcoming</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">0</p>
+                  <p className="text-white font-bold text-lg">{past.length}</p>
                   <p className="text-blue-200 text-xs">Attended</p>
                 </div>
                 <div className="text-center">
