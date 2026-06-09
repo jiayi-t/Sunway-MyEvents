@@ -15,14 +15,6 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between bg-secondary shadow relative border-b border-gray-200">
-      <div className="w-10" />
-      <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
-        <div className="pointer-events-auto">
-          <span className="text-primary">Sunway </span>
-          <span className="text-accent">MyEvents</span>
-        </div>
-      </div>
-
       <div className="relative">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
@@ -33,7 +25,7 @@ export default function Header() {
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
+          <div className="absolute left-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
             {user && (
               <div className="px-4 py-2 text-sm text-gray-600 border-b">
                 {user.name}
@@ -66,6 +58,14 @@ export default function Header() {
           </div>
         )}
       </div>
+      <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
+        <div className="pointer-events-auto">
+          <span className="text-primary">Sunway </span>
+          <span className="text-accent">MyEvents</span>
+        </div>
+      </div>
+
+      <div className="w-10" />
     </header>
   )
 }
