@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
-import { FiMenu } from 'react-icons/fi'
+import { Menu } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -21,7 +21,7 @@ export default function Header() {
           className="text-black focus:outline-none w-10 text-center"
           aria-label="Open menu"
         >
-          <FiMenu className="w-6 h-6 mx-auto" aria-hidden="true" />
+          <Menu className="w-6 h-6 mx-auto" aria-hidden="true" />
         </button>
 
         {menuOpen && (

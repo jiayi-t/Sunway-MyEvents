@@ -3,15 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import Header from '../../components/header'
 import api from '../../services/api'
-import { 
-  FaCloudUploadAlt, 
-  FaChartBar, 
-  FaQrcode,
-  FaRegCalendarAlt, 
-  FaClock, 
-  FaMapMarkerAlt,
-  FaArrowLeft,
-} from 'react-icons/fa'
+import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
 
@@ -104,15 +96,15 @@ function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: 
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
           <div className="inline-flex items-center gap-1.5">
-            <FaRegCalendarAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <Calendar className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatDate(event.date)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaClock className="w-3 h-3 text-black flex-shrink-0" />
+            <Clock className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatTimeRange(event.start_time, event.end_time)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaMapMarkerAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-black flex-shrink-0" />
             <span className="truncate">{event.venue}</span>
           </div>
         </div>
@@ -121,7 +113,7 @@ function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: 
           onClick={() => onCheckin(event.id)}
           className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
         >
-          <FaQrcode className="w-3 h-3" />
+          <ScanQrCode className="w-3 h-3" />
           Check In
         </button>
       </div>
@@ -147,15 +139,15 @@ function PastCard({ event, onAnalytics }: { event: OrganizerEvent; onAnalytics: 
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
           <div className="inline-flex items-center gap-1.5">
-            <FaRegCalendarAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <Calendar className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatDate(event.date)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaClock className="w-3 h-3 text-black flex-shrink-0" />
+            <Clock className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatTimeRange(event.start_time, event.end_time)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaMapMarkerAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-black flex-shrink-0" />
             <span className="truncate">{event.venue}</span>
           </div>
         </div>
@@ -164,7 +156,7 @@ function PastCard({ event, onAnalytics }: { event: OrganizerEvent; onAnalytics: 
           onClick={() => onAnalytics(event.id)}
           className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
         >
-          <FaChartBar className="w-3 h-3" />
+          <BarChart2 className="w-3 h-3" />
           View Analytics
         </button>
       </div>
@@ -281,7 +273,7 @@ export default function OrganizerEventsPage() {
       <Header />
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('/organizer/dashboard')} className="text-white">
-          <FaArrowLeft />
+          <ArrowLeft />
         </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">My Events</h1>
       </div>
@@ -378,7 +370,7 @@ export default function OrganizerEventsPage() {
               ) : (
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <FaCloudUploadAlt className="text-3xl" />
+                  <Upload className="text-3xl" />
                   <span className="text-xs">{uploading ? 'Uploading...' : 'Upload poster'}</span>
                 </button>
               )}

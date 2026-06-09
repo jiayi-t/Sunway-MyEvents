@@ -1,18 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import {
-  FaPen,
-  FaInstagram,
-  FaEnvelope,
-  FaPlusSquare,
-  FaCalendarAlt,
-  FaRegClock,
-  FaUsers,
-  FaEye,
-  FaChartLine,
-  FaComments
-} from 'react-icons/fa'
+import { Pen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare } from 'lucide-react'
+import { InstagramLogo } from 'phosphor-react'
 
 export default function OrganizerDashboard() {
   const { user } = useAuth()
@@ -53,17 +43,17 @@ export default function OrganizerDashboard() {
 
           {/* Edit button */}
           <button className="w-8 h-8 rounded-full border border-accent flex items-center justify-center">
-            <FaPen className="text-accent text-xs" />
+            <Pen className="text-accent w-4 h-4" />
           </button>
         </div>
 
         {/* Social icons */}
         <div className="flex gap-3 mt-3">
           <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm">
-            <FaInstagram />
+            <InstagramLogo className="w-4 h-4" />
           </button>
           <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm">
-            <FaEnvelope />
+            <Mail className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -78,7 +68,7 @@ export default function OrganizerDashboard() {
             aria-label="Create new event"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaPlusSquare />
+              <PlusSquare />
             </div>
             <span className="text-xs text-foreground">New</span>
           </button>
@@ -88,7 +78,7 @@ export default function OrganizerDashboard() {
             aria-label="Upcoming events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaCalendarAlt />
+              <Calendar />
             </div>
             <span className="text-xs text-foreground">Upcoming</span>
           </button>
@@ -98,7 +88,7 @@ export default function OrganizerDashboard() {
             aria-label="Past events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaRegClock />
+              <Clock />
             </div>
             <span className="text-xs text-foreground">Past</span>
           </button>
@@ -114,25 +104,25 @@ export default function OrganizerDashboard() {
             className="flex flex-col items-center gap-1"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaUsers />
+              <Users />
             </div>
             <span className="text-xs text-foreground">Attendance</span>
           </button>
           <button className="flex flex-col items-center gap-1">
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaEye />
+              <Eye />
             </div>
             <span className="text-xs text-foreground">Views</span>
           </button>
           <button className="flex flex-col items-center gap-1">
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaChartLine />
+              <TrendingUp />
             </div>
             <span className="text-xs text-foreground">Reach</span>
           </button>
           <button className="flex flex-col items-center gap-1">
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaComments />
+              <MessageSquare />
             </div>
             <span className="text-xs text-foreground">Feedback</span>
           </button>

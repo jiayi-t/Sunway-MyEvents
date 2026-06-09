@@ -2,12 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
-import {
-  FaRegCalendarAlt,
-  FaRegClock,
-  FaMapMarkerAlt,
-  FaArrowLeft
-} from 'react-icons/fa'
+import { Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -103,15 +98,15 @@ function RegistrationCard({ reg }: { reg: Registration }) {
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
           <div className="inline-flex items-center gap-1.5">
-            <FaRegCalendarAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <Calendar className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatDate(reg.event_date)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaRegClock className="w-3 h-3 text-black flex-shrink-0" />
+            <Clock className="w-3 h-3 text-black flex-shrink-0" />
             <span>{formatTimeRange(reg.event_start_time, reg.event_end_time)}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
-            <FaMapMarkerAlt className="w-3 h-3 text-black flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-black flex-shrink-0" />
             <span className="truncate">{reg.event_venue}</span>
           </div>
         </div>
@@ -161,7 +156,7 @@ export default function MyEventsPage() {
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('/profile')} className="text-white">
-          <FaArrowLeft />
+          <ArrowLeft />
         </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">My Events</h1>
         <div className="w-5" />

@@ -3,12 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
 import { useAuth } from '../../context/auth-context'
-import {
-  FaPen,
-  FaCalendarAlt,
-  FaRegClock,
-  FaRegBookmark
-} from 'react-icons/fa'
+import { Pen, Calendar, Clock, Bookmark } from 'lucide-react'
 
 interface Registration {
   id: number
@@ -73,7 +68,7 @@ export default function StudentProfilePage() {
 
           {/* Edit button */}
           <button className="w-8 h-8 rounded-full border border-accent flex items-center justify-center">
-            <FaPen className="text-accent text-xs" />
+            <Pen className="text-accent w-4 h-4" />
           </button>
         </div>
       </div>
@@ -88,7 +83,7 @@ export default function StudentProfilePage() {
             aria-label="Upcoming events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaCalendarAlt />
+              <Calendar />
             </div>
             <span className="text-xs text-foreground">Upcoming</span>
           </button>
@@ -98,7 +93,7 @@ export default function StudentProfilePage() {
             aria-label="Past events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaRegClock />
+              <Clock />
             </div>
             <span className="text-xs text-foreground">Past</span>
           </button>
@@ -108,7 +103,7 @@ export default function StudentProfilePage() {
             aria-label="Saved events"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
-              <FaRegBookmark />
+              <Bookmark />
             </div>
             <span className="text-xs text-foreground">Saved</span>
           </button>

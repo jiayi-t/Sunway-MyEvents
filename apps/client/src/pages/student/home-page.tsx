@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
-import { FaRegCalendarAlt, FaUsers, FaSearch, FaClock, FaMapMarkerAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Event {
   id: number
@@ -139,7 +139,7 @@ export default function HomePage() {
 
           <div className="mb-2">
             <div className="w-full max-w-3xl mx-auto flex items-center bg-white rounded-full shadow px-3 py-2">
-              <FaSearch className="w-4 h-4 text-gray-400 mr-3" aria-hidden="true" />
+              <Search className="w-4 h-4 text-gray-400 mr-3" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search events"
@@ -160,11 +160,11 @@ export default function HomePage() {
 
           <div className="flex gap-4 text-xs text-blue-200 justify-center">
             <span className="inline-flex items-center gap-2">
-              <FaRegCalendarAlt className="w-4 h-4 text-accent" aria-hidden="true" />
+              <Calendar className="w-4 h-4 text-accent" aria-hidden="true" />
               <span>20+ events monthly</span>
             </span>
             <span className="inline-flex items-center gap-2">
-              <FaUsers className="w-4 h-4 text-accent" aria-hidden="true" />
+              <Users className="w-4 h-4 text-accent" aria-hidden="true" />
               <span>100+ SLBs/C&S</span>
             </span>
           </div>
@@ -215,15 +215,15 @@ export default function HomePage() {
                     </p>
                     <div className="flex flex-col gap-2 text-muted-foreground text-sm">
                       <div className="inline-flex items-center gap-2">
-                        <FaRegCalendarAlt className="w-4 h-4 text-black flex-shrink-0" />
+                        <Calendar className="w-4 h-4 text-black flex-shrink-0" />
                         <span>{formatDate(featured.date)}</span>
                       </div>
                       <div className="inline-flex items-center gap-2">
-                        <FaClock className="w-4 h-4 text-black flex-shrink-0" />
+                        <Clock className="w-4 h-4 text-black flex-shrink-0" />
                         <span>{formatTimeRange(featured.start_time, featured.end_time)}</span>
                       </div>
                       <div className="inline-flex items-center gap-2">
-                        <FaMapMarkerAlt className="w-4 h-4 text-black flex-shrink-0" />
+                        <MapPin className="w-4 h-4 text-black flex-shrink-0" />
                         <span>{featured.venue}</span>
                       </div>
                     </div>
@@ -237,14 +237,14 @@ export default function HomePage() {
                       className="absolute -left-9 top-[38%] -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
                       aria-label="Previous event"
                     >
-                      <FaChevronLeft className="w-3 h-3" />
+                      <ChevronLeft className="w-3 h-3" />
                     </button>
                     <button
                       onClick={e => { e.stopPropagation(); nextFeatured() }}
                       className="absolute -right-9 top-[38%] -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
                       aria-label="Next event"
                     >
-                      <FaChevronRight className="w-3 h-3" />
+                      <ChevronRight className="w-3 h-3" />
                     </button>
                   </>
                 )}
@@ -318,15 +318,15 @@ export default function HomePage() {
 
               <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
                 <div className="inline-flex items-center gap-1.5">
-                  <FaRegCalendarAlt className="w-3 h-3 text-black flex-shrink-0" />
+                  <Calendar className="w-3 h-3 text-black flex-shrink-0" />
                   <span>{formatDate(event.date)}</span>
                 </div>
                 <div className="inline-flex items-center gap-1.5">
-                  <FaClock className="w-3 h-3 text-black flex-shrink-0" />
+                  <Clock className="w-3 h-3 text-black flex-shrink-0" />
                   <span>{formatTimeRange(event.start_time, event.end_time)}</span>
                 </div>
                 <div className="inline-flex items-center gap-1.5">
-                  <FaMapMarkerAlt className="w-3 h-3 text-black flex-shrink-0" />
+                  <MapPin className="w-3 h-3 text-black flex-shrink-0" />
                   <span className="truncate">{event.venue}</span>
                 </div>
               </div>

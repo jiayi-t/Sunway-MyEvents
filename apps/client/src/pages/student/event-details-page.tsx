@@ -3,11 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
 import { useAuth } from '../../context/auth-context'
-import {
-  FaRegCalendarAlt, FaClock, FaMapMarkerAlt,
-  FaTicketAlt, FaBookmark, FaRegBookmark, FaShareAlt,
-  FaInstagram, FaEnvelope, FaArrowLeft
-} from 'react-icons/fa'
+import { Calendar, Clock, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
+import { InstagramLogo } from 'phosphor-react'
 
 interface Event {
   id: number
@@ -114,7 +111,7 @@ export default function EventDetailPage() {
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white">
-          <FaArrowLeft />
+          <ArrowLeft />
         </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
         <div className="w-5" />
@@ -139,10 +136,10 @@ export default function EventDetailPage() {
           </h2>
           <div className="flex gap-2 flex-shrink-0 mt-1">
             <button onClick={() => setSaved(s => !s)} className="text-primary">
-              {saved ? <FaBookmark /> : <FaRegBookmark />}
+              <Bookmark fill={saved ? 'currentColor' : 'none'} />
             </button>
             <button className="text-primary">
-              <FaShareAlt />
+              <Share2 />
             </button>
           </div>
         </div>
@@ -169,7 +166,7 @@ export default function EventDetailPage() {
         <div className="space-y-3 mb-4">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <FaRegCalendarAlt className="text-primary w-4 h-4" />
+              <Calendar className="text-primary w-4 h-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Date</p>
@@ -179,7 +176,7 @@ export default function EventDetailPage() {
 
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <FaClock className="text-primary w-4 h-4" />
+              <Clock className="text-primary w-4 h-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Time</p>
@@ -191,7 +188,7 @@ export default function EventDetailPage() {
 
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <FaMapMarkerAlt className="text-primary w-4 h-4" />
+              <MapPin className="text-primary w-4 h-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Venue</p>
@@ -201,7 +198,7 @@ export default function EventDetailPage() {
 
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <FaTicketAlt className="text-primary w-4 h-4" />
+              <Ticket className="text-primary w-4 h-4" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
@@ -256,10 +253,10 @@ export default function EventDetailPage() {
             </p>
             <div className="flex gap-2 mt-1">
               <button className="text-muted-foreground hover:text-primary">
-                <FaInstagram className="w-4 h-4" />
+                <InstagramLogo className="w-4 h-4" />
               </button>
               <button className="text-muted-foreground hover:text-primary">
-                <FaEnvelope className="w-4 h-4" />
+                <Mail className="w-4 h-4" />
               </button>
             </div>
           </div>
