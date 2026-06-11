@@ -29,6 +29,10 @@ export default function OrganizerCreateAccount() {
       setError('Please enter a username')
       return
     }
+    if (form.username.length > 8) {
+      setError('Username must be 8 characters or less. Try your SLB / C&S shortform.')
+      return
+    }
     if (!form.email.trim()) {
       setError('Please enter an email address')
       return
@@ -106,6 +110,9 @@ export default function OrganizerCreateAccount() {
               onChange={e => setForm({ ...form, username: e.target.value })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
             />
+            {form.username.length > 8 && (
+              <p className="text-red-500 text-xs mt-1">Username must be 8 characters or less. Try your SLB / C&S shortform.</p>
+            )}
           </div>
 
           <div>
