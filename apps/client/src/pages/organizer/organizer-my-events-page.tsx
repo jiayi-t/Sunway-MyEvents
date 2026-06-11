@@ -269,7 +269,7 @@ export default function OrganizerEventsPage() {
   const handleAnalytics = (id: number) => navigate(`/organizer/events/${id}/analytics`)
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="bg-surface">
       <Header />
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('/organizer/dashboard')} className="text-white">
