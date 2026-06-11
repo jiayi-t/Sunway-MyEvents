@@ -4,7 +4,7 @@ import { useAuth } from '../../context/auth-context'
 import LoginFooter from '../../components/login-footer'
 import api from '../../services/api'
 
-export default function OrganizerLoginPage() {
+export default function StudentLoginPage() {
   const [form, setForm] = useState({ sunwayId: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,7 +18,7 @@ export default function OrganizerLoginPage() {
       const payload = { sunwayId: form.sunwayId, password: form.password }
       const res = await api.post('/auth/login', payload)
       login(res.data.user, res.data.token)
-      navigate('/organizer/dashboard')
+      navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid username or password')
     } finally {
@@ -45,16 +45,16 @@ export default function OrganizerLoginPage() {
         </div>
 
         <h1 className="text-primary text-xl font-bold mb-6">
-          Sign in with your Username
+          Sign in with your Sunway ID
         </h1>
 
         {/* Form Card */}
         <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">SLB / C&S Username</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
             <input
               type="text"
-              placeholder="Use: ssa"
+              placeholder="Use: 22055313"
               value={form.sunwayId}
               onChange={e => setForm({ ...form, sunwayId: e.target.value })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -73,13 +73,6 @@ export default function OrganizerLoginPage() {
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                 className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline"
-                onClick={() => navigate('/reset-password')}
-              >
-                Forgot?
-              </button>
             </div>
           </div>
 
@@ -93,16 +86,6 @@ export default function OrganizerLoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </div>
-
-        <p className="text-sm text-muted-foreground mt-4">
-          Don't have an account?{' '}
-          <button
-            onClick={() => navigate('/login/organizer/register')}
-            className="text-accent font-semibold underline"
-          >
-            Create one now!
-          </button>
-        </p>
       </div>
 
       <LoginFooter />
