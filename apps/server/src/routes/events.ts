@@ -1,22 +1,24 @@
 import { Router } from 'express'
-import pool from '../db'
+import { eq, asc, and, getTableColumns } from 'drizzle-orm'
+import { db } from '../db'
+import { events, users, registrations } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
 // GET /api/events - get all events
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        e.*,
-        u.name AS organizer_name,
-        u.image_url AS organizer_image_url
-      FROM events e
-      LEFT JOIN users u ON e.organizer_id = u.id
-      ORDER BY e.date ASC
-    `)
-    res.json(result.rows)
+    const result = await db
+      .select({
+        ...getTableColumns(events),
+        organizer_name: users.name,
+        organizer_image_url: users.image_url
+      })
+      .from(events)
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .orderBy(asc(events.date))
+    res.json(result)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -24,21 +26,22 @@ router.get('/', async (req, res) => {
 
 // GET /api/events/:id - get single event
 router.get('/:id', async (req, res) => {
+  const id = parseInt(req.params.id as string)
   try {
-    const result = await pool.query(`
-      SELECT
-        e.*,
-        u.name AS organizer_name,
-        u.image_url AS organizer_image_url
-      FROM events e
-      LEFT JOIN users u ON e.organizer_id = u.id
-      WHERE e.id = $1
-    `, [req.params.id])
+    const result = await db
+      .select({
+        ...getTableColumns(events),
+        organizer_name: users.name,
+        organizer_image_url: users.image_url
+      })
+      .from(events)
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(eq(events.id, id))
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Event not found' })
     }
-    res.json(result.rows[0])
+    res.json(result[0])
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -46,12 +49,17 @@ router.get('/:id', async (req, res) => {
 
 // GET /api/events/:id/registration-status
 router.get('/:id/registration-status', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
   try {
-    const result = await pool.query(
-      'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
-      [req.user!.id, req.params.id]
-    )
-    res.json({ registered: result.rows.length > 0 })
+    const result = await db
+      .select({ id: registrations.id })
+      .from(registrations)
+      .where(and(
+        eq(registrations.user_id, req.user!.id),
+        eq(registrations.event_id, eventId)
+      ))
+
+    res.json({ registered: result.length > 0 })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -59,20 +67,24 @@ router.get('/:id/registration-status', authenticate, async (req: AuthRequest, re
 
 // POST /api/events/:id/register - register for event (protected)
 router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
   try {
-    const existing = await pool.query(
-      'SELECT * FROM registrations WHERE user_id = $1 AND event_id = $2',
-      [req.user!.id, req.params.id]
-    )
+    const existing = await db
+      .select({ id: registrations.id })
+      .from(registrations)
+      .where(and(
+        eq(registrations.user_id, req.user!.id),
+        eq(registrations.event_id, eventId)
+      ))
 
-    if (existing.rows.length > 0) {
+    if (existing.length > 0) {
       return res.status(400).json({ error: 'Already registered for this event' })
     }
 
-    await pool.query(
-      'INSERT INTO registrations (user_id, event_id) VALUES ($1, $2)',
-      [req.user!.id, req.params.id]
-    )
+    await db.insert(registrations).values({
+      user_id: req.user!.id,
+      event_id: eventId
+    })
 
     res.status(201).json({ message: 'Successfully registered for event' })
   } catch {
@@ -92,14 +104,22 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   } = req.body
 
   try {
-    const result = await pool.query(
-      `INSERT INTO events
-       (name, description, date, start_time, end_time, venue, pricing, category, capacity, registration_deadline, image_url, organizer_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-       RETURNING *`,
-      [name, description, date, start_time, end_time, venue, pricing || 0, category, capacity, registration_deadline, image_url, req.user!.id]
-    )
-    res.status(201).json(result.rows[0])
+    const result = await db.insert(events).values({
+      name,
+      description,
+      date: new Date(date),
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      venue,
+      pricing: pricing ?? 0,
+      category,
+      capacity,
+      registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
+      image_url,
+      organizer_id: req.user!.id
+    }).returning()
+
+    res.status(201).json(result[0])
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

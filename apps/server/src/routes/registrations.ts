@@ -1,5 +1,7 @@
 import { Router } from 'express'
-import pool from '../db'
+import { eq, asc } from 'drizzle-orm'
+import { db } from '../db'
+import { registrations, events, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -7,27 +9,27 @@ const router = Router()
 // GET /api/registrations/my - get current user's registrations
 router.get('/my', authenticate, async (req: AuthRequest, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        r.id,
-        r.event_id,
-        r.registered_at,
-        e.name AS event_name,
-        e.date AS event_date,
-        e.start_time AS event_start_time,
-        e.end_time AS event_end_time,
-        e.venue AS event_venue,
-        e.category AS event_category,
-        e.image_url AS event_image_url,
-        u.name AS organizer_name
-      FROM registrations r
-      JOIN events e ON r.event_id = e.id
-      LEFT JOIN users u ON e.organizer_id = u.id
-      WHERE r.user_id = $1
-      ORDER BY e.date ASC
-    `, [req.user!.id])
+    const result = await db
+      .select({
+        id: registrations.id,
+        event_id: registrations.event_id,
+        registered_at: registrations.registered_at,
+        event_name: events.name,
+        event_date: events.date,
+        event_start_time: events.start_time,
+        event_end_time: events.end_time,
+        event_venue: events.venue,
+        event_category: events.category,
+        event_image_url: events.image_url,
+        organizer_name: users.name
+      })
+      .from(registrations)
+      .innerJoin(events, eq(registrations.event_id, events.id))
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(eq(registrations.user_id, req.user!.id))
+      .orderBy(asc(events.date))
 
-    res.json(result.rows)
+    res.json(result)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

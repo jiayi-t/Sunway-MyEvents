@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
+    "db:push": "drizzle-kit push",
     "seed": "ts-node src/database/seed.ts",
     "build": "tsc",
     "start": "node dist/index.js",
@@ -22,6 +23,7 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^24.12.4",
     "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
@@ -30,6 +32,7 @@
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
