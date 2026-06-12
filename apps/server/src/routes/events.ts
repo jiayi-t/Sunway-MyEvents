@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, and, getTableColumns } from 'drizzle-orm'
+import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import { db } from '../db'
 import { events, users, registrations } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -17,6 +17,23 @@ router.get('/', async (_req, res) => {
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
+      .orderBy(asc(events.date))
+    res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/organizer-events
+router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  try {
+    const result = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.organizer_id, req.user!.id), isNull(events.deleted_at)))
       .orderBy(asc(events.date))
     res.json(result)
   } catch {

@@ -252,11 +252,8 @@ export default function OrganizerEventsPage() {
   useEffect(() => {
     if (!user?.id) return
     setEventsLoading(true)
-    api.get('/events')
-      .then(res => {
-        const mine = (res.data as OrganizerEvent[]).filter(e => e.organizer_id === user.id)
-        setMyEvents(mine)
-      })
+    api.get('/events/organizer-events')
+      .then(res => setMyEvents(res.data as OrganizerEvent[]))
       .catch(() => setError('Failed to load events'))
       .finally(() => setEventsLoading(false))
   }, [user?.id])

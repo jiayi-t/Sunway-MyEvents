@@ -1,12 +1,23 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { Pen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
+import api from '../../services/api'
 
 export default function OrganizerDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [eventStats, setEventStats] = useState({ upcoming: 0, total: 0 })
+
+  useEffect(() => {
+    api.get('/events/organizer-events').then(res => {
+      const now = new Date()
+      const upcoming = res.data.filter((e: any) => new Date(e.date) >= now).length
+      setEventStats({ upcoming, total: res.data.length })
+    }).catch(() => {})
+  }, [])
 
   return (
     <div className="bg-surface">
@@ -28,11 +39,11 @@ export default function OrganizerDashboard() {
 
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">5</p>
+                  <p className="text-white font-bold text-lg">{eventStats.upcoming}</p>
                   <p className="text-blue-200 text-xs">Upcoming</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">101</p>
+                  <p className="text-white font-bold text-lg">{eventStats.total}</p>
                   <p className="text-blue-200 text-xs">Organized</p>
                 </div>
               </div>
