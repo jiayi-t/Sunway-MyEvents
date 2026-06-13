@@ -50,6 +50,12 @@ export default function Header() {
               My Events
             </button>
             <button
+              onClick={() => { navigate('/my-preferences'); setMenuOpen(false) }}
+              className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+            >
+              My Preferences
+            </button>
+            <button
               onClick={handleLogout}
               className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
             >

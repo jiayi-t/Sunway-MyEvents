@@ -58,6 +58,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [searchApplied, setSearchApplied] = useState(false)
+  const [userPreferences, setUserPreferences] = useState<string[]>([])
   const touchStartX = useRef<number | null>(null)
   const navigate = useNavigate()
 
@@ -65,18 +66,26 @@ export default function HomePage() {
   const featuredEvents = events.slice(0, 5)
 
   useEffect(() => {
-    api.get('/events')
-      .then(res => {
-        setEvents(res.data)
-        setFiltered(res.data)
-      })
-      .finally(() => setLoading(false))
+    Promise.all([
+      api.get('/events'),
+      api.get('/auth/preferences').catch(() => ({ data: { preferences: [] } })),
+    ]).then(([eventsRes, prefsRes]) => {
+      setEvents(eventsRes.data)
+      setFiltered(eventsRes.data)
+      setUserPreferences(prefsRes.data.preferences || [])
+    }).finally(() => setLoading(false))
   }, [])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
-    if (cat === 'All Events' || cat === 'For You') {
+    if (cat === 'All Events') {
       setFiltered(events)
+    } else if (cat === 'For You') {
+      setFiltered(
+        userPreferences.length > 0
+          ? events.filter(e => userPreferences.some(p => p.toLowerCase() === e.category?.toLowerCase()))
+          : events
+      )
     } else {
       setFiltered(events.filter(e => e.category?.toLowerCase() === cat.toLowerCase()))
     }

@@ -21,6 +21,17 @@ const seed = async () => {
       image_url: null
     },
     {
+      sunway_id: '26011234',
+      email: '26011234@imail.sunway.edu.my',
+      password: defaultPassword,
+      name: 'Tester',
+      role: 'student',
+      program: 'Bachelor of Software Engineering (Hons)',
+      category: null,
+      preferences: null,
+      image_url: null
+    },
+    {
       sunway_id: 'ssa',
       email: 'ssa@imail.sunway.edu.my',
       password: defaultPassword,

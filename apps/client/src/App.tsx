@@ -2,10 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './context/auth-context'
 import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
+import SelectPreferencesPage from './pages/student/select-preferences-page'
 import HomePage from './pages/student/home-page'
 import EventDetailPage from './pages/student/event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
+import MyPreferencesPage from './pages/student/my-preferences-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import ResetPasswordPage from './pages/auth/reset-password-page'
@@ -14,7 +16,7 @@ import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
-const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer']
+const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-preferences']
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth()
@@ -45,6 +47,13 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/select-preferences"
+        element={
+          <ProtectedRoute>
+            <SelectPreferencesPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/events/:id" 
         element={
         <ProtectedRoute>
@@ -65,6 +74,13 @@ function AppRoutes() {
           <MyEventsPage />
         </ProtectedRoute>
         } 
+      />
+      <Route path="/my-preferences"
+        element={
+          <ProtectedRoute>
+            <MyPreferencesPage />
+          </ProtectedRoute>
+        }
       />
       <Route path="/login/organizer" element={<OrganizerLoginPage />} />
       <Route path="/login/organizer/register" element={<OrganizerCreateAccount />} />

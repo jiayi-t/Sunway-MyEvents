@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { users } from '../database/schema'
+import { authenticate, type AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -38,7 +39,8 @@ router.post('/login', async (req, res) => {
         sunway_id: user.sunway_id,
         name: user.name,
         role: user.role,
-        image_url: user.image_url ?? null
+        image_url: user.image_url ?? null,
+        preferences: (user.preferences as string[] | null) ?? null
       },
       token
     })
@@ -80,6 +82,31 @@ router.post('/register/organizer', async (req, res) => {
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Username already taken' })
     }
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/auth/preferences
+router.get('/preferences', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await db.select({ preferences: users.preferences }).from(users).where(eq(users.id, req.user!.id))
+    const prefs = (result[0]?.preferences as string[] | null) ?? []
+    res.json({ preferences: prefs })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/auth/preferences
+router.put('/preferences', authenticate, async (req: AuthRequest, res) => {
+  const { preferences } = req.body
+  if (!Array.isArray(preferences)) {
+    return res.status(400).json({ error: 'preferences must be an array' })
+  }
+  try {
+    await db.update(users).set({ preferences }).where(eq(users.id, req.user!.id))
+    res.json({ preferences })
+  } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })

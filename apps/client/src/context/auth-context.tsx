@@ -7,6 +7,7 @@ interface User {
   name: string
   role: string
   image_url?: string | null
+  preferences?: string[] | null
 }
 
 interface AuthContextType {
