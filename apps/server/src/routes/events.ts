@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import { db } from '../db'
-import { events, users, registrations } from '../database/schema'
+import { events, users, registrations, saved_events } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -34,6 +34,34 @@ router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
       .select()
       .from(events)
       .where(and(eq(events.organizer_id, req.user!.id), isNull(events.deleted_at)))
+      .orderBy(asc(events.date))
+    res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/saved-events
+router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await db
+      .select({
+        id: saved_events.id,
+        event_id: events.id,
+        saved_at: saved_events.saved_at,
+        event_name: events.name,
+        event_date: events.date,
+        event_start_time: events.start_time,
+        event_end_time: events.end_time,
+        event_venue: events.venue,
+        event_category: events.category,
+        event_image_url: events.image_url,
+        organizer_name: users.name,
+      })
+      .from(saved_events)
+      .innerJoin(events, eq(saved_events.event_id, events.id))
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(eq(saved_events.user_id, req.user!.id))
       .orderBy(asc(events.date))
     res.json(result)
   } catch {
@@ -104,6 +132,41 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
     })
 
     res.status(201).json({ message: 'Successfully registered for event' })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/:id/save-status
+router.get('/:id/save-status', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
+  try {
+    const result = await db
+      .select({ id: saved_events.id })
+      .from(saved_events)
+      .where(and(eq(saved_events.user_id, req.user!.id), eq(saved_events.event_id, eventId)))
+    res.json({ saved: result.length > 0 })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/events/:id/save-toggle
+router.post('/:id/save-toggle', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
+  try {
+    const existing = await db
+      .select({ id: saved_events.id })
+      .from(saved_events)
+      .where(and(eq(saved_events.user_id, req.user!.id), eq(saved_events.event_id, eventId)))
+
+    if (existing.length > 0) {
+      await db.delete(saved_events).where(eq(saved_events.id, existing[0].id))
+      res.json({ saved: false })
+    } else {
+      await db.insert(saved_events).values({ user_id: req.user!.id, event_id: eventId })
+      res.json({ saved: true })
+    }
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

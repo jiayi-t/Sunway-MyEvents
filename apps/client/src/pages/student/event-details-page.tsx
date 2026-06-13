@@ -76,6 +76,9 @@ export default function EventDetailPage() {
     api.get(`/events/${id}/registration-status`)
       .then(res => setRegistered(res.data.registered))
       .catch(() => {})
+    api.get(`/events/${id}/save-status`)
+      .then(res => setSaved(res.data.saved))
+      .catch(() => {})
   }, [id, user])
 
   const handleRegister = async () => {
@@ -135,7 +138,10 @@ export default function EventDetailPage() {
             {event.name}
           </h2>
           <div className="flex gap-2 flex-shrink-0 mt-1">
-            <button onClick={() => setSaved(s => !s)} className="text-primary">
+            <button
+              onClick={() => api.post(`/events/${id}/save-toggle`).then(res => setSaved(res.data.saved)).catch(() => {})}
+              className="text-primary"
+            >
               <Bookmark fill={saved ? 'currentColor' : 'none'} />
             </button>
             <button className="text-primary">

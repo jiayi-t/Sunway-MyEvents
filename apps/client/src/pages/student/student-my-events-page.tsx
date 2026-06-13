@@ -9,7 +9,21 @@ type Tab = 'upcoming' | 'past' | 'saved'
 interface Registration {
   id: number
   event_id: number
-  registered_at: string
+  registered_at?: string
+  event_name: string
+  event_date: string
+  event_start_time: string
+  event_end_time: string
+  event_venue: string
+  event_category: string
+  event_image_url: string
+  organizer_name: string
+}
+
+interface SavedEvent {
+  id: number
+  event_id: number
+  saved_at: string
   event_name: string
   event_date: string
   event_start_time: string
@@ -124,13 +138,17 @@ export default function MyEventsPage() {
     (searchParams.get('tab') as Tab) || 'upcoming'
   )
   const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [savedEvents, setSavedEvents] = useState<SavedEvent[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/registrations/my')
-      .then(res => setRegistrations(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.all([
+      api.get('/registrations/my'),
+      api.get('/events/saved-events'),
+    ]).then(([regRes, savedRes]) => {
+      setRegistrations(regRes.data)
+      setSavedEvents(savedRes.data)
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -212,8 +230,22 @@ export default function MyEventsPage() {
 
       {/* Saved tab */}
       {activeTab === 'saved' && (
-        <div className="px-4 py-4">
-          <p className="text-muted-foreground text-sm text-center">No saved events yet</p>
+        <div className="px-4 py-4 space-y-3">
+          {loading ? (
+            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+          ) : savedEvents.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm">No saved events yet. Bookmark events to save them!</p>
+              <button
+                onClick={() => navigate('/')}
+                className="mt-3 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold"
+              >
+                Browse Events
+              </button>
+            </div>
+          ) : (
+            savedEvents.map(e => <RegistrationCard key={e.id} reg={e} />)
+          )}
         </div>
       )}
     </div>
