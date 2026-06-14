@@ -153,7 +153,7 @@ export default function StudentEventDetailsPage() {
             </span>
           )}
           <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {typedEvent.pricing === 0 ? 'Free' : 'Paid'}
+            {Number(typedEvent.pricing) === 0 ? 'Free' : 'Paid'}
           </span>
         </div>
 
@@ -204,7 +204,7 @@ export default function StudentEventDetailsPage() {
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
               <p className="text-sm text-foreground">
-                {typedEvent.pricing === 0 ? 'Free' : `RM ${typedEvent.pricing}`}
+                {Number(typedEvent.pricing) === 0 ? 'Free' : `RM ${typedEvent.pricing}`}
               </p>
             </div>
           </div>

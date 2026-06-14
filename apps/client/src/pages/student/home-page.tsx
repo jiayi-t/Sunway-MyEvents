@@ -202,7 +202,7 @@ export default function HomePage() {
                         {featured.category || 'General'}
                       </span>
                       <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
-                        {featured.pricing === 0 ? 'Free' : 'Paid'}
+                        {Number(featured.pricing) === 0 ? 'Free' : 'Paid'}
                       </span>
                     </div>
                   </div>
@@ -345,7 +345,7 @@ export default function HomePage() {
                     {event.category}
                   </span>
                 )}
-                {event.pricing === 0 ? (
+                {Number(event.pricing) === 0 ? (
                   <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
                     Free
                   </span>
