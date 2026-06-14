@@ -137,41 +137,41 @@ export default function OrganizerEditEventPage() {
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Event Name</label>
           <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Description</label>
           <textarea rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary resize-none" />
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary resize-none bg-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Date</label>
           <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
             <label className="block text-sm font-medium text-foreground mb-1">Start Time</label>
             <input type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-foreground mb-1">End Time</label>
             <input type="time" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Venue</label>
           <input type="text" value={form.venue} onChange={e => setForm({ ...form, venue: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Pricing</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">RM</span>
             <input type="number" min="0" value={form.pricing} onChange={e => setForm({ ...form, pricing: e.target.value })}
-              className="w-full border border-border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+              className="w-full border border-border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
           </div>
         </div>
         <div>
@@ -186,23 +186,23 @@ export default function OrganizerEditEventPage() {
           <label className="block text-sm font-medium text-foreground mb-1">Capacity</label>
           <div className="relative">
             <input type="number" min="1" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-24" />
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-24 bg-white" />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">participants</span>
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Registration Deadline</label>
           <input type="date" value={form.registration_deadline} onChange={e => setForm({ ...form, registration_deadline: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Poster</label>
-          <div className="w-full border border-border rounded-lg px-3 py-6 flex flex-col items-center justify-center gap-3">
+          <div className="w-full border border-border rounded-lg px-3 py-6 flex flex-col items-center justify-center gap-3 bg-white">
             {preview ? (
               <>
                 <img src={preview} alt="poster preview" className="max-h-56 object-contain rounded" />
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-border text-foreground hover:bg-surface">
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-accent text-accent hover:bg-orange-50">
                   {uploading ? 'Uploading...' : 'Reupload'}
                 </button>
               </>
@@ -219,11 +219,11 @@ export default function OrganizerEditEventPage() {
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-3 pb-6">
           <button onClick={() => navigate(-1)}
-            className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground">
+            className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50">
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={saving || uploading}
-            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50">
+            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90">
             {saving ? 'Saving...' : 'Edit Event'}
           </button>
         </div>
