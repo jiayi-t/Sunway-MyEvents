@@ -11,7 +11,6 @@ import MyEventsPage from './pages/student/student-my-events-page'
 import MyPreferencesPage from './pages/student/my-preferences-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
-import ResetPasswordPage from './pages/auth/reset-password-page'
 import OrganizerDashboard from './pages/organizer/organizer-dashboard'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
@@ -89,7 +88,6 @@ function AppRoutes() {
       />
       <Route path="/login/organizer" element={<OrganizerLoginPage />} />
       <Route path="/login/organizer/register" element={<OrganizerCreateAccount />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/organizer/dashboard" 
         element={
         <ProtectedRoute>
