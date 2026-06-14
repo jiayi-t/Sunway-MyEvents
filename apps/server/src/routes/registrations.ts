@@ -21,6 +21,7 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
         event_venue: events.venue,
         event_category: events.category,
         event_image_url: events.image_url,
+        event_cancelled_at: events.cancelled_at,
         organizer_name: users.name
       })
       .from(registrations)

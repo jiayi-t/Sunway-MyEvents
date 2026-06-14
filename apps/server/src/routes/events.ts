@@ -17,6 +17,7 @@ router.get('/', async (_req, res) => {
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(isNull(events.archived_at))
       .orderBy(asc(events.date))
     res.json(result)
   } catch {
@@ -31,9 +32,12 @@ router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
   }
   try {
     const result = await db
-      .select()
+      .select({
+        ...getTableColumns(events),
+        registered_count: db.$count(registrations, eq(registrations.event_id, events.id))
+      })
       .from(events)
-      .where(and(eq(events.organizer_id, req.user!.id), isNull(events.deleted_at)))
+      .where(and(eq(events.organizer_id, req.user!.id), isNull(events.archived_at)))
       .orderBy(asc(events.date))
     res.json(result)
   } catch {
@@ -56,6 +60,7 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
         event_venue: events.venue,
         event_category: events.category,
         event_image_url: events.image_url,
+        event_cancelled_at: events.cancelled_at,
         organizer_name: users.name,
       })
       .from(saved_events)
@@ -77,7 +82,8 @@ router.get('/:id', async (req, res) => {
       .select({
         ...getTableColumns(events),
         organizer_name: users.name,
-        organizer_image_url: users.image_url
+        organizer_image_url: users.image_url,
+        registered_count: db.$count(registrations, eq(registrations.event_id, events.id))
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
@@ -110,7 +116,7 @@ router.get('/:id/registration-status', authenticate, async (req: AuthRequest, re
   }
 })
 
-// POST /api/events/:id/register - register for event (protected)
+// POST /api/events/:id/register - register for event 
 router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   const eventId = parseInt(req.params.id as string)
   try {
@@ -200,6 +206,78 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     }).returning()
 
     res.status(201).json(result[0])
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/events/:id - edit own event (organizer only)
+router.put('/:id', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = parseInt(req.params.id as string)
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    const {
+      name, description, date, start_time, end_time, venue, pricing,
+      category, capacity, registration_deadline, image_url
+    } = req.body
+
+    const result = await db.update(events).set({
+      name,
+      description,
+      date: new Date(date),
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      venue,
+      pricing: pricing ?? 0,
+      category,
+      capacity,
+      registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
+      image_url: image_url || null
+    }).where(eq(events.id, id)).returning()
+
+    res.json(result[0])
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PATCH /api/events/:id/cancel - cancel own upcoming event (organizer only)
+router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = parseInt(req.params.id as string)
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    await db.update(events).set({ cancelled_at: new Date() }).where(eq(events.id, id))
+    res.json({ message: 'Event cancelled' })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PATCH /api/events/:id/archive - archive own event (organizer only)
+router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = parseInt(req.params.id as string)
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    await db.update(events).set({ archived_at: new Date() }).where(eq(events.id, id))
+    res.json({ message: 'Event archived' })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

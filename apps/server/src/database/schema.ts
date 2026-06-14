@@ -28,8 +28,9 @@ export const events = pgTable('events', {
   registration_deadline: timestamp('registration_deadline'),
   image_url: text('image_url'),
   organizer_id: integer('organizer_id').references(() => users.id),
-  deleted_at: timestamp('deleted_at'),
-  created_at: timestamp('created_at').defaultNow()
+  created_at: timestamp('created_at').defaultNow(),
+  cancelled_at: timestamp('cancelled_at'),
+  archived_at: timestamp('archived_at')
 })
 
 export const registrations = pgTable('registrations', {
