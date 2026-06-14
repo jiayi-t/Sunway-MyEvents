@@ -119,6 +119,18 @@ export function useArchiveEventMutation(id: string | undefined) {
     mutationFn: () => api.patch(`/events/${id}/archive`).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+    },
+  })
+}
+
+export function useUnarchiveEventMutation(id: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.patch(`/events/${id}/unarchive`).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
     },
   })
 }

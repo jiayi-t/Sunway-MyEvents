@@ -5,6 +5,7 @@ import {
   useEventQuery,
   useCancelEventMutation,
   useArchiveEventMutation,
+  useUnarchiveEventMutation,
 } from '../../hooks/queries'
 import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
@@ -24,6 +25,7 @@ interface OrganizerEventDetail {
   organizer_id: number
   registered_count: number
   cancelled_at: string | null
+  archived_at: string | null
 }
 
 const toImageUrl = (url?: string | null) => {
@@ -67,6 +69,7 @@ export default function OrganizerEventDetailsPage() {
 
   const cancelMutation = useCancelEventMutation(id)
   const archiveMutation = useArchiveEventMutation(id)
+  const unarchiveMutation = useUnarchiveEventMutation(id)
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -80,13 +83,19 @@ export default function OrganizerEventDetailsPage() {
   }, [])
 
   const isPast = event ? new Date(event.end_time) < new Date() : false
-  const processing = cancelMutation.isPending || archiveMutation.isPending
+  const isArchived = !!event?.archived_at
+  const processing = cancelMutation.isPending || archiveMutation.isPending || unarchiveMutation.isPending
 
   const handleAction = () => {
     setActionError('')
-    if (isPast) {
+    if (isArchived) {
+      unarchiveMutation.mutate(undefined, {
+        onSuccess: () => setConfirmAction(false),
+        onError: () => { setActionError('Action failed'); setConfirmAction(false) },
+      })
+    } else if (isPast) {
       archiveMutation.mutate(undefined, {
-        onSuccess: () => navigate('/organizer/events', { replace: true }),
+        onSuccess: () => setConfirmAction(false),
         onError: () => { setActionError('Action failed'); setConfirmAction(false) },
       })
     } else {
@@ -136,6 +145,11 @@ export default function OrganizerEventDetailsPage() {
         />
       </div>
 
+      {event.archived_at && (
+        <div className="bg-gray-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
+          This event has been archived
+        </div>
+      )}
       {event.cancelled_at && (
         <div className="bg-red-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
           This event has been cancelled
@@ -172,7 +186,14 @@ export default function OrganizerEventDetailsPage() {
                     <Pin className="w-4 h-4" /> Pin
                   </button>
                 )}
-                {!event.cancelled_at && (
+                {isArchived ? (
+                  <button
+                    onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                  >
+                    <Archive className="w-4 h-4" /> Unarchive
+                  </button>
+                ) : !event.cancelled_at && (
                   <button
                     onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-surface w-full text-left"
@@ -284,12 +305,14 @@ export default function OrganizerEventDetailsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-card rounded-xl p-6 w-full max-w-sm">
             <h3 className="font-bold text-foreground text-base mb-2">
-              {isPast ? 'Archive Event?' : 'Cancel Event?'}
+              {isArchived ? 'Unarchive Event?' : isPast ? 'Archive Event?' : 'Cancel Event?'}
             </h3>
             <p className="text-muted-foreground text-sm mb-5">
-              {isPast
-                ? 'This event will be hidden from students. You can still view it in your event history.'
-                : 'This will cancel the event and notify all registered participants.'}
+              {isArchived
+                ? 'This event will become visible to students again.'
+                : isPast
+                  ? 'This event will be hidden from students. You can still view it in your event history.'
+                  : 'This will cancel the event and notify all registered participants.'}
             </p>
             <div className="flex gap-3">
               <button
@@ -301,9 +324,9 @@ export default function OrganizerEventDetailsPage() {
               <button
                 onClick={handleAction}
                 disabled={processing}
-                className="flex-1 bg-red-500 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50"
+                className={`flex-1 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50 ${isArchived ? 'bg-primary' : 'bg-red-500'}`}
               >
-                {processing ? 'Processing...' : isPast ? 'Archive' : 'Cancel Event'}
+                {processing ? 'Processing...' : isArchived ? 'Unarchive' : isPast ? 'Archive' : 'Cancel Event'}
               </button>
             </div>
           </div>

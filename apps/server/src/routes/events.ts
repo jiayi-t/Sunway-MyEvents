@@ -283,4 +283,22 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// PATCH /api/events/:id/unarchive - unarchive own event (organizer only)
+router.patch('/:id/unarchive', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = parseInt(req.params.id as string)
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    await db.update(events).set({ archived_at: null }).where(eq(events.id, id))
+    res.json({ message: 'Event unarchived' })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router
