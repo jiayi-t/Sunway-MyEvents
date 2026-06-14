@@ -37,7 +37,7 @@ router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
         registered_count: db.$count(registrations, eq(registrations.event_id, events.id))
       })
       .from(events)
-      .where(and(eq(events.organizer_id, req.user!.id), isNull(events.archived_at)))
+      .where(eq(events.organizer_id, req.user!.id))
       .orderBy(asc(events.date))
     res.json(result)
   } catch {

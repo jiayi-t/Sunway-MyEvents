@@ -21,6 +21,7 @@ interface OrganizerEvent {
   capacity?: number
   registered_count?: number
   cancelled_at?: string | null
+  archived_at?: string | null
 }
 
 const CATEGORIES = ['Academics', 'Arts', ' Cultural', 'Entertainment', 'Social', 'Sports']
@@ -88,8 +89,10 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
 
-        <div className="flex items-center gap-1 mt-0.5">
-          {event.cancelled_at ? (
+        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+          {event.archived_at ? (
+            <span className="bg-gray-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">ARCHIVED</span>
+          ) : event.cancelled_at ? (
             <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
           ) : (
             <>
@@ -144,6 +147,17 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
 
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
+
+        {(event.archived_at || event.cancelled_at) && (
+          <div className="flex items-center gap-1 mt-0.5">
+            {event.archived_at && (
+              <span className="bg-gray-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">ARCHIVED</span>
+            )}
+            {event.cancelled_at && !event.archived_at && (
+              <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
+            )}
+          </div>
+        )}
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
           <div className="inline-flex items-center gap-1.5">
