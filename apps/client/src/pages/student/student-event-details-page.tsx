@@ -22,6 +22,7 @@ interface Event {
   organizer_id: number
   organizer_name: string
   organizer_image_url?: string
+  cancelled_at?: string | null
 }
 
 const toImageUrl = (url?: string) => {
@@ -130,6 +131,12 @@ export default function EventDetailPage() {
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
         />
       </div>
+
+      {event.cancelled_at && (
+        <div className="bg-red-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
+          This event has been cancelled
+        </div>
+      )}
 
       {/* Event Info */}
       <div className="bg-card px-4 py-4">

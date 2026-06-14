@@ -17,6 +17,7 @@ interface Event {
   image_url: string
   organizer_id: number
   organizer_name?: string
+  cancelled_at?: string | null
 }
 
 const CATEGORIES = ['All Events', 'For You', 'Academics', 'Arts', ' Cultural', 'Entertainment', 'Social', 'Sports']
@@ -322,7 +323,14 @@ export default function HomePage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
+                {event.cancelled_at && (
+                  <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                    CANCELLED
+                  </span>
+                )}
+              </div>
               <p className="text-accent text-xs mt-0.5">{event.organizer_name ?? 'Organizer'}</p>
 
               <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">

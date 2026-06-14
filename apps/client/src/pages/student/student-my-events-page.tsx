@@ -17,6 +17,7 @@ interface Registration {
   event_venue: string
   event_category: string
   event_image_url: string
+  event_cancelled_at: string | null
   organizer_name: string
 }
 
@@ -31,6 +32,7 @@ interface SavedEvent {
   event_venue: string
   event_category: string
   event_image_url: string
+  event_cancelled_at: string | null
   organizer_name: string
 }
 
@@ -105,9 +107,16 @@ function RegistrationCard({ reg }: { reg: Registration }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">
-          {reg.event_name}
-        </h3>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">
+            {reg.event_name}
+          </h3>
+          {reg.event_cancelled_at && (
+            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
+              CANCELLED
+            </span>
+          )}
+        </div>
         <p className="text-accent text-xs mt-0.5">{reg.organizer_name}</p>
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
