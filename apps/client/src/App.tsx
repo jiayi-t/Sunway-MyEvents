@@ -4,7 +4,7 @@ import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
 import SelectPreferencesPage from './pages/student/select-preferences-page'
 import HomePage from './pages/student/home-page'
-import EventDetailPage from './pages/student/student-event-details-page'
+import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
 import MyPreferencesPage from './pages/student/my-preferences-page'
@@ -59,7 +59,7 @@ function AppRoutes() {
       <Route path="/events/:id" 
         element={
         <ProtectedRoute>
-          <EventDetailPage />
+          <StudentEventDetailsPage />
         </ProtectedRoute>
         } 
       />

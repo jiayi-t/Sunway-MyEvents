@@ -52,7 +52,7 @@ const formatTime = (value?: string) => {
   })
 }
 
-export default function EventDetailPage() {
+export default function StudentEventDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
