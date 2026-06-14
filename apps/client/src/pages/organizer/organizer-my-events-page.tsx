@@ -20,6 +20,7 @@ interface OrganizerEvent {
   organizer_id: number
   capacity?: number
   registered_count?: number
+  cancelled_at?: string | null
 }
 
 const CATEGORIES = ['Academics', 'Arts', ' Cultural', 'Entertainment', 'Social', 'Sports']
@@ -68,13 +69,13 @@ function CountdownBadge({ startTime }: { startTime?: string }) {
   )
 }
 
-function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: (id: number) => void }) {
+function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEvent; onCheckin: (id: number) => void; onViewDetails: (id: number) => void }) {
   const sold = event.registered_count ?? 0
   const cap = event.capacity ?? 0
   const isSoldOut = cap > 0 && sold >= cap
 
   return (
-    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center">
+    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
       <div className="relative flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
         <img
           src={event.image_url || '/SGT%20S7%20Poster.jpg'}
@@ -88,9 +89,15 @@ function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: 
         <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
 
         <div className="flex items-center gap-1 mt-0.5">
-          <span className="text-accent text-xs font-medium">{sold} / {cap || '∞'} tickets sold</span>
-          {isSoldOut && (
-            <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">SOLD OUT</span>
+          {event.cancelled_at ? (
+            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
+          ) : (
+            <>
+              <span className="text-accent text-xs font-medium">{sold} / {cap || '∞'} tickets sold</span>
+              {isSoldOut && (
+                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">SOLD OUT</span>
+              )}
+            </>
           )}
         </div>
 
@@ -110,7 +117,8 @@ function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: 
         </div>
 
         <button
-          onClick={() => onCheckin(event.id)}
+          // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
+          onClick={e => { e.stopPropagation(); onCheckin(event.id) }}
           className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
         >
           <ScanQrCode className="w-3 h-3" />
@@ -123,9 +131,9 @@ function UpcomingCard({ event, onCheckin }: { event: OrganizerEvent; onCheckin: 
   )
 }
 
-function PastCard({ event, onAnalytics }: { event: OrganizerEvent; onAnalytics: (id: number) => void }) {
+function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent; onAnalytics: (id: number) => void; onViewDetails: (id: number) => void }) {
   return (
-    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center">
+    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
       <div className="flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
         <img
           src={event.image_url || '/SGT%20S7%20Poster.jpg'}
@@ -153,7 +161,8 @@ function PastCard({ event, onAnalytics }: { event: OrganizerEvent; onAnalytics: 
         </div>
 
         <button
-          onClick={() => onAnalytics(event.id)}
+          // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
+          onClick={e => { e.stopPropagation(); onAnalytics(event.id) }}
           className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
         >
           <BarChart2 className="w-3 h-3" />
@@ -183,22 +192,27 @@ export default function OrganizerEventsPage() {
 
   const handleSubmit = async () => {
     setError('')
+    if (form.start_time && form.end_time && form.start_time >= form.end_time) {
+      setError('End time must be later than start time')
+      return
+    }
     setLoading(true)
     try {
-      if (form.start_time && form.end_time && form.start_time >= form.end_time) {
-        setError('End time must be later than start time')
-        setLoading(false)
-        return
-      }
       const eventDate = `${form.date}T00:00:00`
       const startDateTime = `${form.date}T${form.start_time}:00`
       const endDateTime = `${form.date}T${form.end_time}:00`
 
       const res = await api.post('/events', {
-        name: form.name, description: form.description, date: eventDate,
-        start_time: startDateTime, end_time: endDateTime, venue: form.venue,
-        pricing: Number(form.pricing) || 0, category: form.category,
-        capacity: Number(form.capacity), registration_deadline: form.registration_deadline,
+        name: form.name, 
+        description: form.description, 
+        date: eventDate,
+        start_time: startDateTime, 
+        end_time: endDateTime, 
+        venue: form.venue,
+        pricing: Number(form.pricing) || 0, 
+        category: form.category,
+        capacity: Number(form.capacity), 
+        registration_deadline: form.registration_deadline,
         image_url: form.image_url || null
       })
 
@@ -264,6 +278,7 @@ export default function OrganizerEventsPage() {
 
   const handleCheckin = (id: number) => navigate(`/organizer/events/${id}/checkin`)
   const handleAnalytics = (id: number) => navigate(`/organizer/events/${id}/analytics`)
+  const handleViewDetails = (id: number) => navigate(`/organizer/events/${id}`)
 
   return (
     <div className="bg-surface">
@@ -397,7 +412,7 @@ export default function OrganizerEventsPage() {
             <p className="text-muted-foreground text-sm text-center">No upcoming events yet</p>
           ) : (
             upcomingEvents.map(event => (
-              <UpcomingCard key={event.id} event={event} onCheckin={handleCheckin} />
+              <UpcomingCard key={event.id} event={event} onCheckin={handleCheckin} onViewDetails={handleViewDetails} />
             ))
           )}
         </div>
@@ -412,7 +427,7 @@ export default function OrganizerEventsPage() {
             <p className="text-muted-foreground text-sm text-center">No past events yet</p>
           ) : (
             pastEvents.map(event => (
-              <PastCard key={event.id} event={event} onAnalytics={handleAnalytics} />
+              <PastCard key={event.id} event={event} onAnalytics={handleAnalytics} onViewDetails={handleViewDetails} />
             ))
           )}
         </div>

@@ -4,7 +4,7 @@ import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
 import SelectPreferencesPage from './pages/student/select-preferences-page'
 import HomePage from './pages/student/home-page'
-import EventDetailPage from './pages/student/event-details-page'
+import EventDetailPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
 import MyPreferencesPage from './pages/student/my-preferences-page'
@@ -13,6 +13,8 @@ import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import ResetPasswordPage from './pages/auth/reset-password-page'
 import OrganizerDashboard from './pages/organizer/organizer-dashboard'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
+import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
+import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -92,12 +94,26 @@ function AppRoutes() {
         </ProtectedRoute>
         } 
       />
-      <Route path="/organizer/events" 
+      <Route path="/organizer/events"
         element={
         <ProtectedRoute>
           <OrganizerEventsPage />
         </ProtectedRoute>
-        } 
+        }
+      />
+      <Route path="/organizer/events/:id"
+        element={
+        <ProtectedRoute>
+          <OrganizerEventDetailsPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/events/:id/edit"
+        element={
+        <ProtectedRoute>
+          <OrganizerEditEventPage />
+        </ProtectedRoute>
+        }
       />
     </Routes>
   )
