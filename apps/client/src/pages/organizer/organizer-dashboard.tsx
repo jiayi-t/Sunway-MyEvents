@@ -1,23 +1,20 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
+import { useOrganizerEventsQuery } from '../../hooks/queries'
 import { Pen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
-import api from '../../services/api'
 
 export default function OrganizerDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [eventStats, setEventStats] = useState({ upcoming: 0, total: 0 })
 
-  useEffect(() => {
-    api.get('/events/organizer-events').then(res => {
-      const now = new Date()
-      const upcoming = res.data.filter((e: any) => new Date(e.date) >= now).length
-      setEventStats({ upcoming, total: res.data.length })
-    }).catch(() => {})
-  }, [])
+  const { data: events = [] } = useOrganizerEventsQuery()
+  const now = new Date()
+  const eventStats = {
+    upcoming: (events as { date: string }[]).filter(e => new Date(e.date) >= now).length,
+    total: (events as { date: string }[]).length,
+  }
 
   return (
     <div className="bg-surface">

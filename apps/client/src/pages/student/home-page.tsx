@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
+import { useEventsQuery, usePreferencesQuery } from '../../hooks/queries'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Event {
@@ -47,63 +47,54 @@ const toImageUrl = (url?: string) => {
     return `http://localhost:3001${url}`
   }
 
-  // Public folder assets (seeded data) 
+  // Public folder assets (seeded data)
   return url
 }
 
 export default function HomePage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [filtered, setFiltered] = useState<Event[]>([])
   const [activeCategory, setActiveCategory] = useState('All Events')
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [searchApplied, setSearchApplied] = useState(false)
-  const [userPreferences, setUserPreferences] = useState<string[]>([])
   const touchStartX = useRef<number | null>(null)
   const navigate = useNavigate()
+
+  const { data: eventsData, isLoading: loading } = useEventsQuery()
+  const { data: prefsData } = usePreferencesQuery()
+  const events = (eventsData ?? []) as Event[]
+  const userPreferences = (prefsData ?? []) as string[]
 
   // Up to 5 events as featured
   const featuredEvents = events.slice(0, 5)
 
-  useEffect(() => {
-    Promise.all([
-      api.get('/events'),
-      api.get('/auth/preferences').catch(() => ({ data: { preferences: [] } })),
-    ]).then(([eventsRes, prefsRes]) => {
-      setEvents(eventsRes.data)
-      setFiltered(eventsRes.data)
-      setUserPreferences(prefsRes.data.preferences || [])
-    }).finally(() => setLoading(false))
-  }, [])
+  const filtered = useMemo(() => {
+    if (searchApplied) {
+      return events.filter((e: Event) =>
+        e.name.toLowerCase().includes(search.toLowerCase()) ||
+        e.venue?.toLowerCase().includes(search.toLowerCase())
+      )
+    }
+    if (activeCategory === 'All Events') return events
+    if (activeCategory === 'For You') {
+      return userPreferences.length > 0
+        ? events.filter((e: Event) => userPreferences.some(p => p.toLowerCase() === e.category?.toLowerCase()))
+        : events
+    }
+    return events.filter((e: Event) => e.category?.toLowerCase() === activeCategory.toLowerCase())
+  }, [events, activeCategory, userPreferences, search, searchApplied])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
-    if (cat === 'All Events') {
-      setFiltered(events)
-    } else if (cat === 'For You') {
-      setFiltered(
-        userPreferences.length > 0
-          ? events.filter(e => userPreferences.some(p => p.toLowerCase() === e.category?.toLowerCase()))
-          : events
-      )
-    } else {
-      setFiltered(events.filter(e => e.category?.toLowerCase() === cat.toLowerCase()))
-    }
+    setSearchApplied(false)
+    setSearch('')
   }
 
   const handleSearch = () => {
-    const results = events.filter(e =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.venue?.toLowerCase().includes(search.toLowerCase())
-    )
-    setFiltered(results)
     setSearchApplied(true)
   }
 
   const handleClearSearch = () => {
     setSearch('')
-    setFiltered(events)
     setSearchApplied(false)
   }
 
@@ -304,7 +295,7 @@ export default function HomePage() {
 
       {/* Events List */}
       <div className="px-4 py-3 space-y-3">
-        {filtered.map(event => (
+        {filtered.map((event) => (
           <div
             key={event.id}
             onClick={() => navigate(`/events/${event.id}`)}

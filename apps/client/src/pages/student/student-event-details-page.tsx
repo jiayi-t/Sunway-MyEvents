@@ -1,8 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
 import { useAuth } from '../../context/auth-context'
+import {
+  useEventQuery,
+  useRegistrationStatusQuery,
+  useSaveStatusQuery,
+  useRegisterEventMutation,
+  useToggleSaveMutation,
+} from '../../hooks/queries'
 import { Calendar, Clock, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
 
@@ -57,56 +63,38 @@ export default function StudentEventDetailsPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [event, setEvent] = useState<Event | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [registering, setRegistering] = useState(false)
-  const [registered, setRegistered] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  useEffect(() => {
-    api.get(`/events/${id}`)
-      .then(res => setEvent(res.data))
-      .catch(() => setError('Event not found'))
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data: event, isLoading, isError } = useEventQuery(id)
+  const { data: registered = false } = useRegistrationStatusQuery(id, !!user)
+  const { data: saved = false } = useSaveStatusQuery(id, !!user)
 
-  useEffect(() => {
-    if (!user || !id) return
-    api.get(`/events/${id}/registration-status`)
-      .then(res => setRegistered(res.data.registered))
-      .catch(() => {})
-    api.get(`/events/${id}/save-status`)
-      .then(res => setSaved(res.data.saved))
-      .catch(() => {})
-  }, [id, user])
+  const registerMutation = useRegisterEventMutation(id)
+  const saveMutation = useToggleSaveMutation(id)
 
-  const handleRegister = async () => {
-    setRegistering(true)
+  const handleRegister = () => {
     setError('')
-    try {
-      await api.post(`/events/${id}/register`)
-      setRegistered(true)
-      setSuccess('Successfully registered for this event!')
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to register')
-    } finally {
-      setRegistering(false)
-    }
+    registerMutation.mutate(undefined, {
+      onSuccess: () => setSuccess('Successfully registered for this event!'),
+      onError: (err: any) => setError(err.response?.data?.error || 'Failed to register'),
+    })
   }
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Loading event...</p>
     </div>
   )
 
-  if (!event) return (
+  if (isError || !event) return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Event not found</p>
     </div>
   )
+
+  // useEventQuery returns unknown, cast to access event fields
+  const typedEvent = event as Event
 
   return (
     <div className="min-h-screen bg-surface">
@@ -124,15 +112,15 @@ export default function StudentEventDetailsPage() {
       {/* Event Poster */}
       <div className="relative">
         <img
-          src={toImageUrl(event.image_url)}
-          alt={event.name}
+          src={toImageUrl(typedEvent.image_url)}
+          alt={typedEvent.name}
           className="w-full object-cover"
           style={{ aspectRatio: '4/5' }}
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
         />
       </div>
 
-      {event.cancelled_at && (
+      {typedEvent.cancelled_at && (
         <div className="bg-red-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
           This event has been cancelled
         </div>
@@ -142,11 +130,11 @@ export default function StudentEventDetailsPage() {
       <div className="bg-card px-4 py-4">
         <div className="flex items-start justify-between gap-2 mb-3">
           <h2 className="font-bold text-foreground text-lg leading-tight flex-1">
-            {event.name}
+            {typedEvent.name}
           </h2>
           <div className="flex gap-2 flex-shrink-0 mt-1">
             <button
-              onClick={() => api.post(`/events/${id}/save-toggle`).then(res => setSaved(res.data.saved)).catch(() => {})}
+              onClick={() => saveMutation.mutate()}
               className="text-primary"
             >
               <Bookmark fill={saved ? 'currentColor' : 'none'} />
@@ -159,20 +147,20 @@ export default function StudentEventDetailsPage() {
 
         {/* Category labels */}
         <div className="flex gap-2 mb-4">
-          {event.category && (
+          {typedEvent.category && (
             <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-              {event.category}
+              {typedEvent.category}
             </span>
           )}
           <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {event.pricing === 0 ? 'Free' : 'Paid'}
+            {typedEvent.pricing === 0 ? 'Free' : 'Paid'}
           </span>
         </div>
 
         {/* Description */}
         <h3 className="font-semibold text-foreground text-sm mb-2">About this event:</h3>
         <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-          {event.description || 'No description provided.'}
+          {typedEvent.description || 'No description provided.'}
         </p>
 
         {/* Event Details */}
@@ -183,7 +171,7 @@ export default function StudentEventDetailsPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Date</p>
-              <p className="text-sm text-foreground">{formatDate(event.date)}</p>
+              <p className="text-sm text-foreground">{formatDate(typedEvent.date)}</p>
             </div>
           </div>
 
@@ -194,7 +182,7 @@ export default function StudentEventDetailsPage() {
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Time</p>
               <p className="text-sm text-foreground">
-                {formatTime(event.start_time)} - {formatTime(event.end_time)}
+                {formatTime(typedEvent.start_time)} - {formatTime(typedEvent.end_time)}
               </p>
             </div>
           </div>
@@ -205,7 +193,7 @@ export default function StudentEventDetailsPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Venue</p>
-              <p className="text-sm text-foreground">{event.venue}</p>
+              <p className="text-sm text-foreground">{typedEvent.venue}</p>
             </div>
           </div>
 
@@ -216,7 +204,7 @@ export default function StudentEventDetailsPage() {
             <div>
               <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
               <p className="text-sm text-foreground">
-                {event.pricing === 0 ? 'Free' : `RM ${event.pricing}`}
+                {typedEvent.pricing === 0 ? 'Free' : `RM ${typedEvent.pricing}`}
               </p>
             </div>
           </div>
@@ -237,14 +225,14 @@ export default function StudentEventDetailsPage() {
         {/* Register Button */}
         <button
           onClick={registered ? undefined : handleRegister}
-          disabled={registering || registered}
+          disabled={registerMutation.isPending || registered}
           className={`w-full py-3 rounded-full text-white font-semibold text-sm transition-colors
             ${registered
               ? 'bg-green-500 cursor-default'
               : 'bg-accent hover:bg-orange-600 disabled:opacity-50'
             }`}
         >
-          {registered ? 'Registered' : registering ? 'Registering...' : 'Register Now!'}
+          {registered ? 'Registered' : registerMutation.isPending ? 'Registering...' : 'Register Now!'}
         </button>
       </div>
 
@@ -254,15 +242,15 @@ export default function StudentEventDetailsPage() {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <img
-              src={toImageUrl(event.organizer_image_url)}
-              alt={event.organizer_name ?? 'Organizer'}
+              src={toImageUrl(typedEvent.organizer_image_url)}
+              alt={typedEvent.organizer_name ?? 'Organizer'}
               className="w-full h-full object-cover"
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">
-              {event.organizer_name ?? 'Organizer'}
+              {typedEvent.organizer_name ?? 'Organizer'}
             </p>
             <div className="flex gap-2 mt-1">
               <button className="text-muted-foreground hover:text-primary">

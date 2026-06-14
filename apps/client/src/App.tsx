@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/auth-context'
 import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
@@ -17,6 +18,8 @@ import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
+
+const queryClient = new QueryClient()
 
 const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-preferences']
 
@@ -121,12 +124,14 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppLayout>
-          <AppRoutes />
-        </AppLayout>
-      </BrowserRouter>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppLayout>
+            <AppRoutes />
+          </AppLayout>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }

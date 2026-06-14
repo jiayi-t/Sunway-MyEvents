@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
+import {
+  useEventQuery,
+  useCancelEventMutation,
+  useArchiveEventMutation,
+} from '../../hooks/queries'
 import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
@@ -53,22 +57,18 @@ export default function OrganizerEventDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [event, setEvent] = useState<OrganizerEventDetail | null>(null)
-  const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState(false)
-  const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    api.get(`/events/${id}`)
-      .then(res => setEvent(res.data))
-      .catch(() => setError('Event not found'))
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data, isLoading, isError } = useEventQuery(id)
+  const event = data as OrganizerEventDetail | undefined
 
-  // close menu when clicking outside of it
+  const cancelMutation = useCancelEventMutation(id)
+  const archiveMutation = useArchiveEventMutation(id)
+
+  // Close menu when clicking outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -80,34 +80,32 @@ export default function OrganizerEventDetailsPage() {
   }, [])
 
   const isPast = event ? new Date(event.end_time) < new Date() : false
+  const processing = cancelMutation.isPending || archiveMutation.isPending
 
-  const handleAction = async () => {
-    setProcessing(true)
-    try {
-      await api.patch(isPast ? `/events/${id}/archive` : `/events/${id}/cancel`)
-      if (isPast) {
-        navigate('/organizer/events', { replace: true })
-      } else {
-        setEvent(prev => prev ? { ...prev, cancelled_at: new Date().toISOString() } : prev)
-        setConfirmAction(false)
-      }
-    } catch {
-      setError('Action failed')
-      setConfirmAction(false)
-    } finally {
-      setProcessing(false)
+  const handleAction = () => {
+    setActionError('')
+    if (isPast) {
+      archiveMutation.mutate(undefined, {
+        onSuccess: () => navigate('/organizer/events', { replace: true }),
+        onError: () => { setActionError('Action failed'); setConfirmAction(false) },
+      })
+    } else {
+      cancelMutation.mutate(undefined, {
+        onSuccess: () => setConfirmAction(false),
+        onError: () => { setActionError('Action failed'); setConfirmAction(false) },
+      })
     }
   }
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Loading event...</p>
     </div>
   )
 
-  if (error || !event) return (
+  if (isError || !event) return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">{error || 'Event not found'}</p>
+      <p className="text-muted-foreground text-sm">{actionError || 'Event not found'}</p>
     </div>
   )
 

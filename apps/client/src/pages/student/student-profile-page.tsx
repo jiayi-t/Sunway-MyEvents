@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
 import { useAuth } from '../../context/auth-context'
+import { useMyRegistrationsQuery } from '../../hooks/queries'
 import { Pen, Calendar, Clock, Bookmark } from 'lucide-react'
 
 interface Registration {
@@ -13,13 +12,9 @@ interface Registration {
 export default function StudentProfilePage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [registrations, setRegistrations] = useState<Registration[]>([])
 
-  useEffect(() => {
-    api.get('/registrations/my')
-      .then(res => setRegistrations(res.data))
-      .catch(() => {})
-  }, [])
+  const { data: registrationsData } = useMyRegistrationsQuery()
+  const registrations = (registrationsData || []) as Registration[]
 
   const now = new Date()
   const upcoming = registrations.filter(r => new Date(r.event_date) >= now)

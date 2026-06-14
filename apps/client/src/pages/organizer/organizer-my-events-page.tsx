@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../../context/auth-context'
 import Header from '../../components/header'
 import api from '../../services/api'
+import { useOrganizerEventsQuery, useCreateEventMutation } from '../../hooks/queries'
 import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
@@ -177,12 +177,8 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
 
 export default function OrganizerEventsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('new')
-  const [loading, setLoading] = useState(false)
-  const [eventsLoading, setEventsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [myEvents, setMyEvents] = useState<OrganizerEvent[]>([])
   const navigate = useNavigate()
-  const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [form, setForm] = useState({
@@ -190,46 +186,45 @@ export default function OrganizerEventsPage() {
     venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
   })
 
-  const handleSubmit = async () => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+
+  const { data: myEventsData, isLoading: eventsLoading } = useOrganizerEventsQuery()
+  const myEvents = (myEventsData || []) as OrganizerEvent[]
+  const createMutation = useCreateEventMutation()
+
+  const handleSubmit = () => {
     setError('')
     if (form.start_time && form.end_time && form.start_time >= form.end_time) {
       setError('End time must be later than start time')
       return
     }
-    setLoading(true)
-    try {
-      const eventDate = `${form.date}T00:00:00`
-      const startDateTime = `${form.date}T${form.start_time}:00`
-      const endDateTime = `${form.date}T${form.end_time}:00`
+    const eventDate = `${form.date}T00:00:00`
+    const startDateTime = `${form.date}T${form.start_time}:00`
+    const endDateTime = `${form.date}T${form.end_time}:00`
 
-      const res = await api.post('/events', {
-        name: form.name, 
-        description: form.description, 
-        date: eventDate,
-        start_time: startDateTime, 
-        end_time: endDateTime, 
-        venue: form.venue,
-        pricing: Number(form.pricing) || 0, 
-        category: form.category,
-        capacity: Number(form.capacity), 
-        registration_deadline: form.registration_deadline,
-        image_url: form.image_url || null
-      })
-
-      setMyEvents(prev => [res.data, ...prev])
-      const targetTab: Tab = new Date(endDateTime) < new Date() ? 'past' : 'upcoming'
-      setSearchParams({ tab: targetTab })
-      setActiveTab(targetTab)
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create event')
-    } finally {
-      setLoading(false)
-    }
+    createMutation.mutate({
+      name: form.name,
+      description: form.description,
+      date: eventDate,
+      start_time: startDateTime,
+      end_time: endDateTime,
+      venue: form.venue,
+      pricing: Number(form.pricing) || 0,
+      category: form.category,
+      capacity: Number(form.capacity),
+      registration_deadline: form.registration_deadline,
+      image_url: form.image_url || null
+    }, {
+      onSuccess: () => {
+        const targetTab: Tab = new Date(endDateTime) < new Date() ? 'past' : 'upcoming'
+        setSearchParams({ tab: targetTab })
+        setActiveTab(targetTab)
+      },
+      onError: (err: any) => setError(err.response?.data?.error || 'Failed to create event'),
+    })
   }
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -262,15 +257,6 @@ export default function OrganizerEventsPage() {
     setActiveTab(tab)
     setSearchParams({ tab })
   }
-
-  useEffect(() => {
-    if (!user?.id) return
-    setEventsLoading(true)
-    api.get('/events/organizer-events')
-      .then(res => setMyEvents(res.data as OrganizerEvent[]))
-      .catch(() => setError('Failed to load events'))
-      .finally(() => setEventsLoading(false))
-  }, [user?.id])
 
   const now = new Date()
   const upcomingEvents = useMemo(() => myEvents.filter(e => new Date(e.end_time || e.date) >= now), [myEvents])
@@ -395,9 +381,9 @@ export default function OrganizerEventsPage() {
               className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50">
               Cancel
             </button>
-            <button onClick={handleSubmit} disabled={loading || uploading}
+            <button onClick={handleSubmit} disabled={createMutation.isPending || uploading}
               className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90">
-              {loading ? 'Creating...' : 'Create Event'}
+              {createMutation.isPending ? 'Creating...' : 'Create Event'}
             </button>
           </div>
         </div>

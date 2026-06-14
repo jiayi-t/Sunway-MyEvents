@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
+import { usePreferencesQuery, useUpdatePreferencesMutation } from '../../hooks/queries'
 
 const CATEGORIES = [
   'Academics',
@@ -15,15 +15,18 @@ const CATEGORIES = [
 export default function MyPreferencesPage() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const initialized = useRef(false)
 
+  const { data: savedPreferences, isLoading } = usePreferencesQuery()
+  const updateMutation = useUpdatePreferencesMutation()
+
+  // initialize form from fetched preferences (runs once when data first arrives)
   useEffect(() => {
-    api.get('/auth/preferences')
-      .then(res => setSelected(res.data.preferences || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+    if (savedPreferences && !initialized.current) {
+      initialized.current = true
+      setSelected(savedPreferences)
+    }
+  }, [savedPreferences])
 
   const toggle = (label: string) => {
     setSelected(prev =>
@@ -31,14 +34,10 @@ export default function MyPreferencesPage() {
     )
   }
 
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await api.put('/auth/preferences', { preferences: selected })
-      navigate('/')
-    } catch {
-      setSaving(false)
-    }
+  const handleSave = () => {
+    updateMutation.mutate(selected, {
+      onSuccess: () => navigate('/'),
+    })
   }
 
   return (
@@ -48,7 +47,7 @@ export default function MyPreferencesPage() {
       <div className="flex-1 px-6 py-6">
         <h1 className="text-primary text-xl font-bold mb-4">My Preferences</h1>
 
-        {loading ? (
+        {isLoading ? (
           <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
         ) : (
           <div className="bg-white rounded-xl shadow p-4">
@@ -80,10 +79,10 @@ export default function MyPreferencesPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving}
+                disabled={updateMutation.isPending}
                 className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save'}
+                {updateMutation.isPending ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>

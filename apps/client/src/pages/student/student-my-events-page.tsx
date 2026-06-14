@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
-import api from '../../services/api'
+import { useMyRegistrationsQuery, useSavedEventsQuery } from '../../hooks/queries'
 import { Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
@@ -146,19 +146,13 @@ export default function MyEventsPage() {
   const [activeTab, setActiveTab] = useState<Tab>(
     (searchParams.get('tab') as Tab) || 'upcoming'
   )
-  const [registrations, setRegistrations] = useState<Registration[]>([])
-  const [savedEvents, setSavedEvents] = useState<SavedEvent[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    Promise.all([
-      api.get('/registrations/my'),
-      api.get('/events/saved-events'),
-    ]).then(([regRes, savedRes]) => {
-      setRegistrations(regRes.data)
-      setSavedEvents(savedRes.data)
-    }).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  const { data: registrationsData, isLoading: regsLoading } = useMyRegistrationsQuery()
+  const { data: savedEventsData, isLoading: savedLoading } = useSavedEventsQuery()
+
+  const registrations = (registrationsData || []) as Registration[]
+  const savedEvents = (savedEventsData || []) as SavedEvent[]
+  const loading = regsLoading || savedLoading
 
   useEffect(() => {
     const tab = searchParams.get('tab') as Tab

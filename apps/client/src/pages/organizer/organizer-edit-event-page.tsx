@@ -2,16 +2,31 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
+import { useEventQuery, useUpdateEventMutation } from '../../hooks/queries'
 import { ArrowLeft, Upload } from 'lucide-react'
+
+interface Event {
+  name: string
+  description: string
+  date: string
+  start_time: string
+  end_time: string
+  venue: string
+  pricing: number | null
+  category: string
+  capacity: number | null
+  registration_deadline: string | null
+  image_url: string | null
+}
 
 const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
-const toLocalDateStr = (isoStr?: string) => {
+const toLocalDateStr = (isoStr?: string | null) => {
   if (!isoStr) return ''
   return new Date(isoStr).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' })
 }
 
-const toLocalTimeStr = (isoStr?: string) => {
+const toLocalTimeStr = (isoStr?: string | null) => {
   if (!isoStr) return ''
   return new Date(isoStr).toLocaleTimeString('en-GB', {
     timeZone: 'Asia/Kuala_Lumpur',
@@ -25,45 +40,47 @@ const toImageUrl = (url?: string | null) => {
   return url
 }
 
+const EMPTY_FORM = {
+  name: '', description: '', date: '', start_time: '', end_time: '',
+  venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
+}
+
 export default function OrganizerEditEventPage() {
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [eventName, setEventName] = useState('')
-  const [form, setForm] = useState({
-    name: '', description: '', date: '', start_time: '', end_time: '',
-    venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
-  })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
+  const [uploadError, setUploadError] = useState('')
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const initialized = useRef(false)
 
+  const { data, isLoading, isError } = useEventQuery(id)
+  const updateMutation = useUpdateEventMutation(id)
+
+  // Populate form once when event data first arrives
   useEffect(() => {
-    api.get(`/events/${id}`)
-      .then(res => {
-        const e = res.data
-        setEventName(e.name)
-        setForm({
-          name: e.name || '',
-          description: e.description || '',
-          date: toLocalDateStr(e.date),
-          start_time: toLocalTimeStr(e.start_time),
-          end_time: toLocalTimeStr(e.end_time),
-          venue: e.venue || '',
-          pricing: e.pricing != null ? String(e.pricing) : '',
-          category: e.category || '',
-          capacity: e.capacity != null ? String(e.capacity) : '',
-          registration_deadline: toLocalDateStr(e.registration_deadline),
-          image_url: e.image_url || ''
-        })
-        setPreview(toImageUrl(e.image_url))
-      })
-      .catch(() => setError('Failed to load event'))
-      .finally(() => setLoading(false))
-  }, [id])
+    if (!data || initialized.current) return
+    initialized.current = true
+    const e = data as Event
+    setEventName(e.name)
+    setForm({
+      name: e.name || '',
+      description: e.description || '',
+      date: toLocalDateStr(e.date),
+      start_time: toLocalTimeStr(e.start_time),
+      end_time: toLocalTimeStr(e.end_time),
+      venue: e.venue || '',
+      pricing: e.pricing != null ? String(e.pricing) : '',
+      category: e.category || '',
+      capacity: e.capacity != null ? String(e.capacity) : '',
+      registration_deadline: toLocalDateStr(e.registration_deadline),
+      image_url: e.image_url || ''
+    })
+    setPreview(toImageUrl(e.image_url))
+  }, [data])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -78,46 +95,47 @@ export default function OrganizerEditEventPage() {
       const res = await api.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setForm(prev => ({ ...prev, image_url: `http://localhost:3001${res.data.url}` }))
     } catch {
-      setError('Upload failed')
+      setUploadError('Upload failed')
     } finally {
       setUploading(false)
     }
   }
 
-  const handleSubmit = async () => {
-    setError('')
+  const handleSubmit = () => {
+    setUploadError('')
     if (form.start_time && form.end_time && form.start_time >= form.end_time) {
-      setError('End time must be later than start time')
+      setUploadError('End time must be later than start time')
       return
     }
-    setSaving(true)
-    try {
-      const startDateTime = `${form.date}T${form.start_time}:00`
-      const endDateTime = `${form.date}T${form.end_time}:00`
-      await api.put(`/events/${id}`, {
-        name: form.name,
-        description: form.description,
-        date: `${form.date}T00:00:00`,
-        start_time: startDateTime,
-        end_time: endDateTime,
-        venue: form.venue,
-        pricing: Number(form.pricing) || 0,
-        category: form.category,
-        capacity: Number(form.capacity),
-        registration_deadline: form.registration_deadline || null,
-        image_url: form.image_url || null
-      })
-      navigate(`/organizer/events/${id}`, { replace: true })
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update event')
-    } finally {
-      setSaving(false)
-    }
+    const startDateTime = `${form.date}T${form.start_time}:00`
+    const endDateTime = `${form.date}T${form.end_time}:00`
+    updateMutation.mutate({
+      name: form.name,
+      description: form.description,
+      date: `${form.date}T00:00:00`,
+      start_time: startDateTime,
+      end_time: endDateTime,
+      venue: form.venue,
+      pricing: Number(form.pricing) || 0,
+      category: form.category,
+      capacity: Number(form.capacity),
+      registration_deadline: form.registration_deadline || null,
+      image_url: form.image_url || null
+    }, {
+      onSuccess: () => navigate(`/organizer/events/${id}`, { replace: true }),
+      onError: (err: any) => setUploadError(err.response?.data?.error || 'Failed to update event'),
+    })
   }
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Loading...</p>
+    </div>
+  )
+
+  if (isError) return (
+    <div className="min-h-screen bg-surface flex items-center justify-center">
+      <p className="text-muted-foreground text-sm">Failed to load event</p>
     </div>
   )
 
@@ -216,15 +234,15 @@ export default function OrganizerEditEventPage() {
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
         <div className="flex gap-3 pb-6">
           <button onClick={() => navigate(-1)}
             className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50">
             Cancel
           </button>
-          <button onClick={handleSubmit} disabled={saving || uploading}
+          <button onClick={handleSubmit} disabled={updateMutation.isPending || uploading}
             className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90">
-            {saving ? 'Saving...' : 'Edit Event'}
+            {updateMutation.isPending ? 'Saving...' : 'Edit Event'}
           </button>
         </div>
       </div>
