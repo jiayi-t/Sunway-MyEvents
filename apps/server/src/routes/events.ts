@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
+import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -138,6 +139,33 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
     })
 
     res.status(201).json({ message: 'Successfully registered for event' })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/:id/checkin-token - generate signed QR token for student check-in
+router.get('/:id/checkin-token', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
+  const userId = req.user!.id
+  try {
+    const [row] = await db
+      .select({ end_time: events.end_time })
+      .from(registrations)
+      .innerJoin(events, eq(registrations.event_id, events.id))
+      .where(and(eq(registrations.user_id, userId), eq(registrations.event_id, eventId)))
+      .limit(1)
+
+    if (!row) return res.status(403).json({ error: 'Not registered for this event' })
+
+    const expiresIn = Math.max(Math.floor((new Date(row.end_time!).getTime() - Date.now()) / 1000), 60)
+
+    const token = jwt.sign(
+      { userId, eventId, type: 'checkin' },
+      process.env.JWT_SECRET!,
+      { expiresIn }
+    )
+    res.json({ token })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

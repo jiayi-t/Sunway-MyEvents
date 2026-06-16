@@ -15,6 +15,7 @@ import OrganizerDashboard from './pages/organizer/organizer-dashboard'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
+import StudentCheckinPage from './pages/student/student-checkin-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -58,12 +59,19 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/events/:id" 
+      <Route path="/events/:id"
         element={
         <ProtectedRoute>
           <StudentEventDetailsPage />
         </ProtectedRoute>
-        } 
+        }
+      />
+      <Route path="/events/:id/checkin"
+        element={
+        <ProtectedRoute>
+          <StudentCheckinPage />
+        </ProtectedRoute>
+        }
       />
       <Route path="/profile" 
         element={

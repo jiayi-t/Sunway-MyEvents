@@ -8,6 +8,7 @@ export const eventKeys = {
   saved: ['events', 'saved'] as const,
   registrationStatus: (id: string | undefined) => ['events', id, 'registration-status'] as const,
   saveStatus: (id: string | undefined) => ['events', id, 'save-status'] as const,
+  checkinToken: (id: string | undefined) => ['events', id, 'checkin-token'] as const,
 }
 
 export function useEventsQuery(options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
@@ -58,6 +59,17 @@ export function useSaveStatusQuery(id: string | undefined, enabled: boolean, opt
     queryFn: () => api.get(`/events/${id}/save-status`).then(res => res.data.saved as boolean),
     enabled: !!id && enabled,
     ...options,
+  })
+}
+
+export function useCheckinTokenQuery(id: string | undefined) {
+  return useQuery({
+    queryKey: eventKeys.checkinToken(id),
+    queryFn: () => api.get(`/events/${id}/checkin-token`).then(res => res.data.token as string),
+    enabled: !!id,
+     // token is valid until the end of the event
+    staleTime: Infinity,      
+    refetchOnWindowFocus: false,
   })
 }
 

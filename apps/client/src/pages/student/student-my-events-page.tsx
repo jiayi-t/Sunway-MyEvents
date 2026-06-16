@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useMyRegistrationsQuery, useSavedEventsQuery } from '../../hooks/queries'
-import { Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
+import { Calendar, Clock, MapPin, ArrowLeft, ScanQrCode } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -86,7 +86,7 @@ function CountdownBadge({ startTime }: { startTime?: string }) {
   )
 }
 
-function RegistrationCard({ reg }: { reg: Registration }) {
+function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin?: boolean }) {
   const navigate = useNavigate()
 
   return (
@@ -133,6 +133,16 @@ function RegistrationCard({ reg }: { reg: Registration }) {
             <span className="truncate">{reg.event_venue}</span>
           </div>
         </div>
+
+        {showCheckin && (
+          <button
+            onClick={e => { e.stopPropagation(); navigate(`/events/${reg.event_id}/checkin`) }}
+            className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+          >
+            <ScanQrCode className="w-4 h-4 flex-shrink-0" />
+            Check In
+          </button>
+        )}
       </div>
 
       <span className="text-muted-foreground self-center flex-shrink-0">›</span>
@@ -213,7 +223,7 @@ export default function MyEventsPage() {
               </button>
             </div>
           ) : (
-            upcoming.map(reg => <RegistrationCard key={reg.id} reg={reg} />)
+            upcoming.map(reg => <RegistrationCard key={reg.id} reg={reg} showCheckin />)
           )}
         </div>
       )}
