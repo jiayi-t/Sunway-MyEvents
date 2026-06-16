@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, and } from 'drizzle-orm'
+import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { registrations, events, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -31,6 +32,84 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
       .orderBy(asc(events.date))
 
     res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/registrations/event/:eventId - event participant list (organizer only)
+router.get('/event/:eventId', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const eventId = parseInt(req.params.eventId as string)
+  try {
+    const [event] = await db.select({ organizer_id: events.organizer_id })
+      .from(events).where(eq(events.id, eventId)).limit(1)
+    if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (event.organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    const result = await db
+      .select({
+        id: registrations.id,
+        registered_at: registrations.registered_at,
+        checked_in_at: registrations.checked_in_at,
+        user_id: users.id,
+        user_name: users.name,
+        sunway_id: users.sunway_id,
+        email: users.email,
+        image_url: users.image_url
+      })
+      .from(registrations)
+      .innerJoin(users, eq(registrations.user_id, users.id))
+      .where(eq(registrations.event_id, eventId))
+      .orderBy(asc(registrations.registered_at))
+
+    res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/registrations/checkin - scan student QR attendance (organizer only)
+router.post('/checkin', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const { token } = req.body as { token: string }
+  if (!token) return res.status(400).json({ error: 'Token required' })
+
+  let payload: { userId: number; eventId: number; type: string }
+  try {
+    payload = jwt.verify(token, process.env.JWT_SECRET!) as typeof payload
+  } catch {
+    return res.status(400).json({ error: 'Invalid or expired QR code' })
+  }
+
+  if (payload.type !== 'checkin') return res.status(400).json({ error: 'Invalid QR code' })
+
+  try {
+    const [event] = await db.select({ organizer_id: events.organizer_id, name: events.name })
+      .from(events).where(eq(events.id, payload.eventId)).limit(1)
+    if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (event.organizer_id !== req.user!.id) return res.status(403).json({ error: 'QR code is for a different event' })
+
+    const [registration] = await db.select()
+      .from(registrations)
+      .where(and(eq(registrations.user_id, payload.userId), eq(registrations.event_id, payload.eventId)))
+      .limit(1)
+    if (!registration) return res.status(404).json({ error: 'Registration not found' })
+
+    if (registration.checked_in_at) {
+      const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id })
+        .from(users).where(eq(users.id, payload.userId)).limit(1)
+      return res.status(409).json({ error: 'Already checked in', student_name: student?.name, sunway_id: student?.sunway_id })
+    }
+
+    await db.update(registrations)
+      .set({ checked_in_at: new Date() })
+      .where(eq(registrations.id, registration.id))
+
+    const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id })
+      .from(users).where(eq(users.id, payload.userId)).limit(1)
+
+    res.json({ success: true, student_name: student?.name, sunway_id: student?.sunway_id })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
