@@ -37,7 +37,8 @@ export const registrations = pgTable('registrations', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id').references(() => users.id),
   event_id: integer('event_id').references(() => events.id),
-  registered_at: timestamp('registered_at').defaultNow()
+  registered_at: timestamp('registered_at').defaultNow(),
+  checked_in_at: timestamp('checked_in_at')
 })
 
 export const saved_events = pgTable('saved_events', {
