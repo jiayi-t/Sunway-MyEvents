@@ -134,7 +134,7 @@ function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin
           </div>
         </div>
 
-        {showCheckin && (
+        {showCheckin && !reg.event_cancelled_at && (
           <button
             onClick={e => { e.stopPropagation(); navigate(`/events/${reg.event_id}/checkin`) }}
             className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
