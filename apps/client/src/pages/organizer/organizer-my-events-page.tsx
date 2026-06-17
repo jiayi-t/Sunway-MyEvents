@@ -278,6 +278,12 @@ export default function OrganizerEventsPage() {
   const upcomingEvents = useMemo(() => myEvents.filter(e => new Date(e.end_time || e.date) >= now), [myEvents])
   const pastEvents = useMemo(() => myEvents.filter(e => new Date(e.end_time || e.date) < now), [myEvents])
 
+  const tabs: { key: Tab; label: string; count: number | null }[] = [
+    { key: 'new', label: 'New', count: null },
+    { key: 'upcoming', label: 'Upcoming', count: upcomingEvents.length },
+    { key: 'past', label: 'Past', count: pastEvents.length },
+  ]
+
   const handleCheckin = (id: number) => navigate(`/organizer/events/${id}/checkin`)
   const handleAnalytics = (id: number) => navigate(`/organizer/events/${id}/analytics`)
   const handleViewDetails = (id: number) => navigate(`/organizer/events/${id}`)
@@ -294,14 +300,21 @@ export default function OrganizerEventsPage() {
 
       {/* Tabs */}
       <div className="bg-card px-4 py-3 flex gap-2">
-        {(['new', 'upcoming', 'past'] as Tab[]).map(tab => (
+        {tabs.map(tab => (
           <button
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors
-              ${activeTab === tab ? 'bg-primary text-white' : 'text-muted-foreground'}`}
+            key={tab.key}
+            onClick={() => handleTabChange(tab.key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap
+              ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
           >
-            {tab}
+            {tab.label}
+            {tab.count !== null && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-surface text-muted-foreground'
+              }`}>
+                {tab.count}
+              </span>
+            )}
           </button>
         ))}
       </div>

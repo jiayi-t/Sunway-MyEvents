@@ -174,6 +174,12 @@ export default function MyEventsPage() {
   const past = useMemo(() =>
     registrations.filter(r => new Date(r.event_date) < now), [registrations])
 
+  const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: 'upcoming', label: 'Upcoming', count: upcoming.length },
+    { key: 'past', label: 'Past', count: past.length },
+    { key: 'saved', label: 'Saved', count: savedEvents.length },
+  ]
+
   return (
     <div className="bg-surface">
       <Header />
@@ -189,14 +195,19 @@ export default function MyEventsPage() {
 
       {/* Tabs */}
       <div className="bg-card px-4 py-3 flex gap-2">
-        {(['upcoming', 'past', 'saved'] as Tab[]).map(tab => (
+        {tabs.map(tab => (
           <button
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors
-              ${activeTab === tab ? 'bg-primary text-white' : 'text-muted-foreground'}`}
+            key={tab.key}
+            onClick={() => handleTabChange(tab.key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap
+              ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
           >
-            {tab}
+            {tab.label}
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+              activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-surface text-muted-foreground'
+            }`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>
