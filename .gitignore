@@ -32,6 +32,7 @@ npm-debug.log*
 
 # Local uploads (development only)
 apps/backend/local-uploads/
+apps/server/uploads/
 
 # TypeScript
 *.tsbuildinfo
