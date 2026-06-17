@@ -36,12 +36,6 @@ interface SavedEvent {
   organizer_name: string
 }
 
-const toImageUrl = (url?: string) => {
-  if (!url) return ''
-  if (url.startsWith('/uploads/')) return `http://localhost:3001${url}`
-  return url
-}
-
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
   return new Date(value).toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', ...options })
@@ -99,7 +93,7 @@ function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin
         style={{ width: '100px', aspectRatio: '4/5' }}
       >
         <img
-          src={toImageUrl(reg.event_image_url)}
+          src={reg.event_image_url ?? ''}
           alt={reg.event_name}
           className="w-full h-full object-cover object-center"
         />

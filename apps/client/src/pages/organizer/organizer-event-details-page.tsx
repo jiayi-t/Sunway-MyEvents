@@ -30,7 +30,7 @@ interface OrganizerEventDetail {
 
 const toImageUrl = (url?: string | null) => {
   if (!url) return ''
-  if (url.startsWith('/uploads/')) return `http://localhost:3001${url}`
+  if (url.startsWith('/uploads/')) return url
   return url
 }
 
@@ -274,13 +274,13 @@ export default function OrganizerEventDetailsPage() {
 
         {!isPast ? (
           <div className="flex gap-3">
-            <button
-              onClick={() => navigate(`/organizer/events/${id}/checkin`)}
-              className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
-            >
-              <ScanQrCode className="w-4 h-4" />
-              Check In
-            </button>
+              <button
+                onClick={() => navigate(`/organizer/events/${id}/checkin`)}
+                className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+              >
+                <ScanQrCode className="w-4 h-4" />
+                Check In
+              </button>
             <button
               onClick={() => navigate(`/organizer/events/${id}/participants`)}
               className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"

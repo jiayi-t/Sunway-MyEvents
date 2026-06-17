@@ -36,7 +36,7 @@ const toLocalTimeStr = (isoStr?: string | null) => {
 
 const toImageUrl = (url?: string | null) => {
   if (!url) return null
-  if (url.startsWith('/uploads/')) return `http://localhost:3001${url}`
+  if (url.startsWith('/uploads/')) return url
   return url
 }
 
@@ -93,7 +93,7 @@ export default function OrganizerEditEventPage() {
       const fd = new FormData()
       fd.append('file', file)
       const res = await api.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      setForm(prev => ({ ...prev, image_url: `http://localhost:3001${res.data.url}` }))
+      setForm(prev => ({ ...prev, image_url: res.data.url }))
     } catch {
       setUploadError('Upload failed')
     } finally {

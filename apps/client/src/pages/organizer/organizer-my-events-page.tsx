@@ -119,14 +119,14 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
           </div>
         </div>
 
-        <button
-          // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
-          onClick={e => { e.stopPropagation(); onCheckin(event.id) }}
-          className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
-        >
-          <ScanQrCode className="w-3 h-3" />
-          Check In
-        </button>
+          <button
+            // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
+            onClick={e => { e.stopPropagation(); onCheckin(event.id) }}
+            className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+          >
+            <ScanQrCode className="w-3 h-3" />
+            Check In
+          </button>
       </div>
 
       <span className="text-muted-foreground self-center flex-shrink-0">›</span>
@@ -251,7 +251,7 @@ export default function OrganizerEventsPage() {
       const fd = new FormData()
       fd.append('file', file)
       const res = await api.post('/uploads', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      setForm(prev => ({ ...prev, image_url: `http://localhost:3001${res.data.url}` }))
+      setForm(prev => ({ ...prev, image_url: res.data.url }))
     } catch (err: any) {
       setError(err.response?.data?.error || 'Upload failed')
     } finally {

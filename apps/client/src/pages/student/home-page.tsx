@@ -44,7 +44,7 @@ const toImageUrl = (url?: string) => {
 
   // Server uploaded files
   if (url.startsWith('/uploads/')) {
-    return `http://localhost:3001${url}`
+    return url
   }
 
   // Public folder assets (seeded data)

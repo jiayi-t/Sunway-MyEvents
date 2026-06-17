@@ -33,7 +33,7 @@ interface Event {
 
 const toImageUrl = (url?: string) => {
   if (!url) return ''
-  if (url.startsWith('/uploads/')) return `http://localhost:3001${url}`
+  if (url.startsWith('/uploads/')) return url
   return url
 }
 
