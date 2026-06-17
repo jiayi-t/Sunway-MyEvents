@@ -15,6 +15,8 @@ import OrganizerDashboard from './pages/organizer/organizer-dashboard'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
+import OrganizerCheckinScannerPage from './pages/organizer/organizer-checkin-scanner-page'
+import OrganizerParticipantsPage from './pages/organizer/organizer-participants-page'
 import StudentCheckinPage from './pages/student/student-checkin-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
@@ -121,6 +123,20 @@ function AppRoutes() {
         element={
         <ProtectedRoute>
           <OrganizerEditEventPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/events/:id/checkin"
+        element={
+        <ProtectedRoute>
+          <OrganizerCheckinScannerPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/events/:id/participants"
+        element={
+        <ProtectedRoute>
+          <OrganizerParticipantsPage />
         </ProtectedRoute>
         }
       />
