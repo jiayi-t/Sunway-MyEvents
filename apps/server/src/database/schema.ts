@@ -48,7 +48,7 @@ export const saved_events = pgTable('saved_events', {
   saved_at: timestamp('saved_at').defaultNow()
 })
 
-export const feedbacks = pgTable('feedbacks', {
+export const feedback = pgTable('feedback', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id').references(() => users.id),
   event_id: integer('event_id').references(() => events.id),
