@@ -1,4 +1,4 @@
-import { integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial } from 'drizzle-orm/pg-core'
+import { integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial, unique } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -46,4 +46,22 @@ export const saved_events = pgTable('saved_events', {
   user_id: integer('user_id').references(() => users.id),
   event_id: integer('event_id').references(() => events.id),
   saved_at: timestamp('saved_at').defaultNow()
+})
+
+export const feedbacks = pgTable('feedbacks', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id),
+  event_id: integer('event_id').references(() => events.id),
+  rating: integer('rating').notNull(),
+  answers: jsonb('answers'),
+  created_at: timestamp('created_at').defaultNow()
+}, (table) => [
+  unique().on(table.user_id, table.event_id)
+])
+
+export const feedback_forms = pgTable('feedback_forms', {
+  id: serial('id').primaryKey(),
+  event_id: integer('event_id').references(() => events.id).unique().notNull(),
+  questions: jsonb('questions').notNull(),
+  updated_at: timestamp('updated_at').defaultNow()
 })
