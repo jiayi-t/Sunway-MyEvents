@@ -2,13 +2,8 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import {
-  useEventQuery,
-  useRegistrationStatusQuery,
-  useSaveStatusQuery,
-  useRegisterEventMutation,
-  useToggleSaveMutation,
-} from '../../hooks/queries'
+import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
+import { useRegisterEventMutation, useToggleSaveMutation } from '../../api/mutations'
 import { Calendar, Clock, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
 

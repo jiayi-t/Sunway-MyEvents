@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../../hooks/queries'
+import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../../api/queries'
 import { Pen, Calendar, Clock, Bookmark } from 'lucide-react'
 
 interface Registration {

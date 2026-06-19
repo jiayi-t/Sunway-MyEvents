@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventsQuery, usePreferencesQuery } from '../../hooks/queries'
+import { useEventsQuery, usePreferencesQuery } from '../../api/queries'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Event {

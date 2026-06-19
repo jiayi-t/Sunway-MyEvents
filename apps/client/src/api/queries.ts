@@ -1,0 +1,4 @@
+export * from './queries/events.queries'
+export * from './queries/registrations.queries'
+export * from './queries/preferences.queries'
+export * from './queries/feedback.queries'

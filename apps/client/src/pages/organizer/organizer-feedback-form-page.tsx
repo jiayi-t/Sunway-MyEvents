@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import Header from '../../components/header'
-import { useFeedbackFormQuery, DEFAULT_QUESTIONS, type FeedbackQuestion, type QuestionType } from '../../hooks/queries/feedback.queries'
-import { useSaveFeedbackFormMutation } from '../../hooks/mutations/feedback.mutations'
+import { useFeedbackFormQuery, DEFAULT_QUESTIONS, type FeedbackQuestion, type QuestionType } from '../../api/queries'
+import { useSaveFeedbackFormMutation } from '../../api/mutations'
 import { ArrowLeft, Trash2, Star, Lock, Plus, X } from 'lucide-react'
 
 const TYPE_LABELS: Record<QuestionType, string> = {

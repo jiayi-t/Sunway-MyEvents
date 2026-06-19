@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import { useOrganizerEventsQuery } from '../../hooks/queries'
+import { useOrganizerEventsQuery } from '../../api/queries'
 import { Pen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventQuery, useEventParticipantsQuery } from '../../hooks/queries'
+import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
 import { ArrowLeft, Search, TicketCheck } from 'lucide-react'
 
 type FilterTab = 'all' | 'registered' | 'checked-in'

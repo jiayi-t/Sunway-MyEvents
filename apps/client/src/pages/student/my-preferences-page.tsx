@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { usePreferencesQuery, useUpdatePreferencesMutation } from '../../hooks/queries'
+import { usePreferencesQuery } from '../../api/queries'
+import { useUpdatePreferencesMutation } from '../../api/mutations'
 
 const CATEGORIES = [
   'Academics',

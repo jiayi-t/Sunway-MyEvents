@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
-import {
-  useEventQuery,
-  useCancelEventMutation,
-  useArchiveEventMutation,
-  useUnarchiveEventMutation,
-} from '../../hooks/queries'
+import { useEventQuery } from '../../api/queries'
+import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
 import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {

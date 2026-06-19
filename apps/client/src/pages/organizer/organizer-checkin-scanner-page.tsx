@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
 import Header from '../../components/header'
-import { useEventQuery, useCheckinMutation, useEventParticipantsQuery } from '../../hooks/queries'
+import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
+import { useCheckinMutation } from '../../api/mutations'
 import { ArrowLeft, Users, TicketCheck, XCircle } from 'lucide-react'
 
 interface OrganizerEvent {

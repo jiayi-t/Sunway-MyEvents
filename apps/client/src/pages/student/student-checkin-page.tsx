@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import { useMyRegistrationsQuery, useCheckinTokenQuery } from '../../hooks/queries'
+import { useMyRegistrationsQuery, useCheckinTokenQuery } from '../../api/queries'
 import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react'
 
 interface Registration {

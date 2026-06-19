@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
-import { useEventQuery, useUpdateEventMutation } from '../../hooks/queries'
+import { useEventQuery } from '../../api/queries'
+import { useUpdateEventMutation } from '../../api/mutations'
 import { ArrowLeft, Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {

@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventQuery } from '../../hooks/queries'
-import { useMyFeedbackQuery, useFeedbackFormQuery, type FeedbackQuestion } from '../../hooks/queries/feedback.queries'
-import { useSubmitFeedbackMutation } from '../../hooks/mutations/feedback.mutations'
-import { useMyRegistrationsQuery } from '../../hooks/queries'
+import { useEventQuery, useMyRegistrationsQuery, useMyFeedbackQuery, useFeedbackFormQuery, type FeedbackQuestion } from '../../api/queries'
+import { useSubmitFeedbackMutation } from '../../api/mutations'
 import { ArrowLeft, Star } from 'lucide-react'
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {

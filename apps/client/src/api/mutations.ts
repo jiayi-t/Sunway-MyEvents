@@ -1,0 +1,4 @@
+export * from './mutations/events.mutations'
+export * from './mutations/registrations.mutations'
+export * from './mutations/preferences.mutations'
+export * from './mutations/feedback.mutations'

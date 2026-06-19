@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
-import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../hooks/queries'
+import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
 import { Calendar, Clock, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
