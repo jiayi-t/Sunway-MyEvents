@@ -81,7 +81,7 @@ export default function OrganizerParticipantsPage() {
           {event?.name ?? '...'}
         </p>
         <p className="text-accent font-bold text-base mt-1">
-          {checkedInCount} / {event?.capacity ?? participants.length} Checked In
+          {checkedInCount} / {event?.capacity || participants.length} Checked In
         </p>
       </div>
 

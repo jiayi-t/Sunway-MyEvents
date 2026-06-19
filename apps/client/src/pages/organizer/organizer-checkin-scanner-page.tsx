@@ -141,7 +141,7 @@ export default function OrganizerCheckinScannerPage() {
           {event?.name ?? '...'}
         </p>
         <p className="text-accent font-bold text-xl mb-4">
-          {checkedInCount} / {event?.capacity ?? participants.length} Checked In
+          {checkedInCount} / {event?.capacity || participants.length} Checked In
         </p>
         <button
           onClick={() => navigate(`/organizer/events/${id}/participants`)}
