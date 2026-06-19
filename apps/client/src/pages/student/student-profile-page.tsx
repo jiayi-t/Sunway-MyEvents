@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import { useMyRegistrationsQuery } from '../../hooks/queries'
+import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../../hooks/queries'
 import { Pen, Calendar, Clock, Bookmark } from 'lucide-react'
 
 interface Registration {
@@ -14,7 +14,9 @@ export default function StudentProfilePage() {
   const navigate = useNavigate()
 
   const { data: registrationsData } = useMyRegistrationsQuery()
+  const { data: myFeedbackData } = useMyFeedbackQuery()
   const registrations = (registrationsData || []) as Registration[]
+  const feedbackCount = (myFeedbackData || []).length
 
   const now = new Date()
   const upcoming = registrations.filter(r => new Date(r.event_date) >= now)
@@ -49,7 +51,7 @@ export default function StudentProfilePage() {
                   <p className="text-blue-200 text-xs">Attended</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">0</p>
+                  <p className="text-white font-bold text-lg">{feedbackCount}</p>
                   <p className="text-blue-200 text-xs">Feedback Given</p>
                 </div>
               </div>

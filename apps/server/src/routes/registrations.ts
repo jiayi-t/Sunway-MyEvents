@@ -15,6 +15,7 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
         id: registrations.id,
         event_id: registrations.event_id,
         registered_at: registrations.registered_at,
+        checked_in_at: registrations.checked_in_at,
         event_name: events.name,
         event_date: events.date,
         event_start_time: events.start_time,

@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
-import { useMyRegistrationsQuery, useSavedEventsQuery } from '../../hooks/queries'
-import { Calendar, Clock, MapPin, ArrowLeft, ScanQrCode } from 'lucide-react'
+import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../hooks/queries'
+import { Calendar, Clock, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -10,6 +10,7 @@ interface Registration {
   id: number
   event_id: number
   registered_at?: string
+  checked_in_at?: string | null
   event_name: string
   event_date: string
   event_start_time: string
@@ -80,7 +81,7 @@ function CountdownBadge({ startTime }: { startTime?: string }) {
   )
 }
 
-function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin?: boolean }) {
+function RegistrationCard({ reg, showCheckin, showAttendance, feedbackAction }: { reg: Registration; showCheckin?: boolean; showAttendance?: boolean; feedbackAction?: ReactNode }) {
   const navigate = useNavigate()
 
   return (
@@ -110,6 +111,17 @@ function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin
               CANCELLED
             </span>
           )}
+          {showAttendance && !reg.event_cancelled_at && (
+            reg.checked_in_at ? (
+              <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
+                ATTENDED
+              </span>
+            ) : (
+              <span className="bg-accent text-white text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
+                ABSENT
+              </span>
+            )
+          )}
         </div>
         <p className="text-accent text-xs mt-0.5">{reg.organizer_name}</p>
 
@@ -137,6 +149,12 @@ function RegistrationCard({ reg, showCheckin }: { reg: Registration; showCheckin
             Check In
           </button>
         )}
+
+        {feedbackAction && (
+          <div onClick={e => e.stopPropagation()}>
+            {feedbackAction}
+          </div>
+        )}
       </div>
 
       <span className="text-muted-foreground self-center flex-shrink-0">›</span>
@@ -153,10 +171,16 @@ export default function MyEventsPage() {
 
   const { data: registrationsData, isLoading: regsLoading } = useMyRegistrationsQuery()
   const { data: savedEventsData, isLoading: savedLoading } = useSavedEventsQuery()
+  const { data: myFeedbackData } = useMyFeedbackQuery()
 
   const registrations = (registrationsData || []) as Registration[]
   const savedEvents = (savedEventsData || []) as SavedEvent[]
   const loading = regsLoading || savedLoading
+
+  const myFeedbackSet = useMemo(
+    () => new Set((myFeedbackData || []).map(f => f.event_id)),
+    [myFeedbackData]
+  )
 
   useEffect(() => {
     const tab = searchParams.get('tab') as Tab
@@ -241,7 +265,24 @@ export default function MyEventsPage() {
           ) : past.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center">No past events yet</p>
           ) : (
-            past.map(reg => <RegistrationCard key={reg.id} reg={reg} />)
+            past.map(reg => {
+              const hasGivenFeedback = myFeedbackSet.has(reg.event_id)
+              const feedbackAction = reg.event_cancelled_at || !reg.checked_in_at ? null : hasGivenFeedback ? (
+                <span className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold mt-2">
+                  <MessageSquare className="w-3.5 h-3.5 fill-primary text-primary" />
+                  Feedback Given
+                </span>
+              ) : (
+                <button
+                  onClick={() => navigate(`/events/${reg.event_id}/feedback`)}
+                  className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Give Feedback
+                </button>
+              )
+              return <RegistrationCard key={reg.id} reg={reg} showAttendance feedbackAction={feedbackAction} />
+            })
           )}
         </div>
       )}
