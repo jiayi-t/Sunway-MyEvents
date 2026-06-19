@@ -6,6 +6,8 @@ import eventRoutes from './routes/events'
 import registrationRoutes from './routes/registrations'
 import path from 'path'
 import uploadsRoutes from './routes/uploads'
+import feedbackRoutes from './routes/feedback'
+import feedbackFormRoutes from './routes/feedback-forms'
 
 dotenv.config()
 
@@ -21,6 +23,8 @@ app.use('/api/events', eventRoutes)
 app.use('/api/registrations', registrationRoutes)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/api/uploads', uploadsRoutes)
+app.use('/api/feedback', feedbackRoutes)
+app.use('/api/events', feedbackFormRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
-import { events, users, registrations, saved_events } from '../database/schema'
+import { events, users, registrations, saved_events, feedback } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -306,6 +306,76 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
 
     await db.update(events).set({ archived_at: new Date() }).where(eq(events.id, id))
     res.json({ message: 'Event archived' })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/events/:id/feedback - student's event feedback submission
+router.post('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
+  const eventId = parseInt(req.params.id as string)
+  const { rating, answers } = req.body
+
+  if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: 'Rating must be a number between 1 and 5' })
+  }
+
+  try {
+    const [event] = await db.select({ date: events.date }).from(events).where(eq(events.id, eventId)).limit(1)
+    if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (new Date(event.date) >= new Date()) return res.status(400).json({ error: 'Event has not ended yet' })
+
+    const [reg] = await db
+      .select({ id: registrations.id, checked_in_at: registrations.checked_in_at })
+      .from(registrations)
+      .where(and(eq(registrations.user_id, req.user!.id), eq(registrations.event_id, eventId)))
+      .limit(1)
+    if (!reg) return res.status(403).json({ error: 'You are not registered for this event' })
+    if (!reg.checked_in_at) return res.status(403).json({ error: 'You must check in to the event before submitting feedback' })
+
+    const [existing] = await db
+      .select({ id: feedback.id })
+      .from(feedback)
+      .where(and(eq(feedback.user_id, req.user!.id), eq(feedback.event_id, eventId)))
+      .limit(1)
+    if (existing) return res.status(400).json({ error: 'You have already submitted feedback for this event' })
+
+    const [result] = await db.insert(feedback).values({
+      user_id: req.user!.id,
+      event_id: eventId,
+      rating,
+      answers: answers ?? null
+    }).returning()
+
+    res.status(201).json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/:id/feedback - read feedback for own event (organizer only)
+router.get('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Only organizers can view feedback' })
+  }
+  const eventId = parseInt(req.params.id as string)
+  try {
+    const [event] = await db.select({ organizer_id: events.organizer_id }).from(events).where(eq(events.id, eventId)).limit(1)
+    if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (event.organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    const result = await db
+      .select({
+        id: feedback.id,
+        rating: feedback.rating,
+        created_at: feedback.created_at,
+        student_name: users.name,
+      })
+      .from(feedback)
+      .leftJoin(users, eq(feedback.user_id, users.id))
+      .where(eq(feedback.event_id, eventId))
+
+    res.json(result)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
