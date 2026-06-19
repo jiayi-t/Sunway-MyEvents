@@ -4,7 +4,7 @@ import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation } from '../../api/mutations'
-import { Calendar, Clock, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
+import { Calendar, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
 
 interface Event {
@@ -106,13 +106,18 @@ export default function StudentEventDetailsPage() {
 
       {/* Event Poster */}
       <div className="relative">
-        <img
-          src={toImageUrl(typedEvent.image_url)}
-          alt={typedEvent.name}
-          className="w-full object-cover"
-          style={{ aspectRatio: '4/5' }}
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
+        {typedEvent.image_url
+          ? <img
+              src={toImageUrl(typedEvent.image_url)}
+              alt={typedEvent.name}
+              className="w-full object-cover"
+              style={{ aspectRatio: '4/5' }}
+            />
+          : <div className="w-full bg-surface flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '4/5' }}>
+              <ImageOff className="w-10 h-10 text-border" />
+              <p className="text-muted-foreground text-xs">No poster uploaded</p>
+            </div>
+        }
       </div>
 
       {typedEvent.cancelled_at && (

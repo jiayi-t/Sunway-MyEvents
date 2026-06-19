@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
-import { Calendar, Clock, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
+import { Calendar, Clock, ImageOff, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -93,11 +93,14 @@ function RegistrationCard({ reg, showCheckin, showAttendance, feedbackAction }: 
         className="relative flex-shrink-0 self-center overflow-hidden rounded-lg"
         style={{ width: '100px', aspectRatio: '4/5' }}
       >
-        <img
-          src={reg.event_image_url ?? ''}
-          alt={reg.event_name}
-          className="w-full h-full object-cover object-center"
-        />
+        {reg.event_image_url
+          ? <img 
+              src={reg.event_image_url} 
+              alt={reg.event_name}
+              className="w-full h-full object-cover object-center" 
+            />
+          : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
+        }
         <CountdownBadge startTime={reg.event_start_time} />
       </div>
 

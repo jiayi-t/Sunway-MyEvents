@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
-import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
+import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
   id: number
@@ -132,13 +132,18 @@ export default function OrganizerEventDetailsPage() {
 
       {/* Event Poster */}
       <div className="relative">
-        <img
-          src={toImageUrl(event.image_url)}
-          alt={event.name}
-          className="w-full object-cover"
-          style={{ aspectRatio: '4/5' }}
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
+        {event.image_url
+          ? <img 
+              src={toImageUrl(event.image_url)} 
+              alt={event.name} 
+              className="w-full object-cover" 
+              style={{ aspectRatio: '4/5' }} 
+            />
+          : <div className="w-full bg-surface flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '4/5' }}>
+              <ImageOff className="w-10 h-10 text-border" />
+              <p className="text-muted-foreground text-xs">No poster uploaded</p>
+            </div>
+        }
       </div>
 
       {event.archived_at && (

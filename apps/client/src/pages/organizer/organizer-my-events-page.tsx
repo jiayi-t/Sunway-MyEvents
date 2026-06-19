@@ -4,7 +4,7 @@ import Header from '../../components/header'
 import api from '../../services/api'
 import { useOrganizerEventsQuery, type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
-import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft, ClipboardPen } from 'lucide-react'
+import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft, ClipboardPen, ImageOff } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
 
@@ -79,11 +79,14 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
   return (
     <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
       <div className="relative flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
-        <img
-          src={event.image_url || '/SGT%20S7%20Poster.jpg'}
-          alt={event.name}
-          className="w-full h-full object-cover object-center"
-        />
+        {event.image_url
+          ? <img 
+              src={event.image_url} 
+              alt={event.name}
+              className="w-full h-full object-cover object-center" 
+            />
+          : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
+        }
         <CountdownBadge startTime={event.start_time} />
       </div>
 
@@ -141,11 +144,14 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
   return (
     <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
       <div className="flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
-        <img
-          src={event.image_url || '/SGT%20S7%20Poster.jpg'}
-          alt={event.name}
-          className="w-full h-full object-cover object-center"
-        />
+        {event.image_url
+          ? <img 
+              src={event.image_url} 
+              alt={event.name}
+              className="w-full h-full object-cover object-center" 
+            />
+          : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
+        }
       </div>
 
       <div className="flex-1 min-w-0">

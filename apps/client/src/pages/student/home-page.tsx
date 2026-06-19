@@ -2,7 +2,7 @@ import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useEventsQuery, usePreferencesQuery } from '../../api/queries'
-import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface Event {
   id: number
@@ -191,12 +191,14 @@ export default function HomePage() {
                   className="cursor-pointer rounded-xl overflow-hidden shadow-md bg-white"
                 >
                   <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
-                    <img
-                      src={toImageUrl(featured.image_url)}
-                      alt={featured.name}
-                      className="absolute inset-0 w-full h-full object-cover object-center"
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
+                    {featured.image_url
+                      ? <img 
+                          src={toImageUrl(featured.image_url)} 
+                          alt={featured.name} 
+                          className="absolute inset-0 w-full h-full object-cover object-center" 
+                        />
+                      : <div className="absolute inset-0 bg-surface flex items-center justify-center"><ImageOff className="w-8 h-8 text-border" /></div>
+                    }
                     <div className="absolute top-3 left-3 flex gap-2">
                       <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
                         {featured.category || 'General'}
@@ -305,12 +307,14 @@ export default function HomePage() {
               className="flex-shrink-0 overflow-hidden rounded-lg self-center"
               style={{ width: '100px', aspectRatio: '4/5' }}
             >
-              <img
-                src={toImageUrl(event.image_url)}
-                alt={event.name}
-                className="w-full h-full object-cover object-center"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
+              {event.image_url
+                ? <img 
+                    src={toImageUrl(event.image_url)} 
+                    alt={event.name} 
+                    className="w-full h-full object-cover object-center" 
+                  />
+                : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
+              }
             </div>
 
             <div className="flex-1 min-w-0">
