@@ -18,6 +18,8 @@ import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
 import OrganizerCheckinScannerPage from './pages/organizer/organizer-checkin-scanner-page'
 import OrganizerParticipantsPage from './pages/organizer/organizer-participants-page'
 import StudentCheckinPage from './pages/student/student-checkin-page'
+import StudentFeedbackPage from './pages/student/student-feedback-page'
+import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -72,6 +74,13 @@ function AppRoutes() {
         element={
         <ProtectedRoute>
           <StudentCheckinPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/events/:id/feedback"
+        element={
+        <ProtectedRoute>
+          <StudentFeedbackPage />
         </ProtectedRoute>
         }
       />
@@ -137,6 +146,20 @@ function AppRoutes() {
         element={
         <ProtectedRoute>
           <OrganizerParticipantsPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/events/:id/feedback-form"
+        element={
+        <ProtectedRoute>
+          <OrganizerFeedbackFormPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/feedback-form/new"
+        element={
+        <ProtectedRoute>
+          <OrganizerFeedbackFormPage />
         </ProtectedRoute>
         }
       />

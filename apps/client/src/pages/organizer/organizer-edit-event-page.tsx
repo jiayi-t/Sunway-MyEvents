@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
 import { useEventQuery, useUpdateEventMutation } from '../../hooks/queries'
-import { ArrowLeft, Upload } from 'lucide-react'
+import { ArrowLeft, Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {
   name: string
@@ -234,6 +234,18 @@ export default function OrganizerEditEventPage() {
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/organizer/events/${id}/feedback-form`)}
+          className="w-full border border-primary rounded-lg py-2.5 text-sm font-medium text-primary flex items-center justify-between px-4 hover:bg-primary/5"
+        >
+          <span className="flex items-center gap-2">
+            <ClipboardPen className="w-4 h-4" />
+            Customize feedback questions
+          </span>
+          <span>›</span>
+        </button>
+
         {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
         <div className="flex gap-3 pb-6">
           <button onClick={() => navigate(-1)}

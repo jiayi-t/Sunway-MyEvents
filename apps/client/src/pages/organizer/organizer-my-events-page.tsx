@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import Header from '../../components/header'
 import api from '../../services/api'
 import { useOrganizerEventsQuery, useCreateEventMutation } from '../../hooks/queries'
-import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
+import { type FeedbackQuestion } from '../../hooks/queries/feedback.queries'
+import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft, ClipboardPen } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
 
@@ -191,19 +192,32 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
   )
 }
 
+const EMPTY_FORM = {
+  name: '', description: '', date: '', start_time: '', end_time: '',
+  venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
+}
+
 export default function OrganizerEventsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('new')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [form, setForm] = useState({
-    name: '', description: '', date: '', start_time: '', end_time: '',
-    venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
-  })
+  // restore form state when returning from the feedback form editor
+  const locationState = (location.state ?? {}) as {
+    form?: typeof EMPTY_FORM
+    preview?: string | null
+    questions?: FeedbackQuestion[]
+  }
+
+  const [form, setForm] = useState(locationState.form ?? EMPTY_FORM)
+  const [customQuestions, setCustomQuestions] = useState<FeedbackQuestion[] | null>(
+    locationState.questions ?? null
+  )
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [preview, setPreview] = useState<string | null>(locationState.preview ?? null)
   const [uploading, setUploading] = useState(false)
 
   const { data: myEventsData, isLoading: eventsLoading } = useOrganizerEventsQuery()
@@ -233,7 +247,13 @@ export default function OrganizerEventsPage() {
       registration_deadline: form.registration_deadline,
       image_url: form.image_url || null
     }, {
-      onSuccess: () => {
+      onSuccess: (newEvent: any) => {
+        if (customQuestions) {
+          api.put(`/events/${newEvent.id}/feedback-form`, { questions: customQuestions }).catch(() => {})
+        }
+        setCustomQuestions(null)
+        setForm(EMPTY_FORM)
+        setPreview(null)
         const targetTab: Tab = new Date(endDateTime) < new Date() ? 'past' : 'upcoming'
         setSearchParams({ tab: targetTab })
         setActiveTab(targetTab)
@@ -404,6 +424,20 @@ export default function OrganizerEventsPage() {
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate('/organizer/feedback-form/new', {
+              state: { form, preview, questions: customQuestions ?? undefined }
+            })}
+            className="w-full border border-primary rounded-lg py-2.5 text-sm font-medium text-primary flex items-center justify-between px-4 hover:bg-primary/5"
+          >
+            <span className="flex items-center gap-2">
+              <ClipboardPen className="w-4 h-4" />
+              Customize feedback questions
+            </span>
+            <span>›</span>
+          </button>
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex gap-3 pb-6">
             <button onClick={() => navigate('/organizer/dashboard')}
