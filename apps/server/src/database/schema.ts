@@ -1,4 +1,4 @@
-import { integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial, unique } from 'drizzle-orm/pg-core'
+import { integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial, unique, index } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -31,7 +31,9 @@ export const events = pgTable('events', {
   created_at: timestamp('created_at').defaultNow(),
   cancelled_at: timestamp('cancelled_at'),
   archived_at: timestamp('archived_at')
-})
+}, (table) => [
+  index('events_organizer_id_idx').on(table.organizer_id)
+])
 
 export const registrations = pgTable('registrations', {
   id: serial('id').primaryKey(),
@@ -39,14 +41,20 @@ export const registrations = pgTable('registrations', {
   event_id: integer('event_id').references(() => events.id),
   registered_at: timestamp('registered_at').defaultNow(),
   checked_in_at: timestamp('checked_in_at')
-})
+}, (table) => [
+  index('registrations_user_id_idx').on(table.user_id),
+  index('registrations_event_id_idx').on(table.event_id)
+])
 
 export const saved_events = pgTable('saved_events', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id').references(() => users.id),
   event_id: integer('event_id').references(() => events.id),
   saved_at: timestamp('saved_at').defaultNow()
-})
+}, (table) => [
+  index('saved_events_user_id_idx').on(table.user_id),
+  index('saved_events_event_id_idx').on(table.event_id)
+])
 
 export const feedback = pgTable('feedback', {
   id: serial('id').primaryKey(),
@@ -56,7 +64,8 @@ export const feedback = pgTable('feedback', {
   answers: jsonb('answers'),
   created_at: timestamp('created_at').defaultNow()
 }, (table) => [
-  unique().on(table.user_id, table.event_id)
+  unique().on(table.user_id, table.event_id),
+  index('feedback_event_id_idx').on(table.event_id)
 ])
 
 export const feedback_forms = pgTable('feedback_forms', {
