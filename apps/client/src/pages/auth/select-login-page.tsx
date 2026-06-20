@@ -1,12 +1,29 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LoginFooter from '../../components/login-footer'
 
 export default function SelectLoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [showBanner, setShowBanner] = useState(searchParams.get('reason') === 'session_expired')
+
+  useEffect(() => {
+    if (!showBanner) return
+    // remove the query param so navigating back does not show the banner again
+    window.history.replaceState({}, '', '/login')
+    const id = setTimeout(() => setShowBanner(false), 5000)
+    return () => clearTimeout(id)
+  }, [showBanner])
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       
+      {showBanner && (
+        <div className="bg-accent text-white text-sm text-center px-4 py-2.5 font-medium">
+          Your session has expired. Please log in again.
+        </div>
+      )}
+
       {/* Logos */}
       <div className="w-full flex justify-center pt-8">
         <img
