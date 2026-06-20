@@ -4,7 +4,7 @@ import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation } from '../../api/mutations'
-import { Calendar, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
+import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
 import { InstagramLogo } from 'phosphor-react'
 
 interface Event {
@@ -208,6 +208,18 @@ export default function StudentEventDetailsPage() {
               </p>
             </div>
           </div>
+
+          {typedEvent.registration_deadline && (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                <CalendarClock className="text-primary w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase font-medium">Registration Deadline</p>
+                <p className="text-sm text-foreground">{formatDate(typedEvent.registration_deadline)}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Success/Error messages */}

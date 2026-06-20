@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
-import { Archive, ArrowLeft, Ban, BarChart2, Calendar, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
+import { Archive, ArrowLeft, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
   id: number
@@ -271,6 +271,18 @@ export default function OrganizerEventDetailsPage() {
               </p>
             </div>
           </div>
+
+          {event.registration_deadline && (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                <CalendarClock className="text-primary w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase font-medium">Registration Deadline</p>
+                <p className="text-sm text-foreground">{formatDate(event.registration_deadline)}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {!isPast ? (
