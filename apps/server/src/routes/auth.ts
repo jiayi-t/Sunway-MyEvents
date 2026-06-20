@@ -14,6 +14,10 @@ const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '1d') as jwt.SignOptions['ex
 router.post('/login', async (req, res) => {
   const { sunwayId, password } = req.body
 
+  if (!sunwayId || !password) {
+    return res.status(400).json({ error: 'ID and password are required' })
+  }
+
   try {
     const result = await db.select().from(users).where(eq(users.sunway_id, sunwayId))
     const user = result[0]
@@ -52,6 +56,10 @@ router.post('/login', async (req, res) => {
 // POST /api/auth/register/organizer
 router.post('/register/organizer', async (req, res) => {
   const { name, username, email, category, password } = req.body
+
+  if (!name || !username || !email || !category || !password) {
+    return res.status(400).json({ error: 'All fields are required' })
+  }
 
   try {
     if (username.length > 8) {

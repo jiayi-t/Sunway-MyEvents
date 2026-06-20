@@ -217,6 +217,10 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     category, capacity, registration_deadline, image_url
   } = req.body
 
+  if (!name || !date || !start_time || !end_time || !venue || pricing == null || !category || !image_url) {
+    return res.status(400).json({ error: 'Please fill in all required fields' })
+  }
+
   try {
     const result = await db.insert(events).values({
       name,
@@ -254,6 +258,10 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       name, description, date, start_time, end_time, venue, pricing,
       category, capacity, registration_deadline, image_url
     } = req.body
+
+    if (!name || !date || !start_time || !end_time || !venue || pricing == null || !category || !image_url) {
+      return res.status(400).json({ error: 'Please fill in all required fields' })
+    }
 
     const result = await db.update(events).set({
       name,
