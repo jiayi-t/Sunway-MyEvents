@@ -206,6 +206,7 @@ const EMPTY_FORM = {
 export default function OrganizerEventsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('new')
   const [error, setError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -232,6 +233,11 @@ export default function OrganizerEventsPage() {
 
   const handleSubmit = () => {
     setError('')
+    setSubmitted(true)
+    if (!form.name || !form.date || !form.start_time || !form.end_time || !form.venue || form.pricing === '' || !form.category || !form.image_url) {
+      setError('Please fill in all required fields')
+      return
+    }
     if (form.start_time && form.end_time && form.start_time >= form.end_time) {
       setError('End time must be later than start time')
       return
@@ -260,6 +266,7 @@ export default function OrganizerEventsPage() {
         setCustomQuestions(null)
         setForm(EMPTY_FORM)
         setPreview(null)
+        setSubmitted(false)
         const targetTab: Tab = new Date(endDateTime) < new Date() ? 'past' : 'upcoming'
         setSearchParams({ tab: targetTab })
         setActiveTab(targetTab)
@@ -351,53 +358,53 @@ export default function OrganizerEventsPage() {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Event Name</label>
             <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.name ? 'border-red-400' : 'border-border'}`} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Description</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Description <span className="text-muted-foreground font-normal">(Optional)</span></label>
             <textarea rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
               className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary resize-none bg-white" />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Date</label>
             <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.date ? 'border-red-400' : 'border-border'}`} />
           </div>
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-foreground mb-1">Start Time</label>
               <input type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })}
-                className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.start_time ? 'border-red-400' : 'border-border'}`} />
             </div>
             <div className="flex-1">
               <label className="block text-sm font-medium text-foreground mb-1">End Time</label>
               <input type="time" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })}
-                className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.end_time ? 'border-red-400' : 'border-border'}`} />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Venue</label>
             <input type="text" value={form.venue} onChange={e => setForm({ ...form, venue: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.venue ? 'border-red-400' : 'border-border'}`} />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Pricing</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">RM</span>
               <input type="number" min="0" value={form.pricing} onChange={e => setForm({ ...form, pricing: e.target.value })}
-                className="w-full border border-border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+                className={`w-full border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && form.pricing === '' ? 'border-red-400' : 'border-border'}`} />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Category</label>
             <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white">
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.category ? 'border-red-400' : 'border-border'}`}>
               <option value="">Select a category</option>
               {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Capacity</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Capacity <span className="text-muted-foreground font-normal">(Optional)</span></label>
             <div className="relative">
               <input type="number" min="1" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })}
                 className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-24 bg-white" />
@@ -405,13 +412,13 @@ export default function OrganizerEventsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Registration Deadline</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Registration Deadline <span className="text-muted-foreground font-normal">(Optional)</span></label>
             <input type="date" value={form.registration_deadline} onChange={e => setForm({ ...form, registration_deadline: e.target.value })}
               className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Poster</label>
-            <div className="w-full border border-border rounded-lg px-3 py-6 flex flex-col items-center justify-center gap-3 bg-white">
+            <div className={`w-full border rounded-lg px-3 py-6 flex flex-col items-center justify-center gap-3 bg-white ${submitted && !form.image_url ? 'border-red-400' : 'border-border'}`}>
               {preview ? (
                 <>
                   <img src={preview} alt="poster preview" className="max-h-56 object-contain rounded" />
