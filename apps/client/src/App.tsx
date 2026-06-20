@@ -23,7 +23,12 @@ import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
-const queryClient = new QueryClient()
+// cache query results for 1 minute before marking them stale and refetching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 1000 * 60 },
+  },
+})
 
 const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-preferences']
 
