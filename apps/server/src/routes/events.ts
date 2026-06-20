@@ -121,6 +121,25 @@ router.get('/:id/registration-status', authenticate, async (req: AuthRequest, re
 router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   const eventId = parseInt(req.params.id as string)
   try {
+    const [event] = await db
+      .select({ cancelled_at: events.cancelled_at, registration_deadline: events.registration_deadline, capacity: events.capacity })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1)
+
+    if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (event.cancelled_at) return res.status(400).json({ error: 'This event has been cancelled' })
+    if (event.registration_deadline && new Date(event.registration_deadline) < new Date()) {
+      return res.status(400).json({ error: 'Registration deadline has passed' })
+    }
+    if (event.capacity) {
+      const [{ count }] = await db
+        .select({ count: db.$count(registrations, eq(registrations.event_id, eventId)) })
+        .from(events)
+        .where(eq(events.id, eventId))
+      if (count >= event.capacity) return res.status(400).json({ error: 'This event is sold out' })
+    }
+
     const existing = await db
       .select({ id: registrations.id })
       .from(registrations)
