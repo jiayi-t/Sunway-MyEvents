@@ -18,39 +18,22 @@ export default function OrganizerCreateAccount() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async () => {
     setError('')
-    if (!form.name.trim()) {
-      setError('Please enter your SLB / C&S name')
-      return
-    }
-    if (!form.username.trim()) {
-      setError('Please enter a username')
+    setSubmitted(true)
+
+    if (!form.name.trim() || !form.username.trim() || !form.email.trim() || !orgType || (orgType === 'c&s' && !form.category) || !form.password || !form.confirmPassword) {
+      setError('Please fill in all fields')
       return
     }
     if (form.username.length > 8) {
       setError('Username must be 8 characters or less. Try your SLB / C&S shortform.')
       return
     }
-    if (!form.email.trim()) {
-      setError('Please enter an email address')
-      return
-    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setError('Please enter a valid email address')
-      return
-    }
-    if (!orgType) {
-      setError('Please select an organization type')
-      return
-    }
-    if (orgType === 'c&s' && !form.category) {
-      setError('Please select a category')
-      return
-    }
-    if (!form.password) {
-      setError('Please enter a password')
       return
     }
     if (form.password.length < 8) {
@@ -98,7 +81,7 @@ export default function OrganizerCreateAccount() {
               type="text"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary ${submitted && !form.name.trim() ? 'border-red-400' : 'border-gray-300'}`}
             />
           </div>
 
@@ -108,7 +91,7 @@ export default function OrganizerCreateAccount() {
               type="text"
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary ${submitted && !form.username.trim() ? 'border-red-400' : 'border-gray-300'}`}
             />
             {form.username.length > 8 && (
               <p className="text-red-500 text-xs mt-1">Username must be 8 characters or less. Try your SLB / C&S shortform.</p>
@@ -121,7 +104,7 @@ export default function OrganizerCreateAccount() {
               type="email"
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary ${submitted && !form.email.trim() ? 'border-red-400' : 'border-gray-300'}`}
             />
           </div>
 
@@ -139,7 +122,9 @@ export default function OrganizerCreateAccount() {
                   className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition-colors
                     ${orgType === type
                       ? 'bg-primary text-white border-primary'
-                      : 'bg-white text-gray-700 border-gray-300'
+                      : submitted && !orgType
+                        ? 'bg-white text-gray-700 border-red-400'
+                        : 'bg-white text-gray-700 border-gray-300'
                     }`}
                 >
                   {type === 'slb' ? 'SLB' : 'C&S'}
@@ -154,7 +139,7 @@ export default function OrganizerCreateAccount() {
               <select
                 value={form.category}
                 onChange={e => setForm({ ...form, category: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white"
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.category ? 'border-red-400' : 'border-gray-300'}`}
               >
                 <option value="">Select a category</option>
                 {CNS_CATEGORIES.map(cat => (
@@ -171,7 +156,7 @@ export default function OrganizerCreateAccount() {
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-10"
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-10 ${submitted && !form.password ? 'border-red-400' : 'border-gray-300'}`}
               />
               <button
                 type="button"
@@ -190,7 +175,7 @@ export default function OrganizerCreateAccount() {
                 type={showConfirm ? 'text' : 'password'}
                 value={form.confirmPassword}
                 onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-10"
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-10 ${submitted && !form.confirmPassword ? 'border-red-400' : 'border-gray-300'}`}
               />
               <button
                 type="button"
