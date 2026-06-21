@@ -10,6 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: ci_myevents
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,3 +44,18 @@ jobs:
       - name: Build server
         run: npm run build
         working-directory: apps/server
+
+      - name: Push database schema
+        run: npx drizzle-kit push --force
+        working-directory: apps/server
+        env:
+          DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_myevents
+
+      - name: Run server tests
+        run: npm test
+        working-directory: apps/server
+        env:
+          DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_myevents
+          JWT_SECRET: ci-test-secret
+          JWT_EXPIRES_IN: 7d
+          NODE_ENV: test
