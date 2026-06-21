@@ -49,7 +49,11 @@ jobs:
         run: npx drizzle-kit push --force
         working-directory: apps/server
         env:
-          DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_myevents
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USER: ci_user
+          DATABASE_PASSWORD: ci_password
+          DATABASE_NAME: ci_myevents
 
       - name: Run server tests
         run: npm test
