@@ -1,0 +1,94 @@
+import api from '../../services/api'
+import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
+
+export const analyticsKeys = {
+  attendance: ['analytics', 'attendance'] as const,
+  feedback: ['analytics', 'feedback'] as const,
+  eventAnalytics: (id: string | undefined) => ['analytics', 'event', id] as const,
+}
+
+export interface AttendanceEvent {
+  id: number
+  name: string
+  date: string
+  capacity: number | null
+  image_url: string | null
+  registrations: number
+  attendees: number
+  attendance_rate: number
+}
+
+export interface AttendanceAnalytics {
+  totals: {
+    total_registrations: number
+    total_attendees: number
+    attendance_rate: number
+  }
+  events: AttendanceEvent[]
+}
+
+export interface FeedbackEvent {
+  id: number
+  name: string
+  date: string
+  image_url: string | null
+  registrations: number
+  feedback_count: number
+  avg_rating: number
+  feedback_rate: number
+}
+
+export interface FeedbackAnalytics {
+  totals: {
+    total_feedback: number
+    total_registrations: number
+    avg_rating: number
+    feedback_rate: number
+  }
+  rating_distribution: Record<string, number>
+  events: FeedbackEvent[]
+}
+
+export type QuestionAnalysis =
+  | { question: string; type: 'open_ended'; responses: string[] }
+  | { question: string; type: string; options?: string[]; responses: Record<string, number> }
+
+export interface EventAnalytics {
+  event: { id: number; name: string; date: string; capacity: number | null; image_url: string | null }
+  attendance: { registrations: number; attendees: number; attendance_rate: number }
+  demographics: {
+    faculty_distribution: { faculty: string; count: number }[]
+  }
+  feedback: {
+    count: number
+    avg_rating: number
+    feedback_rate: number
+    rating_distribution: Record<string, number>
+    questions: QuestionAnalysis[]
+  }
+}
+
+export function useAttendanceAnalyticsQuery(options?: Omit<UseQueryOptions<AttendanceAnalytics>, 'queryKey' | 'queryFn'>) {
+  return useQuery<AttendanceAnalytics>({
+    queryKey: analyticsKeys.attendance,
+    queryFn: () => api.get('/analytics/attendance').then(res => res.data),
+    ...options,
+  })
+}
+
+export function useFeedbackAnalyticsQuery(options?: Omit<UseQueryOptions<FeedbackAnalytics>, 'queryKey' | 'queryFn'>) {
+  return useQuery<FeedbackAnalytics>({
+    queryKey: analyticsKeys.feedback,
+    queryFn: () => api.get('/analytics/feedback').then(res => res.data),
+    ...options,
+  })
+}
+
+export function useEventAnalyticsQuery(id: string | undefined, options?: Omit<UseQueryOptions<EventAnalytics>, 'queryKey' | 'queryFn'>) {
+  return useQuery<EventAnalytics>({
+    queryKey: analyticsKeys.eventAnalytics(id),
+    queryFn: () => api.get(`/analytics/events/${id}`).then(res => res.data),
+    enabled: !!id,
+    ...options,
+  })
+}
