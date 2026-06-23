@@ -1,5 +1,5 @@
 import api from '../../services/api'
-import { useQuery } from '@tanstack/react-query'
+import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
 
 export type QuestionType = 'rating' | 'multiple_choice' | 'checkboxes' | 'open_ended'
 
@@ -33,25 +33,28 @@ export interface MyFeedback {
   created_at: string
 }
 
-export function useMyFeedbackQuery() {
+export function useMyFeedbackQuery(options?: Omit<UseQueryOptions<MyFeedback[]>, 'queryKey' | 'queryFn'>) {
   return useQuery<MyFeedback[]>({
     queryKey: feedbackKeys.my,
     queryFn: () => api.get('/feedback/my').then(res => res.data),
+    ...options,
   })
 }
 
-export function useEventFeedbackQuery(id: string | undefined, enabled: boolean) {
+export function useEventFeedbackQuery(id: string | undefined, enabled: boolean, options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
   return useQuery({
     queryKey: feedbackKeys.eventFeedback(id),
     queryFn: () => api.get(`/events/${id}/feedback`).then(res => res.data),
     enabled: !!id && enabled,
+    ...options,
   })
 }
 
-export function useFeedbackFormQuery(id: string | undefined) {
+export function useFeedbackFormQuery(id: string | undefined, options?: Omit<UseQueryOptions<{ questions: FeedbackQuestion[] }>, 'queryKey' | 'queryFn'>) {
   return useQuery<{ questions: FeedbackQuestion[] }>({
     queryKey: feedbackKeys.feedbackForm(id),
     queryFn: () => api.get(`/events/${id}/feedback-form`).then(res => res.data),
     enabled: !!id,
+    ...options,
   })
 }
