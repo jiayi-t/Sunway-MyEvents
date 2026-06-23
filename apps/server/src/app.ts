@@ -7,6 +7,7 @@ import registrationRoutes from './routes/registrations'
 import uploadsRoutes from './routes/uploads'
 import feedbackRoutes from './routes/feedback'
 import feedbackFormRoutes from './routes/feedback-forms'
+import analyticsRoutes from './routes/analytics'
 
 const app = express()
 
@@ -21,6 +22,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use('/api/uploads', uploadsRoutes)
 app.use('/api/feedback', feedbackRoutes)
 app.use('/api/events', feedbackFormRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {

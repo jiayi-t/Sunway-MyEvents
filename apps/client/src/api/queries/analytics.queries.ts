@@ -11,7 +11,6 @@ export interface AttendanceEvent {
   id: number
   name: string
   date: string
-  capacity: number | null
   image_url: string | null
   registrations: number
   attendees: number
@@ -54,11 +53,8 @@ export type QuestionAnalysis =
   | { question: string; type: string; options?: string[]; responses: Record<string, number> }
 
 export interface EventAnalytics {
-  event: { id: number; name: string; date: string; capacity: number | null; image_url: string | null }
+  event: { id: number; name: string; date: string; image_url: string | null }
   attendance: { registrations: number; attendees: number; attendance_rate: number }
-  demographics: {
-    faculty_distribution: { faculty: string; count: number }[]
-  }
   feedback: {
     count: number
     avg_rating: number

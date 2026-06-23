@@ -1,0 +1,240 @@
+import { Router } from 'express'
+import { eq, sql, desc } from 'drizzle-orm'
+import { db } from '../db'
+import { events, registrations, feedback, feedback_forms } from '../database/schema'
+import { authenticate, AuthRequest } from '../middleware/auth'
+import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
+
+const router = Router()
+
+// GET /api/analytics/attendance
+router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const rows = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        date: events.date,
+        image_url: events.image_url,
+        // sql<number> tells TS to treat the string as a number, since pg returns aggregates as strings
+        registrations: sql<number>`COUNT(${registrations.id})`, 
+        attendees: sql<number>`COUNT(${registrations.checked_in_at})`,
+      })
+      .from(events)
+      .leftJoin(registrations, eq(registrations.event_id, events.id))
+      .where(eq(events.organizer_id, req.user!.id))
+      .groupBy(events.id, events.name, events.date, events.image_url)
+      .orderBy(desc(events.date))
+
+    // calculate aggregate totals across all events
+    const total_registrations = rows.reduce((s, r) => s + Number(r.registrations), 0)
+    const total_attendees = rows.reduce((s, r) => s + Number(r.attendees), 0)
+    const attendance_rate = total_registrations > 0
+      ? Math.round((total_attendees / total_registrations) * 1000) / 10
+      : 0
+
+    res.json({
+      totals: { total_registrations, total_attendees, attendance_rate },
+      events: rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        date: r.date,
+        image_url: r.image_url,
+        // convert from string to number (pg sends aggregates as strings)
+        registrations: Number(r.registrations), 
+        attendees: Number(r.attendees),
+        attendance_rate: Number(r.registrations) > 0
+          ? Math.round((Number(r.attendees) / Number(r.registrations)) * 1000) / 10
+          : 0,
+      })),
+    })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/analytics/feedback
+router.get('/feedback', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const rows = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        date: events.date,
+        image_url: events.image_url,
+        registrations: sql<number>`COUNT(DISTINCT ${registrations.id})`,
+        feedback_count: sql<number>`COUNT(${feedback.id})`,
+        avg_rating: sql<number>`COALESCE(AVG(${feedback.rating}), 0)`,
+      })
+      .from(events)
+      .leftJoin(registrations, eq(registrations.event_id, events.id))
+      .leftJoin(feedback, eq(feedback.event_id, events.id))
+      .where(eq(events.organizer_id, req.user!.id))
+      .groupBy(events.id, events.name, events.date, events.image_url)
+      .orderBy(desc(events.date))
+
+    const ratingRows = await db
+      .select({
+        rating: feedback.rating,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(feedback)
+      .innerJoin(events, eq(feedback.event_id, events.id))
+      .where(eq(events.organizer_id, req.user!.id))
+      .groupBy(feedback.rating)
+
+    const rating_distribution: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 }
+    for (const r of ratingRows) rating_distribution[String(r.rating)] = Number(r.count)
+
+    // calculate aggregate totals across all events
+    const total_feedback = rows.reduce((s, r) => s + Number(r.feedback_count), 0)
+    const total_registrations = rows.reduce((s, r) => s + Number(r.registrations), 0)
+    const totalRatingSum = ratingRows.reduce((s, r) => s + r.rating * Number(r.count), 0)
+    const avg_rating = total_feedback > 0 ? Math.round((totalRatingSum / total_feedback) * 10) / 10 : 0
+    // percentage with 1 decimal place
+    const feedback_rate = total_registrations > 0
+      ? Math.round((total_feedback / total_registrations) * 1000) / 10
+      : 0
+
+    res.json({
+      totals: { total_feedback, total_registrations, avg_rating, feedback_rate },
+      rating_distribution,
+      events: rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        date: r.date,
+        image_url: r.image_url,
+        registrations: Number(r.registrations),
+        feedback_count: Number(r.feedback_count),
+        avg_rating: Math.round(Number(r.avg_rating) * 10) / 10,
+        feedback_rate: Number(r.registrations) > 0
+          ? Math.round((Number(r.feedback_count) / Number(r.registrations)) * 1000) / 10
+          : 0,
+      })),
+    })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/analytics/events/:id - per-event analytics
+router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const eventId = parseInt(req.params.id as string)
+
+  try {
+    const [eventRow] = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        date: events.date,
+        image_url: events.image_url,
+        organizer_id: events.organizer_id,
+      })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1)
+
+    if (!eventRow) return res.status(404).json({ error: 'Event not found' })
+    if (eventRow.organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    // attendance stats
+    const [attRow] = await db
+      .select({
+        registrations: sql<number>`COUNT(${registrations.id})`,
+        attendees: sql<number>`COUNT(${registrations.checked_in_at})`,
+      })
+      .from(registrations)
+      .where(eq(registrations.event_id, eventId))
+
+    const regCount = Number(attRow?.registrations ?? 0)
+    const attendeeCount = Number(attRow?.attendees ?? 0)
+
+    // feedback rows
+    const feedbackRows = await db
+      .select({ rating: feedback.rating, answers: feedback.answers })
+      .from(feedback)
+      .where(eq(feedback.event_id, eventId))
+
+    const feedbackCount = feedbackRows.length
+    const avgRating = feedbackCount > 0
+      ? Math.round((feedbackRows.reduce((s, f) => s + f.rating, 0) / feedbackCount) * 10) / 10
+      : 0
+
+    const ratingDist: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 }
+    for (const f of feedbackRows) ratingDist[String(f.rating)] = (ratingDist[String(f.rating)] ?? 0) + 1
+
+    // feedback form questions
+    const [formRow] = await db
+      .select({ questions: feedback_forms.questions })
+      .from(feedback_forms)
+      .where(eq(feedback_forms.event_id, eventId))
+      .limit(1)
+
+    const questions: FeedbackQuestion[] = formRow
+      ? (formRow.questions as FeedbackQuestion[])
+      : DEFAULT_QUESTIONS
+
+    type QuestionAnalysis = {
+      question: string
+      type: string
+      options?: string[]
+      responses: Record<string, number> | string[]
+    }
+
+    const questionAnalyses: QuestionAnalysis[] = []
+
+    if (feedbackCount > 0) {
+      for (const q of questions) {
+        if (q.type === 'rating') continue
+
+        if (q.type === 'open_ended') {
+          const responses: string[] = []
+          for (const fb of feedbackRows) {
+            const ans = fb.answers as Record<string, unknown> | null
+            const val = ans?.[q.id]
+            if (val != null && String(val).trim()) responses.push(String(val).trim())
+          }
+          questionAnalyses.push({ question: q.question, type: q.type, responses })
+        } else {
+          const responses: Record<string, number> = {}
+          for (const fb of feedbackRows) {
+            const ans = fb.answers as Record<string, unknown> | null
+            const val = ans?.[q.id]
+            if (val == null) continue
+            const vals = Array.isArray(val) ? val : [val]
+            for (const v of vals) {
+              const key = String(v)
+              responses[key] = (responses[key] ?? 0) + 1
+            }
+          }
+          questionAnalyses.push({ question: q.question, type: q.type, options: q.options, responses })
+        }
+      }
+    }
+
+    res.json({
+      event: { id: eventRow.id, name: eventRow.name, date: eventRow.date, image_url: eventRow.image_url },
+      attendance: {
+        registrations: regCount,
+        attendees: attendeeCount,
+        attendance_rate: regCount > 0 ? Math.round((attendeeCount / regCount) * 1000) / 10 : 0,
+      },
+      feedback: {
+        count: feedbackCount,
+        avg_rating: avgRating,
+        feedback_rate: regCount > 0 ? Math.round((feedbackCount / regCount) * 1000) / 10 : 0,
+        rating_distribution: ratingDist,
+        questions: questionAnalyses,
+      },
+    })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+export default router
