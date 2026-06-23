@@ -108,7 +108,7 @@ export default function OrganizerDashboard() {
         <h2 className="text-primary font-bold text-sm mb-4">Analytics</h2>
         <div className="flex justify-around">
           <button
-            onClick={() => navigate('/organizer/analytics')}
+            onClick={() => navigate('/organizer/analytics?tab=attendance')}
             className="flex flex-col items-center gap-1"
           >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
@@ -116,19 +116,22 @@ export default function OrganizerDashboard() {
             </div>
             <span className="text-xs text-foreground">Attendance</span>
           </button>
-          <button className="flex flex-col items-center gap-1">
+          <button className="flex flex-col items-center gap-1 opacity-40" disabled>
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
               <Eye />
             </div>
             <span className="text-xs text-foreground">Views</span>
           </button>
-          <button className="flex flex-col items-center gap-1">
+          <button className="flex flex-col items-center gap-1 opacity-40" disabled>
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
               <TrendingUp />
             </div>
             <span className="text-xs text-foreground">Reach</span>
           </button>
-          <button className="flex flex-col items-center gap-1">
+          <button
+            onClick={() => navigate('/organizer/analytics?tab=feedback')}
+            className="flex flex-col items-center gap-1"
+          >
             <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
               <MessageSquare />
             </div>
