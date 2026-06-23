@@ -15,17 +15,17 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between bg-secondary shadow relative border-b border-gray-200">
-      <div className="relative">
+      <div className="relative flex items-center">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="text-black focus:outline-none w-10 text-center"
+          className="text-black focus:outline-none"
           aria-label="Open menu"
         >
-          <Menu className="w-6 h-6 mx-auto" aria-hidden="true" />
+          <Menu className="w-6 h-6" aria-hidden="true" />
         </button>
 
         {menuOpen && (
-          <div className="absolute left-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
+          <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded shadow-lg z-50">
             {user && (
               <div className="px-4 py-2 text-sm text-gray-600 border-b">
                 {user.name}
