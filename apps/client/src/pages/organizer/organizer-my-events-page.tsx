@@ -32,8 +32,21 @@ const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): s
   return new Date(value).toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', ...options })
 }
 
-const formatDate = (date?: string) =>
-  formatDateTime(date, { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })
+const formatDate = (date?: string) => {
+  if (!date) return 'TBA'
+  const d = new Date(date)
+  const formatted = d.toLocaleDateString('en-MY', { 
+    timeZone: 'Asia/Kuala_Lumpur', 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  })
+  const weekday = d.toLocaleDateString('en-MY', { 
+    timeZone: 'Asia/Kuala_Lumpur', 
+    weekday: 'long' 
+  })
+  return `${formatted} (${weekday})`
+}
 
 const formatTime = (time?: string) =>
   formatDateTime(time, { hour: 'numeric', minute: '2-digit', hour12: true })

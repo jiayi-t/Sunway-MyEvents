@@ -32,13 +32,18 @@ const toImageUrl = (url?: string | null) => {
 
 const formatDate = (value?: string) => {
   if (!value) return 'TBA'
-  return new Date(value).toLocaleDateString('en-MY', {
-    timeZone: 'Asia/Kuala_Lumpur',
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+  const d = new Date(value)
+  const date = d.toLocaleDateString('en-MY', { 
+    timeZone: 'Asia/Kuala_Lumpur', 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
   })
+  const day = d.toLocaleDateString('en-MY', { 
+    timeZone: 'Asia/Kuala_Lumpur', 
+    weekday: 'long' 
+  })
+  return `${date} (${day})`
 }
 
 const formatTime = (value?: string) => {
