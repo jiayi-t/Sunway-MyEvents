@@ -11,7 +11,13 @@ export const users = pgTable('users', {
   category: text('category'),
   preferences: jsonb('preferences'),
   image_url: text('image_url'),
-  created_at: timestamp('created_at').defaultNow()
+  created_at: timestamp('created_at').defaultNow(),
+  gender: text('gender'),
+  faculty: text('faculty'),
+  semester: integer('semester'),
+  mobile_number: text('mobile_number'),
+  personal_email: text('personal_email'),
+  notification_preferences: jsonb('notification_preferences'),
 })
 
 export const events = pgTable('events', {
@@ -74,3 +80,15 @@ export const feedback_forms = pgTable('feedback_forms', {
   questions: jsonb('questions').notNull(),
   updated_at: timestamp('updated_at').defaultNow()
 })
+
+export const notifications = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id),
+  type: varchar('type', { length: 50 }).notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  message: text('message').notNull(),
+  read_at: timestamp('read_at'),
+  created_at: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('notifications_user_id_idx').on(table.user_id)
+])
