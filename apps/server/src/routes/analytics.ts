@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { eq, sql, desc } from 'drizzle-orm'
 import { db } from '../db'
-import { events, registrations, feedback, feedback_forms } from '../database/schema'
+import { events, registrations, feedback, feedback_forms, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
 
@@ -37,6 +37,7 @@ router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
 
     res.json({
       totals: { total_registrations, total_attendees, attendance_rate },
+      // convert each raw db row into the final shape sent to the client, converting string counts to numbers
       events: rows.map(r => ({
         id: r.id,
         name: r.name,
@@ -217,12 +218,33 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
       }
     }
 
+    const [genderRows, facultyRows, programmeRows, semesterRows] = await Promise.all([
+      db.select({ gender: users.gender, count: sql<number>`COUNT(*)` })
+        .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
+        .where(eq(registrations.event_id, eventId)).groupBy(users.gender),
+      db.select({ faculty: users.faculty, count: sql<number>`COUNT(*)` })
+        .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
+        .where(eq(registrations.event_id, eventId)).groupBy(users.faculty),
+      db.select({ programme: users.program, count: sql<number>`COUNT(*)` })
+        .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
+        .where(eq(registrations.event_id, eventId)).groupBy(users.program),
+      db.select({ semester: users.semester, count: sql<number>`COUNT(*)` })
+        .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
+        .where(eq(registrations.event_id, eventId)).groupBy(users.semester),
+    ])
+
     res.json({
       event: { id: eventRow.id, name: eventRow.name, date: eventRow.date, image_url: eventRow.image_url },
       attendance: {
         registrations: regCount,
         attendees: attendeeCount,
         attendance_rate: regCount > 0 ? Math.round((attendeeCount / regCount) * 1000) / 10 : 0,
+      },
+      demographics: {
+        gender_distribution: genderRows.map(r => ({ gender: r.gender, count: Number(r.count) })),
+        faculty_distribution: facultyRows.map(r => ({ faculty: r.faculty, count: Number(r.count) })),
+        programme_distribution: programmeRows.map(r => ({ programme: r.programme, count: Number(r.count) })),
+        semester_distribution: semesterRows.map(r => ({ semester: r.semester, count: Number(r.count) })),
       },
       feedback: {
         count: feedbackCount,
