@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../../api/queries'
-import { Pen, Calendar, Clock, Bookmark } from 'lucide-react'
+import { Calendar, Clock, Bookmark, Settings } from 'lucide-react'
 
 interface Registration {
   id: number
@@ -63,9 +63,12 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
-          {/* Edit button */}
-          <button className="w-8 h-8 rounded-full border border-accent flex items-center justify-center">
-            <Pen className="text-accent w-4 h-4" />
+          {/* Settings Button */}
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-8 h-8 rounded-full border border-accent flex items-center justify-center"
+          >
+            <Settings className="text-accent w-4 h-4" />
           </button>
         </div>
       </div>
