@@ -8,7 +8,6 @@ import HomePage from './pages/student/home-page'
 import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
-import MyPreferencesPage from './pages/student/my-preferences-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import OrganizerDashboard from './pages/organizer/organizer-dashboard'
@@ -105,13 +104,6 @@ function AppRoutes() {
           <MyEventsPage />
         </ProtectedRoute>
         } 
-      />
-      <Route path="/my-preferences"
-        element={
-          <ProtectedRoute>
-            <MyPreferencesPage />
-          </ProtectedRoute>
-        }
       />
       <Route path="/settings"
         element={
