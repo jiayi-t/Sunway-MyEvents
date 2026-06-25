@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
-import { events, users, registrations, saved_events, feedback } from '../database/schema'
+import { events, users, registrations, saved_events, feedback, notifications } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -314,6 +314,23 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
     if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
 
     await db.update(events).set({ cancelled_at: new Date() }).where(eq(events.id, id))
+
+    const eventRegistrations = await db
+      .select({ user_id: registrations.user_id })
+      .from(registrations)
+      .where(eq(registrations.event_id, id))
+
+    if (eventRegistrations.length > 0) {
+      await db.insert(notifications).values(
+        eventRegistrations.map(r => ({
+          user_id: r.user_id,
+          type: 'event_cancelled' as const,
+          title: 'Event Cancelled',
+          message: `"${existing[0].name}" has been cancelled.`,
+        }))
+      )
+    }
+
     res.json({ message: 'Event cancelled' })
   } catch {
     res.status(500).json({ error: 'Server error' })
