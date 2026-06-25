@@ -119,4 +119,45 @@ router.put('/preferences', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// GET /api/auth/profile
+router.get('/profile', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await db
+      .select({
+        id: users.id,
+        sunway_id: users.sunway_id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        program: users.program,
+        image_url: users.image_url,
+        gender: users.gender,
+        faculty: users.faculty,
+        semester: users.semester,
+        mobile_number: users.mobile_number,
+        personal_email: users.personal_email,
+        notification_preferences: users.notification_preferences,
+      })
+      .from(users)
+      .where(eq(users.id, req.user!.id))
+    const user = result[0]
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    res.json(user)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/auth/notification-preferences
+router.put('/notification-preferences', authenticate, async (req: AuthRequest, res) => {
+  const { email_enabled, email_channel, course_related, interest_related, suggested } = req.body
+  try {
+    const prefs = { email_enabled, email_channel, course_related, interest_related, suggested }
+    await db.update(users).set({ notification_preferences: prefs }).where(eq(users.id, req.user!.id))
+    res.json({ notification_preferences: prefs })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router
