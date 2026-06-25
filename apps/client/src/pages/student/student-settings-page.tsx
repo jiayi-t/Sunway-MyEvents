@@ -1,0 +1,291 @@
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import Header from '../../components/header'
+import { useAuth } from '../../context/auth-context'
+import { ArrowLeft } from 'lucide-react'
+import { useProfileQuery, usePreferencesQuery, type NotificationPreferences } from '../../api/queries'
+import { useUpdateNotificationPreferencesMutation, useUpdatePreferencesMutation } from '../../api/mutations'
+
+type Tab = 'profile' | 'notifications' | 'interests'
+
+const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
+
+const DEFAULT_NOTIF_PREFS: NotificationPreferences = {
+  email_enabled: true,
+  email_channel: ['imail'],
+  course_related: true,
+  interest_related: true,
+  suggested: true,
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary' : 'bg-gray-300'}`}
+    >
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
+    </button>
+  )
+}
+
+export default function SettingsPage() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as Tab) ?? 'profile'
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab)
+
+  const { data: profile, isLoading: profileLoading } = useProfileQuery()
+
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(DEFAULT_NOTIF_PREFS)
+  const notifInitialized = useRef(false)
+  const updateNotifPrefsMutation = useUpdateNotificationPreferencesMutation()
+  const [notifSaved, setNotifSaved] = useState(false)
+
+  useEffect(() => {
+    if (profile?.notification_preferences && !notifInitialized.current) {
+      notifInitialized.current = true
+      setNotifPrefs(profile.notification_preferences)
+    }
+  }, [profile])
+
+  const { data: savedPreferences, isLoading: prefsLoading } = usePreferencesQuery()
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+  const interestsInitialized = useRef(false)
+  const updateInterestsMutation = useUpdatePreferencesMutation()
+  const [interestsSaved, setInterestsSaved] = useState(false)
+
+  useEffect(() => {
+    if (savedPreferences && !interestsInitialized.current) {
+      interestsInitialized.current = true
+      setSelectedInterests(savedPreferences)
+    }
+  }, [savedPreferences])
+
+  const savedNotifPrefs = profile?.notification_preferences ?? DEFAULT_NOTIF_PREFS
+  const notifHasChanges = JSON.stringify(notifPrefs) !== JSON.stringify(savedNotifPrefs)
+  const interestsHasChanges = JSON.stringify([...selectedInterests].sort()) !== JSON.stringify([...(savedPreferences ?? [])].sort())
+
+  useEffect(() => { if (notifHasChanges) setNotifSaved(false) }, [notifHasChanges])
+  useEffect(() => { if (interestsHasChanges) setInterestsSaved(false) }, [interestsHasChanges])
+
+  const handleTabChange = (newTab: Tab) => {
+    setActiveTab(newTab)
+    setSearchParams({ tab: newTab }, { replace: true })
+  }
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'profile', label: 'Profile' },
+    { key: 'notifications', label: 'Notifications' },
+    { key: 'interests', label: 'Interests' },
+  ]
+
+  return (
+    <div className="bg-surface">
+      <Header />
+
+      {/* Sub-header */}
+      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate(-1)} className="text-white">
+          <ArrowLeft />
+        </button>
+        <h1 className="text-white font-bold text-base flex-1 text-center">Settings</h1>
+        <div className="w-5" />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 px-4 py-3 bg-card">
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => handleTabChange(tab.key)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors
+              ${activeTab === tab.key
+                ? 'bg-primary text-white'
+                : 'border border-border text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Profile tab */}
+      {activeTab === 'profile' && (
+        <div className="px-4 py-4">
+          {profileLoading ? (
+            <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
+          ) : (
+            <>
+            <div className="flex flex-col items-center mb-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 mb-2">
+                <img
+                  src={user?.image_url ?? '/Default Icon.jpg'}
+                  alt={user?.name ?? ''}
+                  className="w-full h-full object-cover"
+                  onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
+                />
+              </div>
+              <p className="text-primary font-bold text-lg">{user?.name}</p>
+            </div>
+            <div className="bg-card rounded-xl shadow overflow-hidden">
+              {[
+                { label: 'Student ID', value: user?.sunway_id },
+                { label: 'Gender', value: profile?.gender },
+                { label: 'Faculty / School', value: profile?.faculty },
+                { label: 'Programme', value: profile?.program },
+                { label: 'Semester', value: profile?.semester?.toString() },
+                { label: 'iMail', value: profile?.email },
+                { label: 'Personal Email', value: profile?.personal_email },
+                { label: 'Mobile Number', value: profile?.mobile_number },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex border-b border-border last:border-0">
+                  <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">{label}</span>
+                  <span className="pl-2 pr-4 py-3 text-sm text-foreground">{value ?? '—'}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+              <span className="font-semibold">Note:</span> Your profile information is synced from your Sunway student account. To update your details, please visit your profile on{' '}
+              {/* opens in new tab, rel="noreferrer" prevents the new tab from accessing window.opener */}
+              <a href="https://izone.sunway.edu.my/" target="_blank" rel="noreferrer" className="text-accent underline">iZone</a>.
+            </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Notifications tab */}
+      {activeTab === 'notifications' && (
+        <div className="px-4 py-4 space-y-3">
+          <div className="bg-card rounded-xl shadow p-4 space-y-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Email notifications</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Receive event updates and reminders via email.</p>
+                </div>
+                <Toggle
+                  checked={notifPrefs.email_enabled}
+                  onChange={value => setNotifPrefs(p => ({ ...p, email_enabled: value }))}
+                />
+              </div>
+              {notifPrefs.email_enabled && (
+                <div className="mt-3 flex gap-3">
+                  {(['imail', 'personal'] as const).map(channel => (
+                    <label key={channel} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={notifPrefs.email_channel.includes(channel)}
+                        onChange={e => {
+                          const channels = e.target.checked
+                            ? [...notifPrefs.email_channel, channel]
+                            : notifPrefs.email_channel.filter(existing => existing !== channel)
+                          setNotifPrefs(p => ({ ...p, email_channel: channels }))
+                        }}
+                        className="accent-primary"
+                      />
+                      {channel === 'imail' ? 'iMail' : 'Personal Email'}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-border" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Course-related events</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Get notified about events related to your programme.</p>
+              </div>
+              <Toggle
+                checked={notifPrefs.course_related}
+                onChange={value => setNotifPrefs(p => ({ ...p, course_related: value }))}
+              />
+            </div>
+
+            <div className="border-t border-border" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Interest-related events</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Get notified about events related to your selected interests.</p>
+              </div>
+              <Toggle
+                checked={notifPrefs.interest_related}
+                onChange={value => setNotifPrefs(p => ({ ...p, interest_related: value }))}
+              />
+            </div>
+
+            <div className="border-t border-border" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Suggested events</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Get suggestions based on your activity.</p>
+              </div>
+              <Toggle
+                checked={notifPrefs.suggested}
+                onChange={value => setNotifPrefs(p => ({ ...p, suggested: value }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => updateNotifPrefsMutation.mutate(notifPrefs, { onSuccess: () => setNotifSaved(true) })}
+              disabled={!notifHasChanges || updateNotifPrefsMutation.isPending}
+              className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updateNotifPrefsMutation.isPending ? 'Saving...' : notifSaved ? 'Saved' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Interests tab */}
+      {activeTab === 'interests' && (
+        <div className="px-4 py-4">
+          {prefsLoading ? (
+            <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
+          ) : (
+            <div className="bg-card rounded-xl shadow p-4">
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {CATEGORIES.map(label => (
+                  <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedInterests.includes(label)}
+                      onChange={e => setSelectedInterests(prev =>
+                        e.target.checked ? [...prev, label] : prev.filter(p => p !== label)
+                      )}
+                      className="accent-primary"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setSelectedInterests(savedPreferences ?? [])}
+                  className="px-5 py-2 rounded-lg border border-accent text-accent text-sm font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => updateInterestsMutation.mutate(selectedInterests, { onSuccess: () => setInterestsSaved(true) })}
+                  disabled={!interestsHasChanges || updateInterestsMutation.isPending}
+                  className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updateInterestsMutation.isPending ? 'Saving...' : interestsSaved ? 'Saved' : 'Save'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
