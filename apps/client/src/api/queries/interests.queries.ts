@@ -8,7 +8,7 @@ export const interestKeys = {
 export function useInterestsQuery(options?: Omit<UseQueryOptions<string[]>, 'queryKey' | 'queryFn'>) {
   return useQuery<string[]>({
     queryKey: interestKeys.all,
-    queryFn: () => api.get('/auth/preferences').then(res => (res.data.preferences || []) as string[]),
+    queryFn: () => api.get('/auth/interests').then(res => (res.data.interests || []) as string[]),
     ...options,
   })
 }

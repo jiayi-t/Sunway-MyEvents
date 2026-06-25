@@ -18,8 +18,8 @@ export default function StudentLoginPage() {
       const payload = { sunwayId: form.sunwayId, password: form.password }
       const res = await api.post('/auth/login', payload)
       login(res.data.user, res.data.token)
-      const prefs = res.data.user.preferences
-      navigate((!prefs || prefs.length === 0) ? '/select-interests' : '/')
+      const interests = res.data.user.interests
+      navigate((!interests || interests.length === 0) ? '/select-interests' : '/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid username or password')
     } finally {

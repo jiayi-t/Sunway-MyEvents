@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         role: user.role,
         image_url: user.image_url ?? null,
-        preferences: (user.preferences as string[] | null) ?? null
+        interests: (user.interests as string[] | null) ?? null
       },
       token
     })
@@ -94,26 +94,26 @@ router.post('/register/organizer', async (req, res) => {
   }
 })
 
-// GET /api/auth/preferences
-router.get('/preferences', authenticate, async (req: AuthRequest, res) => {
+// GET /api/auth/interests
+router.get('/interests', authenticate, async (req: AuthRequest, res) => {
   try {
-    const result = await db.select({ preferences: users.preferences }).from(users).where(eq(users.id, req.user!.id))
-    const prefs = (result[0]?.preferences as string[] | null) ?? []
-    res.json({ preferences: prefs })
+    const result = await db.select({ interests: users.interests }).from(users).where(eq(users.id, req.user!.id))
+    const interests = (result[0]?.interests as string[] | null) ?? []
+    res.json({ interests })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })
 
-// PUT /api/auth/preferences
-router.put('/preferences', authenticate, async (req: AuthRequest, res) => {
-  const { preferences } = req.body
-  if (!Array.isArray(preferences)) {
-    return res.status(400).json({ error: 'preferences must be an array' })
+// PUT /api/auth/interests
+router.put('/interests', authenticate, async (req: AuthRequest, res) => {
+  const { interests } = req.body
+  if (!Array.isArray(interests)) {
+    return res.status(400).json({ error: 'interests must be an array' })
   }
   try {
-    await db.update(users).set({ preferences }).where(eq(users.id, req.user!.id))
-    res.json({ preferences })
+    await db.update(users).set({ interests }).where(eq(users.id, req.user!.id))
+    res.json({ interests })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

@@ -26,7 +26,7 @@ export default function SelectInterestsPage() {
   const handleNext = async () => {
     setSaving(true)
     try {
-      await api.put('/auth/preferences', { preferences: selected })
+      await api.put('/auth/interests', { interests: selected })
     } catch {}
     navigate('/')
   }

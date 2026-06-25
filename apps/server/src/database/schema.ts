@@ -9,7 +9,7 @@ export const users = pgTable('users', {
   role: varchar('role', { length: 50 }).default('student'),
   program: text('program'),
   category: text('category'),
-  preferences: jsonb('preferences'),
+  interests: jsonb('interests'),
   image_url: text('image_url'),
   created_at: timestamp('created_at').defaultNow(),
   gender: text('gender'),
