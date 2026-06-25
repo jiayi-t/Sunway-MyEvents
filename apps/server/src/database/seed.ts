@@ -18,7 +18,19 @@ const seed = async () => {
       program: 'Bachelor of Software Engineering (Hons)',
       category: null,
       preferences: ['Entertainment', 'Social'],
-      image_url: null
+      image_url: null,
+      gender: 'Female',
+      faculty: 'FET',
+      semester: 9,
+      mobile_number: '+60 12-345 6789',
+      personal_email: 'tiongjiayi6@gmail.com',
+      notification_preferences: {
+        email_enabled: true,
+        email_channel: ['imail', 'personal'],
+        course_related: true,
+        interest_related: true,
+        suggested: true,
+      },
     },
     {
       sunway_id: '26011234',
@@ -29,7 +41,13 @@ const seed = async () => {
       program: 'Bachelor of Software Engineering (Hons)',
       category: null,
       preferences: null,
-      image_url: null
+      image_url: null,
+      gender: 'Male',
+      faculty: 'SBS',
+      semester: 5,
+      mobile_number: '+60 12-345 6789',
+      personal_email: 'tester@gmail.com',
+      notification_preferences: null,
     },
     {
       sunway_id: 'ssa',
@@ -40,12 +58,28 @@ const seed = async () => {
       program: null,
       category: 'SLB',
       preferences: null,
-      image_url: '/SSA Logo.jpg'
+      image_url: '/SSA Logo.jpg',
+      gender: null,
+      faculty: null,
+      semester: null,
+      mobile_number: null,
+      personal_email: null,
+      notification_preferences: null,
     }
   ]
 
   for (const user of seedUsers) {
-    await db.insert(users).values(user).onConflictDoNothing()
+    await db.insert(users).values(user).onConflictDoUpdate({
+      target: users.sunway_id,
+      set: {
+        gender: user.gender,
+        faculty: user.faculty,
+        semester: user.semester,
+        mobile_number: user.mobile_number,
+        personal_email: user.personal_email,
+        notification_preferences: user.notification_preferences,
+      },
+    })
   }
   console.log('Users seeded')
 
