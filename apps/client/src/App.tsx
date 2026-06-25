@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/auth-context'
 import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
-import SelectPreferencesPage from './pages/student/select-preferences-page'
+import SelectInterestsPage from './pages/student/select-interests-page'
 import HomePage from './pages/student/home-page'
 import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
   },
 })
 
-const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-preferences']
+const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-interests']
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth()
@@ -63,10 +63,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/select-preferences"
+      <Route path="/select-interests"
         element={
           <ProtectedRoute>
-            <SelectPreferencesPage />
+            <SelectInterestsPage />
           </ProtectedRoute>
         }
       />

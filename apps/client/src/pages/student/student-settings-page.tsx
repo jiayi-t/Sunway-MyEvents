@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { ArrowLeft } from 'lucide-react'
-import { useProfileQuery, usePreferencesQuery, type NotificationPreferences } from '../../api/queries'
-import { useUpdateNotificationPreferencesMutation, useUpdatePreferencesMutation } from '../../api/mutations'
+import { useProfileQuery, useInterestsQuery, type NotificationPreferences } from '../../api/queries'
+import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation } from '../../api/mutations'
 
 type Tab = 'profile' | 'notifications' | 'interests'
 
@@ -50,22 +50,22 @@ export default function SettingsPage() {
     }
   }, [profile])
 
-  const { data: savedPreferences, isLoading: prefsLoading } = usePreferencesQuery()
+  const { data: savedInterests, isLoading: interestsLoading } = useInterestsQuery()
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const interestsInitialized = useRef(false)
-  const updateInterestsMutation = useUpdatePreferencesMutation()
+  const updateInterestsMutation = useUpdateInterestsMutation()
   const [interestsSaved, setInterestsSaved] = useState(false)
 
   useEffect(() => {
-    if (savedPreferences && !interestsInitialized.current) {
+    if (savedInterests && !interestsInitialized.current) {
       interestsInitialized.current = true
-      setSelectedInterests(savedPreferences)
+      setSelectedInterests(savedInterests)
     }
-  }, [savedPreferences])
+  }, [savedInterests])
 
   const savedNotifPrefs = profile?.notification_preferences ?? DEFAULT_NOTIF_PREFS
   const notifHasChanges = JSON.stringify(notifPrefs) !== JSON.stringify(savedNotifPrefs)
-  const interestsHasChanges = JSON.stringify([...selectedInterests].sort()) !== JSON.stringify([...(savedPreferences ?? [])].sort())
+  const interestsHasChanges = JSON.stringify([...selectedInterests].sort()) !== JSON.stringify([...(savedInterests ?? [])].sort())
 
   useEffect(() => { if (notifHasChanges) setNotifSaved(false) }, [notifHasChanges])
   useEffect(() => { if (interestsHasChanges) setInterestsSaved(false) }, [interestsHasChanges])
@@ -248,7 +248,7 @@ export default function SettingsPage() {
       {/* Interests tab */}
       {activeTab === 'interests' && (
         <div className="px-4 py-4">
-          {prefsLoading ? (
+          {interestsLoading ? (
             <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
           ) : (
             <div className="bg-card rounded-xl shadow p-4">
@@ -269,7 +269,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setSelectedInterests(savedPreferences ?? [])}
+                  onClick={() => setSelectedInterests(savedInterests ?? [])}
                   className="px-5 py-2 rounded-lg border border-accent text-accent text-sm font-semibold"
                 >
                   Cancel

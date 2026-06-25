@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventsQuery, usePreferencesQuery } from '../../api/queries'
+import { useEventsQuery, useInterestsQuery } from '../../api/queries'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface Event {
@@ -60,9 +60,9 @@ export default function HomePage() {
   const navigate = useNavigate()
 
   const { data: eventsData, isLoading: loading } = useEventsQuery()
-  const { data: prefsData } = usePreferencesQuery()
+  const { data: interestsData } = useInterestsQuery()
   const events = (eventsData ?? []) as Event[]
-  const userPreferences = (prefsData ?? []) as string[]
+  const userInterests = (interestsData ?? []) as string[]
 
   // Up to 5 events as featured
   const featuredEvents = events.slice(0, 5)
@@ -76,12 +76,12 @@ export default function HomePage() {
     }
     if (activeCategory === 'All Events') return events
     if (activeCategory === 'For You') {
-      return userPreferences.length > 0
-        ? events.filter((e: Event) => userPreferences.some(p => p.toLowerCase() === e.category?.toLowerCase()))
+      return userInterests.length > 0
+        ? events.filter((e: Event) => userInterests.some(p => p.toLowerCase() === e.category?.toLowerCase()))
         : events
     }
     return events.filter((e: Event) => e.category?.toLowerCase() === activeCategory.toLowerCase())
-  }, [events, activeCategory, userPreferences, search, searchApplied])
+  }, [events, activeCategory, userInterests, search, searchApplied])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)

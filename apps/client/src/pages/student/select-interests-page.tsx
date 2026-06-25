@@ -12,7 +12,7 @@ const CATEGORIES = [
   'Sports',
 ]
 
-export default function SelectPreferencesPage() {
+export default function SelectInterestsPage() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<string[]>([])
   const [saving, setSaving] = useState(false)

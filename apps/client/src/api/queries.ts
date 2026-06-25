@@ -1,6 +1,6 @@
 export * from './queries/events.queries'
 export * from './queries/registrations.queries'
-export * from './queries/preferences.queries'
+export * from './queries/interests.queries'
 export * from './queries/feedback.queries'
 export * from './queries/analytics.queries'
 export * from './queries/users.queries'
