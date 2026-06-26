@@ -73,10 +73,10 @@ export default function OrganizerProfilePage() {
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-full overflow-hidden bg-white/20">
                     <img
-                      src={toImageUrl(profile.image_url ?? undefined) || '/SSA Logo.jpg'}
+                      src={toImageUrl(profile.image_url ?? undefined) || '/Default Icon.jpg'}
                       alt={profile.name}
                       className="w-full h-full object-cover"
-                      onError={e => { e.currentTarget.src = '/SSA Logo.jpg' }}
+                      onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
                     />
                   </div>
 
