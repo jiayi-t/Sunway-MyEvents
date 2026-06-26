@@ -79,7 +79,8 @@ export default function OrganizerEditProfilePage() {
   const updateMutation = useUpdateOrganizerProfileMutation()
 
   const [links, setLinks] = useState<SocialLinks[]>([])
-  const linksInitialized = useRef(false)
+  const [about, setAbout] = useState('')
+  const profileInitialized = useRef(false)
   const [linksSaved, setLinksSaved] = useState(false)
   // track which row is being dragged for drag-and-drop reordering
   const dragIndex = useRef<number | null>(null)
@@ -92,13 +93,16 @@ export default function OrganizerEditProfilePage() {
   } | null>(null)
 
   useEffect(() => {
-    if (profile?.social_links && !linksInitialized.current) {
-      linksInitialized.current = true
-      setLinks(profile.social_links)
+    if (profile && !profileInitialized.current) {
+      profileInitialized.current = true
+      setLinks(profile.social_links ?? [])
+      setAbout(profile.about ?? '')
     }
   }, [profile])
 
-  const hasChanges = JSON.stringify(links) !== JSON.stringify(profile?.social_links ?? [])
+  const hasChanges =
+    JSON.stringify(links) !== JSON.stringify(profile?.social_links ?? []) ||
+    about !== (profile?.about ?? '')
 
   useEffect(() => { if (hasChanges) setLinksSaved(false) }, [hasChanges])
 
@@ -163,6 +167,20 @@ export default function OrganizerEditProfilePage() {
                   <span className="pl-1 pr-4 py-3 text-sm text-foreground">{value ?? '—'}</span>
                 </div>
               ))}
+
+              {/* About */}
+              <div className="flex border-b border-border">
+                <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">About</span>
+                <div className="pl-1 pr-4 py-3 flex-1 min-w-0">
+                  <textarea
+                    value={about}
+                    onChange={e => setAbout(e.target.value)}
+                    placeholder="Tell students about your organisation..."
+                    rows={3}
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary resize-none"
+                  />
+                </div>
+              </div>
 
               {/* Links */}
               <div className="flex rounded-b-xl overflow-visible">
@@ -273,7 +291,7 @@ export default function OrganizerEditProfilePage() {
 
             <div className="flex justify-end">
               <button
-                onClick={() => updateMutation.mutate({ social_links: links, about: profile?.about ?? null }, { onSuccess: () => setLinksSaved(true) })}
+                onClick={() => updateMutation.mutate({ social_links: links, about: about || null }, { onSuccess: () => setLinksSaved(true) })}
                 disabled={!hasChanges || updateMutation.isPending}
                 className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
