@@ -21,6 +21,7 @@ import StudentFeedbackPage from './pages/student/student-feedback-page'
 import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form-page'
 import OrganizerAnalyticsPage from './pages/organizer/organizer-analytics-page'
 import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analytics-page'
+import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
 import SettingsPage from './pages/student/student-settings-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
@@ -120,6 +121,13 @@ function AppRoutes() {
           <OrganizerDashboard />
         </ProtectedRoute>
         } 
+      />
+      <Route path="/organizer/profile"
+        element={
+        <ProtectedRoute>
+          <OrganizerEditProfilePage />
+        </ProtectedRoute>
+        }
       />
       <Route path="/organizer/events"
         element={

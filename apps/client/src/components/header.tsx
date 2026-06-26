@@ -39,7 +39,7 @@ export default function Header() {
                 >
                   Dashboard
                 </button>
-                <button
+<button
                   onClick={() => { navigate('/organizer/events'); setMenuOpen(false) }}
                   className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                 >
