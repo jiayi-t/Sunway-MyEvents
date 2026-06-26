@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
-import { events, users, registrations, saved_events, feedback, notifications } from '../database/schema'
+import { events, users, registrations, saved_events, feedback, notifications, followed_organizers } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
@@ -256,7 +256,26 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       organizer_id: req.user!.id
     }).returning()
 
-    res.status(201).json(result[0])
+    const newEvent = result[0]
+
+    const followers = await db
+      .select({ student_id: followed_organizers.student_id })
+      .from(followed_organizers)
+      .where(eq(followed_organizers.organizer_id, req.user!.id))
+
+    if (followers.length > 0) {
+      const [organizer] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.user!.id)).limit(1)
+      await db.insert(notifications).values(
+        followers.map(f => ({
+          user_id: f.student_id,
+          type: 'new_event' as const,
+          title: `New event by ${organizer?.name ?? 'an organizer'}`,
+          message: newEvent.name,
+        }))
+      )
+    }
+
+    res.status(201).json(newEvent)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
