@@ -31,6 +31,7 @@ const seed = async () => {
         interest_related: true,
         suggested: true,
       },
+      about: null,
     },
     {
       sunway_id: '26011234',
@@ -48,6 +49,7 @@ const seed = async () => {
       mobile_number: '+60 12-345 6789',
       personal_email: 'tester@gmail.com',
       notification_preferences: null,
+      about: null,
     },
     {
       sunway_id: 'ssa',
@@ -65,6 +67,7 @@ const seed = async () => {
       mobile_number: null,
       personal_email: null,
       notification_preferences: null,
+      about: 'A student leadership body made up of dedicated scholars from Sunway University and Sunway College KL.',
     }
   ]
 
@@ -78,6 +81,7 @@ const seed = async () => {
         mobile_number: user.mobile_number,
         personal_email: user.personal_email,
         notification_preferences: user.notification_preferences,
+        about: user.about ?? null,
       },
     })
   }

@@ -19,6 +19,7 @@ export const users = pgTable('users', {
   personal_email: text('personal_email'),
   notification_preferences: jsonb('notification_preferences'),
   social_links: jsonb('social_links'),
+  about: text('about'),
 })
 
 export const events = pgTable('events', {
@@ -81,6 +82,16 @@ export const feedback_forms = pgTable('feedback_forms', {
   questions: jsonb('questions').notNull(),
   updated_at: timestamp('updated_at').defaultNow()
 })
+
+export const followed_organizers = pgTable('followed_organizers', {
+  id: serial('id').primaryKey(),
+  student_id: integer('student_id').references(() => users.id),
+  organizer_id: integer('organizer_id').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow(),
+}, (table) => [
+  unique().on(table.student_id, table.organizer_id),
+  index('followed_organizers_organizer_id_idx').on(table.organizer_id),
+])
 
 export const notifications = pgTable('notifications', {
   id: serial('id').primaryKey(),
