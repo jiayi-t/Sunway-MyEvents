@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events } from './schema'
 
@@ -95,35 +95,50 @@ const seed = async () => {
   const organizerId = organizerResult[0]?.id
 
   if (organizerId) {
-    await db.insert(events).values({
-      name: "Sunway's Got Talent Season 7: Eternal Radiance Grand Finale",
-      description: "Sunway's Got Talent (SGT) is an annual talent competition that celebrates the diverse talents of Sunway students and aims to cultivate a spirit of community engagement by encouraging students to contribute their 5Ts, Time, Talent, Treasure, Testimony, and Ties. \n\nCome witness the radiance of the Top 10 Finalists on stage, covering talents such as circus acts, harmonica, singing, dancing, and more!",
-      date: new Date('2025-07-01T18:30:00'),
-      start_time: new Date('2025-07-01T18:30:00'),
-      end_time: new Date('2025-07-01T22:00:00'),
-      venue: 'Sir Jeffrey Cheah Hall',
-      category: 'Entertainment',
-      pricing: '0',
-      capacity: 1000,
-      registration_deadline: null,
-      image_url: '/SGT S7 Poster.jpg',
-      organizer_id: organizerId
-    }).onConflictDoNothing()
+    const seedEvents = [
+      {
+        name: "Sunway's Got Talent Season 7: Eternal Radiance Grand Finale",
+        description: "Sunway's Got Talent (SGT) is an annual talent competition that celebrates the diverse talents of Sunway students and aims to cultivate a spirit of community engagement by encouraging students to contribute their 5Ts, Time, Talent, Treasure, Testimony, and Ties. \n\nCome witness the radiance of the Top 10 Finalists on stage, covering talents such as circus acts, harmonica, singing, dancing, and more!",
+        date: new Date('2025-07-01T18:30:00'),
+        start_time: new Date('2025-07-01T18:30:00'),
+        end_time: new Date('2025-07-01T22:00:00'),
+        venue: 'Sir Jeffrey Cheah Hall',
+        category: 'Entertainment',
+        pricing: '0',
+        capacity: 1000,
+        registration_deadline: null,
+        image_url: '/SGT S7 Poster.jpg',
+        organizer_id: organizerId,
+      },
+      {
+        name: "Sunway's Got Talent Season 8: RE:VELATION Grand Finale",
+        description: "Sunway's Got Talent (SGT) is an annual talent competition that celebrates the diverse talents of Sunway students and aims to cultivate a spirit of community engagement by encouraging students to contribute their 5Ts, Time, Talent, Treasure, Testimony, and Ties. \n\nCome witness the revelation of the Top 10 Finalists on stage!",
+        date: new Date('2026-07-07T18:30:00'),
+        start_time: new Date('2026-07-07T18:00:00'),
+        end_time: new Date('2026-07-07T22:30:00'),
+        venue: 'Sir Jeffrey Cheah Hall',
+        category: 'Entertainment',
+        pricing: '18',
+        capacity: 1000,
+        registration_deadline: null,
+        image_url: '/SGT S8 Poster.jpg',
+        organizer_id: organizerId,
+      },
+    ]
 
-    await db.insert(events).values({
-      name: "Sunway's Got Talent Season 8: RE:VELATION Grand Finale",
-      description: "Sunway's Got Talent (SGT) is an annual talent competition that celebrates the diverse talents of Sunway students and aims to cultivate a spirit of community engagement by encouraging students to contribute their 5Ts, Time, Talent, Treasure, Testimony, and Ties. \n\nCome witness the revelation of the Top 10 Finalists on stage!",
-      date: new Date('2026-07-07T18:30:00'),
-      start_time: new Date('2026-07-07T18:00:00'),
-      end_time: new Date('2026-07-07T22:30:00'),
-      venue: 'Sir Jeffrey Cheah Hall',
-      category: 'Entertainment',
-      pricing: '18',
-      capacity: 1000,
-      registration_deadline: null,
-      image_url: '/SGT S8 Poster.jpg',
-      organizer_id: organizerId
-    }).onConflictDoNothing()
+    for (const event of seedEvents) {
+      const [existing] = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.name, event.name), eq(events.organizer_id, organizerId)))
+        .limit(1)
+      // check if the event already exists, update if yes, insert if no
+      if (existing) {
+        await db.update(events).set(event).where(eq(events.id, existing.id))
+      } else {
+        await db.insert(events).values(event)
+      }
+    }
 
     console.log('Events seeded')
   }
