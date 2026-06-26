@@ -273,7 +273,7 @@ export default function OrganizerEditProfilePage() {
 
             <div className="flex justify-end">
               <button
-                onClick={() => updateMutation.mutate(links, { onSuccess: () => setLinksSaved(true) })}
+                onClick={() => updateMutation.mutate({ social_links: links, about: profile?.about ?? null }, { onSuccess: () => setLinksSaved(true) })}
                 disabled={!hasChanges || updateMutation.isPending}
                 className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >

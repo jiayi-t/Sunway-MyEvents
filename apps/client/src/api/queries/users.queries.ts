@@ -49,12 +49,26 @@ export interface OrganizerProfile {
   category: string | null
   image_url: string | null
   social_links: SocialLinks[] | null
+  about: string | null
+}
+
+export interface PublicOrganizerProfile {
+  id: number
+  name: string
+  image_url: string | null
+  category: string | null
+  about: string | null
+  social_links: SocialLinks[] | null
+  event_stats: { upcoming: number; total: number }
+  events: any[]
 }
 
 export const userKeys = {
   profile: ['profile'] as const,
   organizerProfile: ['organizer-profile'] as const,
   notifications: ['notifications'] as const,
+  publicOrganizer: (id: string | undefined) => ['organizer', id] as const,
+  organizerNotificationsStatus: (id: string | undefined) => ['organizer-notifications', id] as const,
 }
 
 export function useProfileQuery() {
@@ -75,5 +89,21 @@ export function useNotificationsQuery() {
   return useQuery({
     queryKey: userKeys.notifications,
     queryFn: () => api.get('/notifications').then(res => res.data as Notification[]),
+  })
+}
+
+export function usePublicOrganizerProfileQuery(id: string | undefined) {
+  return useQuery({
+    queryKey: userKeys.publicOrganizer(id),
+    queryFn: () => api.get(`/organizers/${id}`).then(res => res.data as PublicOrganizerProfile),
+    enabled: !!id,
+  })
+}
+
+export function useOrganizerNotificationsStatusQuery(id: string | undefined) {
+  return useQuery({
+    queryKey: userKeys.organizerNotificationsStatus(id),
+    queryFn: () => api.get(`/organizers/${id}/follow-status`).then(res => res.data as { following: boolean }),
+    enabled: !!id,
   })
 }
