@@ -55,6 +55,7 @@ export interface OrganizerProfile {
 export interface PublicOrganizerProfile {
   id: number
   name: string
+  email: string
   image_url: string | null
   category: string | null
   about: string | null

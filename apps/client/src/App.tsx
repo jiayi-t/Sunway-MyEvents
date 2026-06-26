@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/auth-context'
 import SelectLoginPage from './pages/auth/select-login-page'
@@ -10,7 +11,7 @@ import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
-import OrganizerDashboard from './pages/organizer/organizer-dashboard'
+import OrganizerProfilePage from './pages/organizer/organizer-profile-page'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
 import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
@@ -38,6 +39,12 @@ const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-in
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth()
   return token ? children : <Navigate to="/login" replace />
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
 }
 
 function AppLayout({ children }: { children: ReactNode }) {
@@ -113,12 +120,19 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/organizers/:id"
+        element={
+          <ProtectedRoute>
+            <OrganizerProfilePage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/login/organizer" element={<OrganizerLoginPage />} />
       <Route path="/login/organizer/register" element={<OrganizerCreateAccount />} />
       <Route path="/organizer/dashboard" 
         element={
         <ProtectedRoute>
-          <OrganizerDashboard />
+          <OrganizerProfilePage />
         </ProtectedRoute>
         } 
       />
@@ -201,6 +215,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AppLayout>
             <AppRoutes />
           </AppLayout>

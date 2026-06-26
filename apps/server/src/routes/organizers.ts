@@ -15,6 +15,7 @@ router.get('/:id', async (req, res) => {
       .select({
         id: users.id,
         name: users.name,
+        email: users.email,
         image_url: users.image_url,
         category: users.category,
         about: users.about,

@@ -4,8 +4,7 @@ import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation } from '../../api/mutations'
-import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, Mail, ArrowLeft } from 'lucide-react'
-import { InstagramLogo } from 'phosphor-react'
+import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, ArrowLeft } from 'lucide-react'
 
 interface Event {
   id: number
@@ -256,7 +255,10 @@ export default function StudentEventDetailsPage() {
       {/* Organized By */}
       <div className="bg-card mt-2 px-4 py-4">
         <h3 className="font-semibold text-foreground text-sm mb-3">Organized by:</h3>
-        <div className="flex items-center gap-3">
+        <button
+          className="flex items-center gap-3 w-full text-left"
+          onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
+        >
           <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <img
               src={toImageUrl(typedEvent.organizer_image_url)}
@@ -269,16 +271,9 @@ export default function StudentEventDetailsPage() {
             <p className="text-sm font-medium text-foreground">
               {typedEvent.organizer_name ?? 'Organizer'}
             </p>
-            <div className="flex gap-2 mt-1">
-              <button className="text-muted-foreground hover:text-primary">
-                <InstagramLogo className="w-4 h-4" />
-              </button>
-              <button className="text-muted-foreground hover:text-primary">
-                <Mail className="w-4 h-4" />
-              </button>
-            </div>
           </div>
-        </div>
+          <span className="text-muted-foreground flex-shrink-0">›</span>
+        </button>
       </div>
     </div>
   )
