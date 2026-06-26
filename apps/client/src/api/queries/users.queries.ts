@@ -35,8 +35,25 @@ export interface Notification {
   created_at: string
 }
 
+export interface SocialLinks {
+  type: 'instagram' | 'website' | 'linkedin' | 'tiktok' | 'rednote' | 'facebook' | 'others'
+  url: string
+}
+
+export interface OrganizerProfile {
+  id: number
+  sunway_id: string
+  email: string
+  name: string
+  role: string | null
+  category: string | null
+  image_url: string | null
+  social_links: SocialLinks[] | null
+}
+
 export const userKeys = {
   profile: ['profile'] as const,
+  organizerProfile: ['organizer-profile'] as const,
   notifications: ['notifications'] as const,
 }
 
@@ -44,6 +61,13 @@ export function useProfileQuery() {
   return useQuery({
     queryKey: userKeys.profile,
     queryFn: () => api.get('/auth/profile').then(res => res.data as UserProfile),
+  })
+}
+
+export function useOrganizerProfileQuery() {
+  return useQuery({
+    queryKey: userKeys.organizerProfile,
+    queryFn: () => api.get('/auth/organizer-profile').then(res => res.data as OrganizerProfile),
   })
 }
 
