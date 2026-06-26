@@ -1,15 +1,26 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
-import { useOrganizerEventsQuery } from '../../api/queries'
-import { Pen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare } from 'lucide-react'
-import { InstagramLogo } from 'phosphor-react'
+import { useOrganizerEventsQuery, useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
+import { Pen, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, Globe, Link, BookOpen, Mail } from 'lucide-react'
+import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
+
+function SocialIcon({ type }: { type: SocialLinks['type'] }) {
+  if (type === 'instagram') return <InstagramLogo className="w-4 h-4" />
+  if (type === 'website') return <Globe className="w-4 h-4" />
+  if (type === 'linkedin') return <LinkedinLogo className="w-4 h-4" />
+  if (type === 'tiktok') return <TiktokLogo className="w-4 h-4" />
+  if (type === 'rednote') return <BookOpen className="w-4 h-4" />
+  if (type === 'facebook') return <FacebookLogo className="w-4 h-4" />
+  return <Link className="w-4 h-4" />
+}
 
 export default function OrganizerDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
   const { data: events = [] } = useOrganizerEventsQuery()
+  const { data: profile } = useOrganizerProfileQuery()
   const now = new Date()
   const eventStats = {
     upcoming: (events as { date: string }[]).filter(e => new Date(e.date) >= now).length,
@@ -50,19 +61,33 @@ export default function OrganizerDashboard() {
           </div>
 
           {/* Edit button */}
-          <button className="w-8 h-8 rounded-full border border-accent flex items-center justify-center">
+          <button
+            onClick={() => navigate('/organizer/profile')}
+            className="w-8 h-8 rounded-full border border-accent flex items-center justify-center"
+          >
             <Pen className="text-accent w-4 h-4" />
           </button>
         </div>
 
         {/* Social icons */}
         <div className="flex gap-3 mt-3">
-          <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm">
-            <InstagramLogo className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm">
+          <a
+            href={`mailto:${profile?.email}`}
+            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+          >
             <Mail className="w-4 h-4" />
-          </button>
+          </a>
+          {profile?.social_links?.filter(l => l.url).map((link, index) => (
+            <a
+              key={index}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+            >
+              <SocialIcon type={link.type} />
+            </a>
+          ))}
         </div>
       </div>
 
