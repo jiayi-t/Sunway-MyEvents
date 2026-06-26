@@ -18,6 +18,7 @@ export const users = pgTable('users', {
   mobile_number: text('mobile_number'),
   personal_email: text('personal_email'),
   notification_preferences: jsonb('notification_preferences'),
+  social_links: jsonb('social_links'),
 })
 
 export const events = pgTable('events', {

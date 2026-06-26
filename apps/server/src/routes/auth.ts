@@ -160,4 +160,44 @@ router.put('/notification-preferences', authenticate, async (req: AuthRequest, r
   }
 })
 
+// GET /api/auth/organizer-profile
+router.get('/organizer-profile', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  try {
+    const result = await db
+      .select({
+        id: users.id,
+        sunway_id: users.sunway_id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        category: users.category,
+        image_url: users.image_url,
+        social_links: users.social_links,
+      })
+      .from(users)
+      .where(eq(users.id, req.user!.id))
+    const user = result[0]
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    res.json(user)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/auth/organizer-profile
+router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const { social_links } = req.body
+  if (!Array.isArray(social_links)) {
+    return res.status(400).json({ error: 'social_links must be an array' })
+  }
+  try {
+    await db.update(users).set({ social_links }).where(eq(users.id, req.user!.id))
+    res.json({ social_links })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router
