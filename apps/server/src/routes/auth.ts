@@ -174,6 +174,7 @@ router.get('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
         category: users.category,
         image_url: users.image_url,
         social_links: users.social_links,
+        about: users.about,
       })
       .from(users)
       .where(eq(users.id, req.user!.id))
@@ -188,13 +189,13 @@ router.get('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
 // PUT /api/auth/organizer-profile
 router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
-  const { social_links } = req.body
+  const { social_links, about } = req.body
   if (!Array.isArray(social_links)) {
     return res.status(400).json({ error: 'social_links must be an array' })
   }
   try {
-    await db.update(users).set({ social_links }).where(eq(users.id, req.user!.id))
-    res.json({ social_links })
+    await db.update(users).set({ social_links, about: about ?? null }).where(eq(users.id, req.user!.id))
+    res.json({ social_links, about: about ?? null })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

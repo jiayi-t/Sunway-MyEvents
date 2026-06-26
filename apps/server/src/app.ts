@@ -9,6 +9,7 @@ import feedbackRoutes from './routes/feedback'
 import feedbackFormRoutes from './routes/feedback-forms'
 import analyticsRoutes from './routes/analytics'
 import notificationRoutes from './routes/notifications'
+import organizerRoutes from './routes/organizers'
 
 const app = express()
 
@@ -25,6 +26,7 @@ app.use('/api/feedback', feedbackRoutes)
 app.use('/api/events', feedbackFormRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/organizers', organizerRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {
