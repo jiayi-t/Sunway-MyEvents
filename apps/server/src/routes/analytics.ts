@@ -218,7 +218,7 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
       }
     }
 
-    const [genderRows, facultyRows, programmeRows, semesterRows] = await Promise.all([
+    const [genderRows, facultyRows, programmeRows, yearRows] = await Promise.all([
       db.select({ gender: users.gender, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
         .where(eq(registrations.event_id, eventId)).groupBy(users.gender),
@@ -228,9 +228,9 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
       db.select({ programme: users.program, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
         .where(eq(registrations.event_id, eventId)).groupBy(users.program),
-      db.select({ semester: users.semester, count: sql<number>`COUNT(*)` })
+      db.select({ year: users.year_of_study, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
-        .where(eq(registrations.event_id, eventId)).groupBy(users.semester),
+        .where(eq(registrations.event_id, eventId)).groupBy(users.year_of_study),
     ])
 
     res.json({
@@ -244,7 +244,7 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
         gender_distribution: genderRows.map(r => ({ gender: r.gender, count: Number(r.count) })),
         faculty_distribution: facultyRows.map(r => ({ faculty: r.faculty, count: Number(r.count) })),
         programme_distribution: programmeRows.map(r => ({ programme: r.programme, count: Number(r.count) })),
-        semester_distribution: semesterRows.map(r => ({ semester: r.semester, count: Number(r.count) })),
+        year_distribution: yearRows.map(r => ({ year: r.year, count: Number(r.count) })),
       },
       feedback: {
         count: feedbackCount,

@@ -62,6 +62,12 @@ export interface EventAnalytics {
     rating_distribution: Record<string, number>
     questions: QuestionAnalysis[]
   }
+  demographics: {
+    gender_distribution: { gender: string; count: number }[]
+    faculty_distribution: { faculty: string; count: number }[]
+    programme_distribution: { programme: string; count: number }[]
+    year_distribution: { year: string; count: number }[]
+  } | null
 }
 
 export function useAttendanceAnalyticsQuery(options?: Omit<UseQueryOptions<AttendanceAnalytics>, 'queryKey' | 'queryFn'>) {

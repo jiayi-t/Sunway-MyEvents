@@ -113,7 +113,7 @@ export default function OrganizerEventAnalyticsPage() {
     )
   }
 
-  const { event, attendance, feedback } = data
+  const { event, attendance, feedback, demographics } = data
   const totalFeedback = feedback.count
 
   return (
@@ -124,23 +124,64 @@ export default function OrganizerEventAnalyticsPage() {
       {subHeader(event.name)}
 
       {view === 'attendance' && (
-        <div className="mx-4 mt-4">
-          <p className="text-base font-bold text-primary mb-3">Participant Breakdown</p>
-          <div className="bg-card rounded-2xl shadow-sm">
-            <div className="flex divide-x divide-border py-4">
-              <div className="flex-1 text-center px-2">
-                <p className="text-xl font-bold text-accent">{attendance.registrations}</p>
-                <p className="text-xs text-muted-foreground mt-1">Total Registrations</p>
-              </div>
-              <div className="flex-1 text-center px-2">
-                <p className="text-xl font-bold text-accent">{attendance.attendees}</p>
-                <p className="text-xs text-muted-foreground mt-1">Total Attendees</p>
-              </div>
-              <div className="flex-1 text-center px-2">
-                <p className="text-xl font-bold text-accent">{attendance.attendance_rate}%</p>
-                <p className="text-xs text-muted-foreground mt-1">Attendance Rate</p>
+        <div className="mx-4 mt-4 space-y-6">
+          <div>
+            <p className="text-base font-bold text-primary mb-3">Participant Breakdown</p>
+            <div className="bg-card rounded-2xl shadow-sm">
+              <div className="flex divide-x divide-border py-4">
+                <div className="flex-1 text-center px-2">
+                  <p className="text-xl font-bold text-accent">{attendance.registrations}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Total Registrations</p>
+                </div>
+                <div className="flex-1 text-center px-2">
+                  <p className="text-xl font-bold text-accent">{attendance.attendees}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Total Attendees</p>
+                </div>
+                <div className="flex-1 text-center px-2">
+                  <p className="text-xl font-bold text-accent">{attendance.attendance_rate}%</p>
+                  <p className="text-xs text-muted-foreground mt-1">Attendance Rate</p>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div>
+            <p className="text-base font-bold text-primary mb-3">Demographics</p>
+            {(() => {
+              const d = demographics
+              const isEmpty = !d ||
+                (d.gender_distribution.length === 0 &&
+                 d.faculty_distribution.length === 0 &&
+                 d.programme_distribution.length === 0 &&
+                 d.year_distribution.length === 0)
+              if (isEmpty) {
+                return (
+                  <div className="bg-card rounded-2xl shadow-sm p-6 text-center">
+                    <p className="text-sm text-muted-foreground">No demographic data available.</p>
+                  </div>
+                )
+              }
+              const DemoCard = ({ title, items }: { title: string; items: { label: string; count: number }[] }) => {
+                if (items.length === 0) return null
+                const max = Math.max(...items.map(i => i.count), 1)
+                return (
+                  <div className="bg-card rounded-2xl shadow-sm p-4 space-y-3">
+                    <p className="text-sm font-bold text-foreground">{title}</p>
+                    {items.map(item => (
+                      <OptionBar key={item.label} label={item.label} count={item.count} max={max} />
+                    ))}
+                  </div>
+                )
+              }
+              return (
+                <div className="space-y-3">
+                  <DemoCard title="Gender" items={d.gender_distribution.map(x => ({ label: x.gender, count: x.count }))} />
+                  <DemoCard title="Faculty / School" items={d.faculty_distribution.map(x => ({ label: x.faculty, count: x.count }))} />
+                  <DemoCard title="Programme" items={d.programme_distribution.map(x => ({ label: x.programme, count: x.count }))} />
+                  <DemoCard title="Year of Study" items={d.year_distribution.map(x => ({ label: x.year, count: x.count }))} />
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}
