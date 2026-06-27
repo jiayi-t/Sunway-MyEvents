@@ -59,17 +59,21 @@ export default function OrganizerEditEventPage() {
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const initialized = useRef(false)
+  const initialForm = useRef(EMPTY_FORM)
 
   const { data, isLoading, isError } = useEventQuery(id)
   const updateMutation = useUpdateEventMutation(id)
+
+  const hasChanges = Object.keys(form).some(
+    k => form[k as keyof typeof form] !== initialForm.current[k as keyof typeof form]
+  )
 
   // Populate form once when event data first arrives
   useEffect(() => {
     if (!data || initialized.current) return
     initialized.current = true
     const e = data as Event
-    setEventName(e.name)
-    setForm({
+    const initial = {
       name: e.name || '',
       description: e.description || '',
       date: toLocalDateStr(e.date),
@@ -81,7 +85,10 @@ export default function OrganizerEditEventPage() {
       capacity: e.capacity != null ? String(e.capacity) : '',
       registration_deadline: toLocalDateStr(e.registration_deadline),
       image_url: e.image_url || ''
-    })
+    }
+    setEventName(e.name)
+    initialForm.current = initial
+    setForm(initial)
     setPreview(toImageUrl(e.image_url))
   }, [data])
 

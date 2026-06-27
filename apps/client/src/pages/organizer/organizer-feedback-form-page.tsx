@@ -153,6 +153,7 @@ export default function OrganizerFeedbackFormPage() {
   const { data: serverData, isLoading } = useFeedbackFormQuery(id)
   const saveMutation = useSaveFeedbackFormMutation(id)
   const initialized = useRef(false)
+  const initialQuestions = useRef<FeedbackQuestion[]>([])
 
   // state for extra questions (excluding the locked rating question)
   const [extraQuestions, setExtraQuestions] = useState<FeedbackQuestion[]>([])
@@ -164,13 +165,25 @@ export default function OrganizerFeedbackFormPage() {
       if (initialized.current) return
       initialized.current = true
       const incoming: FeedbackQuestion[] = (location.state as any)?.questions ?? DEFAULT_QUESTIONS
-      setExtraQuestions(incoming.filter(q => q.id !== 'q_rating'))
+      // exclude the locked rating question
+      const extra = incoming.filter(q => q.id !== 'q_rating')
+      // store the initial questions for comparison later
+      initialQuestions.current = extra
+      // set the extra questions state
+      setExtraQuestions(extra)
     } else {
       if (!serverData || initialized.current) return
       initialized.current = true
-      setExtraQuestions(serverData.questions.filter(q => q.id !== 'q_rating'))
+      const extra = serverData.questions.filter(q => q.id !== 'q_rating')
+      initialQuestions.current = extra
+      setExtraQuestions(extra)
     }
   }, [serverData, isNewEvent])
+
+  // button greyed out if no new changes
+  const hasChanges = JSON.stringify(extraQuestions) !== JSON.stringify(initialQuestions.current)
+  // button greyed out if any question is empty
+  const hasEmptyQuestion = extraQuestions.some(q => !q.question.trim())
 
   const updateQuestion = (idx: number, updated: FeedbackQuestion) => {
     setExtraQuestions(prev => prev.map((q, i) => (i === idx ? updated : q)))
@@ -273,7 +286,7 @@ export default function OrganizerFeedbackFormPage() {
           </button>
           <button
             onClick={handleSave}
-            disabled={saveMutation.isPending}
+            disabled={!hasChanges || hasEmptyQuestion || saveMutation.isPending}
             className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90"
           >
             {saveMutation.isPending ? 'Saving…' : 'Save'}
