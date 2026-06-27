@@ -34,11 +34,10 @@ export function useToggleOrganizerNotificationsMutation(id: string | undefined) 
   })
 }
 
-export function useMarkNotificationReadMutation() {
+export function useMarkAllNotificationsReadMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) =>
-      api.patch(`/notifications/${id}/read`).then(res => res.data),
+    mutationFn: () => api.patch('/notifications/read-all').then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.notifications })
     },

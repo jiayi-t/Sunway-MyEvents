@@ -24,6 +24,7 @@ import OrganizerAnalyticsPage from './pages/organizer/organizer-analytics-page'
 import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analytics-page'
 import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
 import SettingsPage from './pages/student/student-settings-page'
+import NotificationsPage from './pages/student/notifications-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -117,6 +118,13 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />
