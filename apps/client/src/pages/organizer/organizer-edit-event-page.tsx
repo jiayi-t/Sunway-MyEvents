@@ -55,6 +55,7 @@ export default function OrganizerEditEventPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [showNotifyModal, setShowNotifyModal] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const initialized = useRef(false)
@@ -114,6 +115,11 @@ export default function OrganizerEditEventPage() {
       setUploadError('End time must be later than start time')
       return
     }
+    setShowNotifyModal(true)
+  }
+
+  const submitWithNotify = (notify: boolean) => {
+    setShowNotifyModal(false)
     const startDateTime = `${form.date}T${form.start_time}:00`
     const endDateTime = `${form.date}T${form.end_time}:00`
     updateMutation.mutate({
@@ -127,7 +133,8 @@ export default function OrganizerEditEventPage() {
       category: form.category,
       capacity: Number(form.capacity),
       registration_deadline: form.registration_deadline || null,
-      image_url: form.image_url || null
+      image_url: form.image_url || null,
+      notify_participants: notify,
     }, {
       onSuccess: () => navigate(`/organizer/events/${id}`, { replace: true }),
       onError: (err: any) => setUploadError(err.response?.data?.error || 'Failed to update event'),
@@ -254,17 +261,45 @@ export default function OrganizerEditEventPage() {
         </button>
 
         {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}
+
         <div className="flex gap-3 pb-6">
           <button onClick={() => navigate(-1)}
             className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50">
             Cancel
           </button>
-          <button onClick={handleSubmit} disabled={updateMutation.isPending || uploading}
+          <button onClick={handleSubmit} disabled={!hasChanges || updateMutation.isPending || uploading}
             className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90">
             {updateMutation.isPending ? 'Saving...' : 'Edit Event'}
           </button>
         </div>
       </div>
+
+      {showNotifyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 pb-8 px-4">
+          <div className="bg-card rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+            <div>
+              <h2 className="text-base font-bold text-foreground">Notify attendees?</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Do you want to notify registered participants about these changes?
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => submitWithNotify(true)}
+                disabled={updateMutation.isPending}
+                className="w-full bg-accent text-white rounded-xl py-3 text-sm font-semibold disabled:opacity-50">
+                Yes, notify them
+              </button>
+              <button
+                onClick={() => submitWithNotify(false)}
+                disabled={updateMutation.isPending}
+                className="w-full border border-border rounded-xl py-3 text-sm font-medium text-foreground">
+                No, save quietly
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

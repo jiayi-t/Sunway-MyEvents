@@ -294,7 +294,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 
     const {
       name, description, date, start_time, end_time, venue, pricing,
-      category, capacity, registration_deadline, image_url
+      category, capacity, registration_deadline, image_url, notify_participants
     } = req.body
 
     if (!name || !date || !start_time || !end_time || !venue || pricing == null || !category || !image_url) {
@@ -314,6 +314,24 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
       image_url: image_url || null
     }).where(eq(events.id, id)).returning()
+
+    if (notify_participants) {
+      const eventRegistrations = await db
+        .select({ user_id: registrations.user_id })
+        .from(registrations)
+        .where(eq(registrations.event_id, id))
+
+      if (eventRegistrations.length > 0) {
+        await db.insert(notifications).values(
+          eventRegistrations.map(r => ({
+            user_id: r.user_id,
+            type: 'event_updated' as const,
+            title: 'Event Updated',
+            message: `"${name}" has been updated. Check the latest details.`,
+          }))
+        )
+      }
+    }
 
     res.json(result[0])
   } catch {
