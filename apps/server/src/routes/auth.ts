@@ -133,7 +133,7 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
         image_url: users.image_url,
         gender: users.gender,
         faculty: users.faculty,
-        semester: users.semester,
+        year_of_study: users.year_of_study,
         mobile_number: users.mobile_number,
         personal_email: users.personal_email,
         notification_preferences: users.notification_preferences,

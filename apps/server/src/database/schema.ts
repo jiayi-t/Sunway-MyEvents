@@ -14,7 +14,7 @@ export const users = pgTable('users', {
   created_at: timestamp('created_at').defaultNow(),
   gender: text('gender'),
   faculty: text('faculty'),
-  semester: integer('semester'),
+  year_of_study: text('year_of_study'),
   mobile_number: text('mobile_number'),
   personal_email: text('personal_email'),
   notification_preferences: jsonb('notification_preferences'),

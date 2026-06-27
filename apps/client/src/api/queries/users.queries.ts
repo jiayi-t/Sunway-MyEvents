@@ -19,7 +19,7 @@ export interface UserProfile {
   image_url: string | null
   gender: string | null
   faculty: string | null
-  semester: number | null
+  year_of_study: string | null
   mobile_number: string | null
   personal_email: string | null
   notification_preferences: NotificationPreferences | null

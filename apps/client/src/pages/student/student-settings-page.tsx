@@ -135,7 +135,7 @@ export default function SettingsPage() {
                 { label: 'Gender', value: profile?.gender },
                 { label: 'Faculty / School', value: profile?.faculty },
                 { label: 'Programme', value: profile?.program },
-                { label: 'Semester', value: profile?.semester?.toString() },
+                { label: 'Year of Study', value: profile?.year_of_study },
                 { label: 'iMail', value: profile?.email },
                 { label: 'Personal Email', value: profile?.personal_email },
                 { label: 'Mobile Number', value: profile?.mobile_number },
