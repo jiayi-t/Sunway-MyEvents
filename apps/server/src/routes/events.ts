@@ -339,13 +339,26 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
       .from(registrations)
       .where(eq(registrations.event_id, id))
 
-    if (eventRegistrations.length > 0) {
+    const eventSaves = await db
+      .select({ user_id: saved_events.user_id })
+      .from(saved_events)
+      .where(eq(saved_events.event_id, id))
+
+    const registeredIds = new Set(eventRegistrations.map(r => r.user_id))
+    const usersToNotify = [
+      ...eventRegistrations,
+      ...eventSaves.filter(s => !registeredIds.has(s.user_id)),
+    ]
+
+    if (usersToNotify.length > 0) {
       await db.insert(notifications).values(
-        eventRegistrations.map(r => ({
-          user_id: r.user_id,
+        usersToNotify.map(u => ({
+          user_id: u.user_id,
           type: 'event_cancelled' as const,
           title: 'Event Cancelled',
-          message: `"${existing[0].name}" has been cancelled.`,
+          message: registeredIds.has(u.user_id)
+            ? `An event you registered for, "${existing[0].name}", has been cancelled.`
+            : `An event you saved, "${existing[0].name}", has been cancelled.`,
         }))
       )
     }
