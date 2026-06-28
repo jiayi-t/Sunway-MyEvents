@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
-import { ArrowLeft, Ban, Bell, CalendarPlus, Pencil } from 'lucide-react'
+import { ArrowLeft, Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -55,15 +55,17 @@ function NotificationItem({ n }: { n: any }) {
     <div className="px-4 py-4 flex items-start gap-3 bg-card">
       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
         n.type === 'event_cancelled' ? 'bg-red-100' :
-        n.type === 'organizer_followed' ? 'bg-blue-100' :
+        n.type === 'organizer_followed' ? 'bg-gray-100' :
         n.type === 'event_updated' ? 'bg-orange-100' :
-        n.type === 'new_event' ? 'bg-green-100' : 
+        n.type === 'new_event' ? 'bg-green-100' :
+        n.type === 'event_reminder' ? 'bg-blue-100' :
         'bg-gray-100'
       }`}>
         {n.type === 'event_cancelled' && <Ban className="w-5 h-5 text-red-500" />}
-        {n.type === 'organizer_followed' && <Bell className="w-5 h-5 text-blue-500" />}
+        {n.type === 'organizer_followed' && <Bell className="w-5 h-5 text-gray-500" />}
         {n.type === 'event_updated' && <Pencil className="w-5 h-5 text-orange-500" />}
         {n.type === 'new_event' && <CalendarPlus className="w-5 h-5 text-green-600" />}
+        {n.type === 'event_reminder' && <CalendarClock className="w-5 h-5 text-blue-500" />}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground">{n.title}</p>
