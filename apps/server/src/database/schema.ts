@@ -104,3 +104,12 @@ export const notifications = pgTable('notifications', {
 }, (table) => [
   index('notifications_user_id_idx').on(table.user_id)
 ])
+
+export const password_reset_tokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id).notNull(),
+  token_hash: varchar('token_hash', { length: 64 }).notNull().unique(),
+  expires_at: timestamp('expires_at').notNull(),
+  used_at: timestamp('used_at'),
+  created_at: timestamp('created_at').defaultNow(),
+})

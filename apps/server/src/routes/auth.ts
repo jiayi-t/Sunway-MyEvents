@@ -1,10 +1,12 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { eq } from 'drizzle-orm'
+import crypto from 'crypto'
+import { and, eq, gt, isNull } from 'drizzle-orm'
 import { db } from '../db'
-import { users } from '../database/schema'
+import { users, password_reset_tokens } from '../database/schema'
 import { authenticate, type AuthRequest } from '../middleware/auth'
+import { sendEmail, forgotPasswordEmail } from '../email'
 
 const router = Router()
 
@@ -196,6 +198,66 @@ router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
   try {
     await db.update(users).set({ social_links, about: about ?? null }).where(eq(users.id, req.user!.id))
     res.json({ social_links, about: about ?? null })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body
+  if (!email) return res.status(400).json({ error: 'Email is required' })
+
+  // Always return 200, don't reveal whether the email exists
+  res.json({ message: 'If that email is registered as an organizer, a reset link has been sent.' })
+
+  try {
+    const [user] = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role })
+      .from(users).where(eq(users.email, email)).limit(1)
+    if (!user || user.role !== 'organizer') return
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+    await db.insert(password_reset_tokens).values({
+      user_id: user.id,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+    })
+
+    const resetUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/reset-password?token=${rawToken}`
+    await sendEmail(user.email, 'Reset your Sunway MyEvents password', forgotPasswordEmail(user.name, resetUrl))
+  } catch (err) {
+    console.error('[auth] forgot-password error:', err)
+  }
+})
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body
+  if (!token || !password) return res.status(400).json({ error: 'Password reset token and new password are required' })
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
+    
+  try {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
+    const [row] = await db.select({ id: password_reset_tokens.id, user_id: password_reset_tokens.user_id })
+      .from(password_reset_tokens)
+      .where(and(
+        eq(password_reset_tokens.token_hash, tokenHash),
+        isNull(password_reset_tokens.used_at),
+        gt(password_reset_tokens.expires_at, new Date()),
+      ))
+      .limit(1)
+
+    if (!row) return res.status(400).json({ error: 'Invalid or expired reset link.' })
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, row.user_id))
+    await db.update(password_reset_tokens).set({ used_at: new Date() }).where(eq(password_reset_tokens.id, row.id))
+
+    res.json({ message: 'Password reset successfully.' })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
