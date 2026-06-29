@@ -1,3 +1,4 @@
+export * from './queries/auth.queries'
 export * from './queries/events.queries'
 export * from './queries/registrations.queries'
 export * from './queries/interests.queries'

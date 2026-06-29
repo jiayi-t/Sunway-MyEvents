@@ -233,6 +233,28 @@ router.post('/forgot-password', async (req, res) => {
   }
 })
 
+// GET /api/auth/validate-reset-token?token=xxx
+router.get('/validate-reset-token', async (req, res) => {
+  const { token } = req.query
+  if (!token || typeof token !== 'string') return res.status(400).json({ valid: false })
+
+  try {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    const [row] = await db.select({ id: password_reset_tokens.id })
+      .from(password_reset_tokens)
+      .where(and(
+        eq(password_reset_tokens.token_hash, tokenHash),
+        isNull(password_reset_tokens.used_at),
+        gt(password_reset_tokens.expires_at, new Date()),
+      ))
+      .limit(1)
+
+    res.json({ valid: !!row })
+  } catch {
+    res.status(500).json({ valid: false })
+  }
+})
+
 // POST /api/auth/reset-password
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body

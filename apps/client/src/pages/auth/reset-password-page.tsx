@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import { useResetPasswordMutation, useValidateResetTokenQuery } from '../../api/mutations'
+import { useResetPasswordMutation } from '../../api/mutations'
+import { useValidateResetTokenQuery } from '../../api/queries'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
