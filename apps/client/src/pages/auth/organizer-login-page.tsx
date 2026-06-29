@@ -76,7 +76,7 @@ export default function OrganizerLoginPage() {
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline"
-                onClick={() => navigate('/reset-password')}
+                onClick={() => navigate('/forgot-password')}
               >
                 Forgot?
               </button>
@@ -88,7 +88,7 @@ export default function OrganizerLoginPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50"
+            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

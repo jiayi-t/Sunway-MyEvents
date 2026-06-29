@@ -9,7 +9,13 @@ import HomePage from './pages/student/home-page'
 import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
+import StudentCheckinPage from './pages/student/student-checkin-page'
+import StudentFeedbackPage from './pages/student/student-feedback-page'
+import SettingsPage from './pages/student/student-settings-page'
+import NotificationsPage from './pages/student/notifications-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
+import ForgotPasswordPage from './pages/auth/forgot-password-page'
+import ResetPasswordPage from './pages/auth/reset-password-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import OrganizerProfilePage from './pages/organizer/organizer-profile-page'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
@@ -17,14 +23,10 @@ import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
 import OrganizerCheckinScannerPage from './pages/organizer/organizer-checkin-scanner-page'
 import OrganizerParticipantsPage from './pages/organizer/organizer-participants-page'
-import StudentCheckinPage from './pages/student/student-checkin-page'
-import StudentFeedbackPage from './pages/student/student-feedback-page'
 import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form-page'
 import OrganizerAnalyticsPage from './pages/organizer/organizer-analytics-page'
 import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analytics-page'
 import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
-import SettingsPage from './pages/student/student-settings-page'
-import NotificationsPage from './pages/student/notifications-page'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -136,6 +138,8 @@ function AppRoutes() {
         }
       />
       <Route path="/login/organizer" element={<OrganizerLoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/login/organizer/register" element={<OrganizerCreateAccount />} />
       <Route path="/organizer/dashboard" 
         element={
