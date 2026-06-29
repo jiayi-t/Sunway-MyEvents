@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { sendEmail, getEmailAddresses, eventCancelledEmail, eventUpdatedEmail, newEventEmail } from '../email'
 
 const router = Router()
 
@@ -259,20 +260,43 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     const newEvent = result[0]
 
     const followers = await db
-      .select({ student_id: followed_organizers.student_id })
+      .select({
+        student_id: followed_organizers.student_id,
+        email: users.email,
+        personal_email: users.personal_email,
+        notification_preferences: users.notification_preferences,
+      })
       .from(followed_organizers)
+      .innerJoin(users, eq(followed_organizers.student_id, users.id))
       .where(eq(followed_organizers.organizer_id, req.user!.id))
 
     if (followers.length > 0) {
       const [organizer] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.user!.id)).limit(1)
+      const organizerName = organizer?.name ?? 'An organizer'
       await db.insert(notifications).values(
         followers.map(f => ({
           user_id: f.student_id,
           type: 'new_event' as const,
-          title: `New event by ${organizer?.name ?? 'an organizer'}`,
+          title: `New event by ${organizerName}`,
           message: newEvent.name,
         }))
       )
+
+      const emailAddresses = [...new Set(
+        followers.flatMap(f => getEmailAddresses({
+          email: f.email,
+          personal_email: f.personal_email,
+          notification_preferences: f.notification_preferences as any,
+        }))
+      )]
+      if (emailAddresses.length > 0) {
+        const eventUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/events/${newEvent.id}`
+        sendEmail(
+          emailAddresses,
+          `New event by ${organizerName}: ${newEvent.name}`,
+          newEventEmail(newEvent.name, organizerName, eventUrl)
+        ).catch(err => console.error('[email]', err))
+      }
     }
 
     res.status(201).json(newEvent)
@@ -317,8 +341,14 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 
     if (notify_participants) {
       const eventRegistrations = await db
-        .select({ user_id: registrations.user_id })
+        .select({
+          user_id: registrations.user_id,
+          email: users.email,
+          personal_email: users.personal_email,
+          notification_preferences: users.notification_preferences,
+        })
         .from(registrations)
+        .innerJoin(users, eq(registrations.user_id, users.id))
         .where(eq(registrations.event_id, id))
 
       if (eventRegistrations.length > 0) {
@@ -330,6 +360,21 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
             message: `"${name}" has been updated. Check the latest details.`,
           }))
         )
+
+        const emailAddresses = [...new Set(
+          eventRegistrations.flatMap(r => getEmailAddresses({
+            email: r.email,
+            personal_email: r.personal_email,
+            notification_preferences: r.notification_preferences as any,
+          }))
+        )]
+        if (emailAddresses.length > 0) {
+          sendEmail(
+            emailAddresses,
+            `Event Updated: ${name}`,
+            eventUpdatedEmail(name, new Date(date))
+          ).catch(err => console.error('[email]', err))
+        }
       }
     }
 
@@ -353,13 +398,25 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
     await db.update(events).set({ cancelled_at: new Date() }).where(eq(events.id, id))
 
     const eventRegistrations = await db
-      .select({ user_id: registrations.user_id })
+      .select({
+        user_id: registrations.user_id,
+        email: users.email,
+        personal_email: users.personal_email,
+        notification_preferences: users.notification_preferences,
+      })
       .from(registrations)
+      .innerJoin(users, eq(registrations.user_id, users.id))
       .where(eq(registrations.event_id, id))
 
     const eventSaves = await db
-      .select({ user_id: saved_events.user_id })
+      .select({
+        user_id: saved_events.user_id,
+        email: users.email,
+        personal_email: users.personal_email,
+        notification_preferences: users.notification_preferences,
+      })
       .from(saved_events)
+      .innerJoin(users, eq(saved_events.user_id, users.id))
       .where(eq(saved_events.event_id, id))
 
     const registeredIds = new Set(eventRegistrations.map(r => r.user_id))
@@ -379,6 +436,21 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
             : `An event you saved, "${existing[0].name}", has been cancelled.`,
         }))
       )
+
+      const emailAddresses = [...new Set(
+        usersToNotify.flatMap(u => getEmailAddresses({
+          email: u.email,
+          personal_email: u.personal_email,
+          notification_preferences: u.notification_preferences as any,
+        }))
+      )]
+      if (emailAddresses.length > 0) {
+        sendEmail(
+          emailAddresses,
+          `Event Cancelled: ${existing[0].name}`,
+          eventCancelledEmail(existing[0].name, new Date(existing[0].date))
+        ).catch(err => console.error('[email]', err))
+      }
     }
 
     res.json({ message: 'Event cancelled' })
