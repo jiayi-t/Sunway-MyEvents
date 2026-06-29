@@ -82,7 +82,7 @@ export default function StudentLoginPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50"
+            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

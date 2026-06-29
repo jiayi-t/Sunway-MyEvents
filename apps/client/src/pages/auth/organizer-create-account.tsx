@@ -199,7 +199,7 @@ export default function OrganizerCreateAccount() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex-1 bg-accent text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50"
+              className="flex-1 bg-accent text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Account'}
             </button>
