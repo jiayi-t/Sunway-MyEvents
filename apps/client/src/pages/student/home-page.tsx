@@ -1,7 +1,8 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventsQuery, useInterestsQuery } from '../../api/queries'
+import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
+import { useAuth } from '../../context/auth-context'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface Event {
@@ -59,10 +60,13 @@ export default function HomePage() {
   const touchStartX = useRef<number | null>(null)
   const navigate = useNavigate()
 
+  const { user } = useAuth()
   const { data: eventsData, isLoading: loading } = useEventsQuery()
-  const { data: interestsData } = useInterestsQuery()
   const events = (eventsData ?? []) as Event[]
-  const userInterests = (interestsData ?? []) as string[]
+
+  const isForYouActive = activeCategory === 'For You' && !searchApplied
+  const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(isForYouActive && !!user)
+  const recommendations = (recommendationsData ?? []) as Event[]
 
   // Up to 5 events as featured
   const featuredEvents = events.slice(0, 5)
@@ -75,13 +79,11 @@ export default function HomePage() {
       )
     }
     if (activeCategory === 'All Events') return events
-    if (activeCategory === 'For You') {
-      return userInterests.length > 0
-        ? events.filter((e: Event) => userInterests.some(p => p.toLowerCase() === e.category?.toLowerCase()))
-        : events
-    }
+    if (activeCategory === 'For You') return recommendations
     return events.filter((e: Event) => e.category?.toLowerCase() === activeCategory.toLowerCase())
-  }, [events, activeCategory, userInterests, search, searchApplied])
+  }, [events, activeCategory, recommendations, search, searchApplied])
+
+  const isLoading = loading || (isForYouActive && recLoading)
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
@@ -177,7 +179,7 @@ export default function HomePage() {
         <div className="px-10 pt-3 pb-10 bg-primary text-white">
           <h2 className="font-bold text-white mb-2 text-center">Featured Events</h2>
 
-          {loading ? (
+          {isLoading ? (
             <p className="text-blue-100 text-sm text-center">Loading events...</p>
           ) : featuredEvents.length > 0 && featured ? (
             <div className="max-w-3xl mx-auto">

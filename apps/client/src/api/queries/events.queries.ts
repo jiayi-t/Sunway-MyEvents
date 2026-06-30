@@ -6,6 +6,7 @@ export const eventKeys = {
   detail: (id: string | undefined) => ['events', id] as const,
   organizer: ['events', 'organizer'] as const,
   saved: ['events', 'saved'] as const,
+  recommendations: ['events', 'recommendations'] as const,
   registrationStatus: (id: string | undefined) => ['events', id, 'registration-status'] as const,
   saveStatus: (id: string | undefined) => ['events', id, 'save-status'] as const,
   checkinToken: (id: string | undefined) => ['events', id, 'checkin-token'] as const,
@@ -58,6 +59,16 @@ export function useSaveStatusQuery(id: string | undefined, enabled: boolean, opt
     queryKey: eventKeys.saveStatus(id),
     queryFn: () => api.get(`/events/${id}/save-status`).then(res => res.data.saved as boolean),
     enabled: !!id && enabled,
+    ...options,
+  })
+}
+
+export function useRecommendationsQuery(enabled: boolean, options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: eventKeys.recommendations,
+    queryFn: () => api.get('/recommendations').then(res => res.data),
+    enabled,
+    staleTime: 5 * 60 * 1000,
     ...options,
   })
 }

@@ -8,6 +8,7 @@ export function useRegisterEventMutation(id: string | undefined) {
     mutationFn: () => api.post(`/events/${id}/register`).then(res => res.data),
     onSuccess: () => {
       queryClient.setQueryData(eventKeys.registrationStatus(id), true)
+      queryClient.invalidateQueries({ queryKey: eventKeys.recommendations })
     },
   })
 }
