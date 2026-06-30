@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { ArrowLeft } from 'lucide-react'
-import { useProfileQuery, useInterestsQuery, type NotificationPreferences } from '../../api/queries'
-import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation } from '../../api/mutations'
+import { useProfileQuery, useInterestsQuery, useTimePreferencesQuery, type NotificationPreferences } from '../../api/queries'
+import { interestKeys, timePreferenceKeys } from '../../api/queries/interests.queries'
+import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation, useUpdateTimePreferencesMutation } from '../../api/mutations'
 
 type Tab = 'profile' | 'notifications' | 'interests'
 
@@ -29,8 +31,9 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boo
   )
 }
 
-export default function SettingsPage() {
+export default function StudentSettingsPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const initialTab = (searchParams.get('tab') as Tab) ?? 'profile'
@@ -54,7 +57,6 @@ export default function SettingsPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const interestsInitialized = useRef(false)
   const updateInterestsMutation = useUpdateInterestsMutation()
-  const [interestsSaved, setInterestsSaved] = useState(false)
 
   useEffect(() => {
     if (savedInterests && !interestsInitialized.current) {
@@ -63,12 +65,52 @@ export default function SettingsPage() {
     }
   }, [savedInterests])
 
+  const { data: savedTimeRange, isLoading: timeRangesLoading } = useTimePreferencesQuery()
+  const [selectedFrom, setSelectedFrom] = useState('')
+  const [selectedTo, setSelectedTo] = useState('')
+  const timeRangesInitialized = useRef(false)
+  const updateTimePreferencesMutation = useUpdateTimePreferencesMutation()
+  const [interestsSaved, setInterestsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    if (savedTimeRange !== undefined && !timeRangesInitialized.current) {
+      timeRangesInitialized.current = true
+      setSelectedFrom(savedTimeRange?.from ?? '')
+      setSelectedTo(savedTimeRange?.to ?? '')
+    }
+  }, [savedTimeRange])
+
   const savedNotifPrefs = profile?.notification_preferences ?? DEFAULT_NOTIF_PREFS
   const notifHasChanges = JSON.stringify(notifPrefs) !== JSON.stringify(savedNotifPrefs)
   const interestsHasChanges = JSON.stringify([...selectedInterests].sort()) !== JSON.stringify([...(savedInterests ?? [])].sort())
+  const timesHasChanges = selectedFrom !== (savedTimeRange?.from ?? '') || selectedTo !== (savedTimeRange?.to ?? '')
+  const interestsTabHasChanges = interestsHasChanges || timesHasChanges
 
   useEffect(() => { if (notifHasChanges) setNotifSaved(false) }, [notifHasChanges])
-  useEffect(() => { if (interestsHasChanges) setInterestsSaved(false) }, [interestsHasChanges])
+  useEffect(() => { if (interestsTabHasChanges) setInterestsSaved(false) }, [interestsTabHasChanges])
+
+  const handleInterestsSave = async () => {
+    const promises: Promise<unknown>[] = []
+    const timeRange = (selectedFrom || selectedTo) ? { from: selectedFrom, to: selectedTo } : null
+    if (interestsHasChanges) promises.push(updateInterestsMutation.mutateAsync(selectedInterests))
+    if (timesHasChanges) promises.push(updateTimePreferencesMutation.mutateAsync(timeRange))
+    if (promises.length === 0) return
+    setIsSaving(true)
+    try {
+      await Promise.all(promises)
+      if (interestsHasChanges) queryClient.setQueryData(interestKeys.all, selectedInterests)
+      if (timesHasChanges) queryClient.setQueryData(timePreferenceKeys.all, timeRange)
+      setInterestsSaved(true)
+    } catch {}
+    setIsSaving(false)
+  }
+
+  const handleInterestsCancel = () => {
+    setSelectedInterests(savedInterests ?? [])
+    setSelectedFrom(savedTimeRange?.from ?? '')
+    setSelectedTo(savedTimeRange?.to ?? '')
+  }
 
   const handleTabChange = (newTab: Tab) => {
     setActiveTab(newTab)
@@ -247,42 +289,75 @@ export default function SettingsPage() {
 
       {/* Interests tab */}
       {activeTab === 'interests' && (
-        <div className="px-4 py-4">
-          {interestsLoading ? (
+        <div className="px-4 py-4 space-y-4">
+          {interestsLoading || timeRangesLoading ? (
             <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
           ) : (
-            <div className="bg-card rounded-xl shadow p-4">
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {CATEGORIES.map(label => (
-                  <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedInterests.includes(label)}
-                      onChange={e => setSelectedInterests(prev =>
-                        e.target.checked ? [...prev, label] : prev.filter(p => p !== label)
-                      )}
-                      className="accent-primary"
-                    />
-                    {label}
-                  </label>
-                ))}
+            <>
+              {/* Categories */}
+              <div className="bg-card rounded-xl shadow p-4">
+                <p className="text-sm font-semibold text-foreground mb-4">Select your interested event categories</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {CATEGORIES.map(label => (
+                    <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedInterests.includes(label)}
+                        onChange={e => {
+                          setInterestsSaved(false)
+                          setSelectedInterests(prev => e.target.checked ? [...prev, label] : prev.filter(p => p !== label))
+                        }}
+                        className="accent-primary"
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
               </div>
+
+              {/* Time range */}
+              <div className="bg-card rounded-xl shadow p-4">
+                <p className="text-sm font-semibold text-foreground mb-4">Select your preferred event timings <span className="text-muted-foreground font-normal">(Optional)</span></p>
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">From</p>
+                    <input
+                      type="time"
+                      value={selectedFrom}
+                      onChange={e => { setInterestsSaved(false); setSelectedFrom(e.target.value) }}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                    />
+                  </div>
+                  <span className="text-muted-foreground pb-2.5">–</span>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">To</p>
+                    <input
+                      type="time"
+                      value={selectedTo}
+                      onChange={e => { setInterestsSaved(false); setSelectedTo(e.target.value) }}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Save / Cancel */}
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setSelectedInterests(savedInterests ?? [])}
+                  onClick={handleInterestsCancel}
                   className="px-5 py-2 rounded-lg border border-accent text-accent text-sm font-semibold"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => updateInterestsMutation.mutate(selectedInterests, { onSuccess: () => setInterestsSaved(true) })}
-                  disabled={!interestsHasChanges || updateInterestsMutation.isPending}
+                  onClick={handleInterestsSave}
+                  disabled={!interestsTabHasChanges || isSaving || interestsSaved}
                   className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {updateInterestsMutation.isPending ? 'Saving...' : interestsSaved ? 'Saved' : 'Save'}
+                  {isSaving ? 'Saving...' : interestsSaved ? 'Saved' : 'Save'}
                 </button>
               </div>
-            </div>
+            </>
           )}
         </div>
       )}

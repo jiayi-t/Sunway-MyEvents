@@ -15,6 +15,8 @@ const CATEGORIES = [
 export default function SelectInterestsPage() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<string[]>([])
+  const [selectedFrom, setSelectedFrom] = useState('')
+  const [selectedTo, setSelectedTo] = useState('')
   const [saving, setSaving] = useState(false)
 
   const toggle = (label: string) => {
@@ -26,7 +28,11 @@ export default function SelectInterestsPage() {
   const handleNext = async () => {
     setSaving(true)
     try {
-      await api.put('/auth/interests', { interests: selected })
+      const timeRange = (selectedFrom || selectedTo) ? { from: selectedFrom, to: selectedTo } : null
+      await Promise.all([
+        api.put('/auth/interests', { interests: selected }),
+        api.put('/auth/time-preferences', { preferred_time_ranges: timeRange }),
+      ])
     } catch {}
     navigate('/')
   }
@@ -49,26 +55,56 @@ export default function SelectInterestsPage() {
 
         <h1 className="text-primary text-xl font-bold mb-6">What interests you?</h1>
 
-        <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {CATEGORIES.map(label => (
-              <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+        <div className="w-full max-w-sm space-y-4">
+          {/* Categories */}
+          <div className="bg-card rounded-xl shadow p-4">
+            <p className="text-sm font-semibold text-foreground mb-4">Select your interested event categories</p>
+            <div className="grid grid-cols-2 gap-3">
+              {CATEGORIES.map(label => (
+                <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(label)}
+                    onChange={() => toggle(label)}
+                    className="accent-primary"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Time range */}
+          <div className="bg-card rounded-xl shadow p-4">
+            <p className="text-sm font-semibold text-foreground mb-4">Select your preferred event timings <span className="text-muted-foreground font-normal">(Optional)</span></p>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground mb-1">From</p>
                 <input
-                  type="checkbox"
-                  checked={selected.includes(label)}
-                  onChange={() => toggle(label)}
-                  className="accent-primary"
+                  type="time"
+                  value={selectedFrom}
+                  onChange={e => setSelectedFrom(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
                 />
-                {label}
-              </label>
-            ))}
+              </div>
+              <span className="text-muted-foreground pb-2.5">–</span>
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground mb-1">To</p>
+                <input
+                  type="time"
+                  value={selectedTo}
+                  onChange={e => setSelectedTo(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end">
             <button
               onClick={handleNext}
-              disabled={saving}
-              className="bg-primary text-white font-semibold px-6 py-2 rounded-lg text-sm disabled:opacity-50"
+              disabled={saving || selected.length === 0}
+              className="bg-primary text-white font-semibold px-6 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving...' : 'Next'}
             </button>
