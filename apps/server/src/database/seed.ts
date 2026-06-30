@@ -431,6 +431,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Social',
+      image_url: '/Golden Groves Poster.jpg',
       cancelled: false,
     },
     {
@@ -444,6 +445,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Sports',
+      image_url: '/WuShu Jomplay Poster.jpg',
       cancelled: false,
     },
     {
@@ -457,6 +459,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Sports',
+      image_url: '/Strike with the Sharks Poster.jpg',
       cancelled: true,
     },
     {
@@ -470,6 +473,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/Gaming Law Poster.jpg',
       cancelled: false,
     },
     {
@@ -483,6 +487,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/Unityverse Poster.jpg',
       cancelled: false,
     },
     {
@@ -496,6 +501,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/Face Recognition Workshop Poster.jpg',
       cancelled: false,
     },
     {
@@ -509,6 +515,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/Building AI Automation Skills Poster.jpg',
       cancelled: false,
     },
     {
@@ -522,6 +529,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/From Names to Networks Poster.jpg',
       cancelled: false,
     },
     {
@@ -535,6 +543,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Social',
+      image_url: '/Hyperliquid Poster.jpg',
       cancelled: false,
     },
     {
@@ -548,6 +557,7 @@ const seed = async () => {
       capacity: 25,
       registration_deadline: '2026-06-28T23:59:00',
       category: 'Academics',
+      image_url: '/Fortinet Industry Visit Poster.jpg',
       cancelled: false,
     },
     {
@@ -561,6 +571,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/Cybersecurity Poster.jpg',
       cancelled: false,
     },
     {
@@ -574,6 +585,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Entertainment',
+      image_url: '/Open Mic Poster.jpg',
       cancelled: false,
     },
     {
@@ -587,6 +599,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Entertainment',
+      image_url: '/Jam Session Poster.jpg',
       cancelled: false,
     },
     {
@@ -600,6 +613,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Arts',
+      image_url: '/Tile & Style Poster.jpg',
       cancelled: false,
     },
     {
@@ -613,6 +627,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Arts',
+      image_url: '/Moru Doll Companion Workshop.jpg',
       cancelled: false,
     },
     {
@@ -626,6 +641,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
+      image_url: '/From Data to Decisions Poster.jpg',
       cancelled: false,
     },
     {
@@ -639,6 +655,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: '2026-07-09T23:59:00',
       category: 'Academics',
+      image_url: '/Autopilot Asia Hackathon Poster.jpg',
       cancelled: false,
     },
   ]
