@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
+import { eq, asc, and, isNull, gt, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
@@ -22,6 +22,44 @@ router.get('/', async (_req, res) => {
       .where(isNull(events.archived_at))
       .orderBy(asc(events.date))
     res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/events/featured
+router.get('/featured', async (_req, res) => {
+  try {
+    const now = new Date()
+    const rows = await db
+      .select({
+        ...getTableColumns(events),
+        organizer_name: users.name,
+        organizer_image_url: users.image_url,
+        registration_count: db.$count(registrations, eq(registrations.event_id, events.id)),
+        save_count: db.$count(saved_events, eq(saved_events.event_id, events.id)),
+      })
+      .from(events)
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now)))
+
+    const scored = rows
+      .map(e => {
+        // registrations x2 + saves
+        const popularity = Number(e.registration_count) * 2 + Number(e.save_count)
+        const daysUntilEvent = (new Date(e.date).getTime() - now.getTime()) / 86_400_000
+        // recency score: 1 for events happening today, 0.5 for events happening in 14 days, 0 for events happening after 14 days
+        const recency = 1 / (1 + daysUntilEvent / 14)
+        // final score: 70% popularity, 30% recency
+        return { ...e, _score: popularity * 0.7 + recency * 0.3 }
+      })
+      // sort events by score in descending order, take top 5
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 5)
+      // remove _score, registration_count, save_count from the result
+      .map(({ _score, registration_count, save_count, ...e }) => e)
+
+    res.json(scored)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

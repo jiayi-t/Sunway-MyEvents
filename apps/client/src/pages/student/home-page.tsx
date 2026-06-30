@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/header'
-import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
+import { useEventsQuery, useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
@@ -68,8 +68,9 @@ export default function HomePage() {
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(isForYouActive && !!user)
   const recommendations = (recommendationsData ?? []) as Event[]
 
-  // Up to 5 events as featured
-  const featuredEvents = events.slice(0, 5)
+  // Up to 5 featured events
+  const { data: featuredData } = useFeaturedEventsQuery()
+  const featuredEvents = (featuredData ?? []) as Event[]
 
   const filtered = useMemo(() => {
     if (searchApplied) {

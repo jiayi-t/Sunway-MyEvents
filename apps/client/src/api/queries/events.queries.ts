@@ -3,6 +3,7 @@ import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
 
 export const eventKeys = {
   all: ['events'] as const,
+  featured: ['events', 'featured'] as const,
   detail: (id: string | undefined) => ['events', id] as const,
   organizer: ['events', 'organizer'] as const,
   saved: ['events', 'saved'] as const,
@@ -17,6 +18,13 @@ export function useEventsQuery(options?: Omit<UseQueryOptions, 'queryKey' | 'que
     queryKey: eventKeys.all,
     queryFn: () => api.get('/events').then(res => res.data),
     ...options,
+  })
+}
+
+export function useFeaturedEventsQuery() {
+  return useQuery({
+    queryKey: eventKeys.featured,
+    queryFn: () => api.get('/events/featured').then(res => res.data),
   })
 }
 
