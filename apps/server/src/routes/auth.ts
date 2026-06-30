@@ -121,6 +121,35 @@ router.put('/interests', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// GET /api/auth/time-preferences
+router.get('/time-preferences', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await db.select({ preferred_time_ranges: users.preferred_time_ranges }).from(users).where(eq(users.id, req.user!.id))
+    const preferred_time_ranges = result[0]?.preferred_time_ranges ?? null
+    res.json({ preferred_time_ranges })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/auth/time-preferences
+router.put('/time-preferences', authenticate, async (req: AuthRequest, res) => {
+  const timeRange = req.body.preferred_time_ranges ?? null
+  const isValid =
+    timeRange === null ||
+    (typeof timeRange === 'object' && !Array.isArray(timeRange) &&
+      typeof timeRange.from === 'string' && typeof timeRange.to === 'string')
+  if (!isValid) {
+    return res.status(400).json({ error: 'preferred_time_ranges must be { from, to } or null' })
+  }
+  try {
+    await db.update(users).set({ preferred_time_ranges: timeRange }).where(eq(users.id, req.user!.id))
+    res.json({ preferred_time_ranges: timeRange })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 // GET /api/auth/profile
 router.get('/profile', authenticate, async (req: AuthRequest, res) => {
   try {

@@ -20,6 +20,7 @@ export const users = pgTable('users', {
   notification_preferences: jsonb('notification_preferences'),
   social_links: jsonb('social_links'),
   about: text('about'),
+  preferred_time_ranges: jsonb('preferred_time_ranges'),
 })
 
 export const events = pgTable('events', {
