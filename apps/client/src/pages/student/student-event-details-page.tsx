@@ -266,12 +266,12 @@ export default function StudentEventDetailsPage() {
           className="flex items-center gap-3 w-full text-left"
           onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
             <img
-              src={toImageUrl(typedEvent.organizer_image_url)}
+              src={toImageUrl(typedEvent.organizer_image_url) || '/Default Icon.jpg'}
               alt={typedEvent.organizer_name ?? 'Organizer'}
               className="w-full h-full object-cover"
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
             />
           </div>
           <div className="flex-1">
