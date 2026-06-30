@@ -83,6 +83,16 @@ export const feedback_forms = pgTable('feedback_forms', {
   updated_at: timestamp('updated_at').defaultNow()
 })
 
+export const event_views = pgTable('event_views', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').references(() => users.id),
+  event_id: integer('event_id').references(() => events.id),
+  viewed_at: timestamp('viewed_at').defaultNow(),
+}, (table) => [
+  index('event_views_user_id_idx').on(table.user_id),
+  index('event_views_event_id_idx').on(table.event_id),
+])
+
 export const followed_organizers = pgTable('followed_organizers', {
   id: serial('id').primaryKey(),
   student_id: integer('student_id').references(() => users.id),

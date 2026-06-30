@@ -23,6 +23,12 @@ export function useToggleSaveMutation(id: string | undefined) {
   })
 }
 
+export function useRecordViewMutation(id: string | undefined) {
+  return useMutation({
+    mutationFn: () => api.post(`/events/${id}/view`).then(res => res.data),
+  })
+}
+
 export function useCreateEventMutation() {
   const queryClient = useQueryClient()
   return useMutation({

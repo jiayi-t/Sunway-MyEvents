@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, asc, and, isNull, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
-import { events, users, registrations, saved_events, feedback, notifications, followed_organizers } from '../database/schema'
+import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { sendEmail, getEmailAddresses, eventCancelledEmail, eventUpdatedEmail, newEventEmail } from '../email'
 
@@ -71,6 +71,18 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
       .where(eq(saved_events.user_id, req.user!.id))
       .orderBy(asc(events.date))
     res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/events/:id/view - record student's event views
+router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'student') return res.status(403).json({ error: 'Forbidden' })
+  const eventId = parseInt(req.params.id as string)
+  try {
+    await db.insert(event_views).values({ user_id: req.user!.id, event_id: eventId })
+    res.status(201).json({ ok: true })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
-import { useRegisterEventMutation, useToggleSaveMutation } from '../../api/mutations'
+import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, ArrowLeft } from 'lucide-react'
 
 interface Event {
@@ -71,6 +71,13 @@ export default function StudentEventDetailsPage() {
 
   const registerMutation = useRegisterEventMutation(id)
   const saveMutation = useToggleSaveMutation(id)
+  const recordView = useRecordViewMutation(id)
+
+  useEffect(() => {
+    if (user?.role === 'student' && id) recordView.mutate()
+    // recordView and user are intentionally excluded from the dependency array, including them would re-run on every render and record duplicate views
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- silences the missing-dependency warning
+  }, [id])
 
   const handleRegister = () => {
     setError('')
