@@ -213,7 +213,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="bg-white p-4">
-                    <h3 className="font-bold text-foreground text-lg leading-tight mb-1">
+                    <h3 className="font-bold text-foreground text-lg leading-tight mb-1 line-clamp-2 min-h-[2.8rem]">
                       {featured.name}
                     </h3>
                     <p className="text-accent text-xs mb-2">
