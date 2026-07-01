@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, and, isNull, gt, getTableColumns } from 'drizzle-orm'
+import { eq, asc, desc, and, isNull, gt, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
@@ -20,7 +20,7 @@ router.get('/', async (_req, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(isNull(events.archived_at))
-      .orderBy(asc(events.date))
+      .orderBy(desc(events.created_at))
     res.json(result)
   } catch {
     res.status(500).json({ error: 'Server error' })
