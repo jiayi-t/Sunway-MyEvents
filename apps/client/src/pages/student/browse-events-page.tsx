@@ -46,12 +46,14 @@ interface Filters {
   dateTo: string
   upcoming: boolean
   past: boolean
+  free: boolean
+  paid: boolean
 }
 
-const EMPTY_FILTERS: Filters = { categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false }
+const EMPTY_FILTERS: Filters = { categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false, free: false, paid: false }
 
 function filtersActive(f: Filters) {
-  return f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past
+  return f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past || f.free || f.paid
 }
 
 export default function BrowseEventsPage() {
@@ -126,6 +128,10 @@ export default function BrowseEventsPage() {
       }
 
       if (filters.categories.length > 0 && !filters.categories.includes(e.category)) return false
+
+      const isFree = Number(e.pricing) === 0
+      if (filters.free && !filters.paid && !isFree) return false
+      if (filters.paid && !filters.free && isFree) return false
 
       return true
     })
@@ -259,6 +265,22 @@ export default function BrowseEventsPage() {
                 onChange={e => setDraftFilters(f => ({ ...f, dateTo: e.target.value }))}
                 className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
               />
+            </div>
+
+            {/* Pricing */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Pricing</p>
+            <div className="flex gap-4 mb-4">
+              {(['free', 'paid'] as const).map(key => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={draftFilters[key]}
+                    onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
+                    className="w-4 h-4 accent-primary rounded"
+                  />
+                  <span className="text-sm capitalize text-foreground">{key}</span>
+                </label>
+              ))}
             </div>
 
             {/* Categories */}
