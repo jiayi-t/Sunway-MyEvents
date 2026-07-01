@@ -4,6 +4,7 @@ import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
 export const analyticsKeys = {
   attendance: ['analytics', 'attendance'] as const,
   feedback: ['analytics', 'feedback'] as const,
+  views: ['analytics', 'views'] as const,
   eventAnalytics: (id: string | undefined) => ['analytics', 'event', id] as const,
 }
 
@@ -70,6 +71,24 @@ export interface EventAnalytics {
   } | null
 }
 
+export interface ViewsEvent {
+  id: number
+  name: string
+  date: string
+  image_url: string | null
+  total_views: number
+  unique_viewers: number
+}
+
+export interface ViewsAnalytics {
+  totals: {
+    total_views: number
+    unique_viewers: number
+    avg_views_per_event: number
+  }
+  events: ViewsEvent[]
+}
+
 export function useAttendanceAnalyticsQuery(options?: Omit<UseQueryOptions<AttendanceAnalytics>, 'queryKey' | 'queryFn'>) {
   return useQuery<AttendanceAnalytics>({
     queryKey: analyticsKeys.attendance,
@@ -82,6 +101,14 @@ export function useFeedbackAnalyticsQuery(options?: Omit<UseQueryOptions<Feedbac
   return useQuery<FeedbackAnalytics>({
     queryKey: analyticsKeys.feedback,
     queryFn: () => api.get('/analytics/feedback').then(res => res.data),
+    ...options,
+  })
+}
+
+export function useViewsAnalyticsQuery(options?: Omit<UseQueryOptions<ViewsAnalytics>, 'queryKey' | 'queryFn'>) {
+  return useQuery<ViewsAnalytics>({
+    queryKey: analyticsKeys.views,
+    queryFn: () => api.get('/analytics/views').then(res => res.data),
     ...options,
   })
 }

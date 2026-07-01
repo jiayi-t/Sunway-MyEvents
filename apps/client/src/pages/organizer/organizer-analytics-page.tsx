@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, ImageOff, Star } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Eye, ImageOff, Star, Users } from 'lucide-react'
 import {
   useAttendanceAnalyticsQuery,
   useFeedbackAnalyticsQuery,
+  useViewsAnalyticsQuery,
   type AttendanceAnalytics,
   type FeedbackAnalytics,
+  type ViewsAnalytics,
 } from '../../api/queries'
 
 type Tab = 'attendance' | 'views' | 'reach' | 'feedback'
@@ -77,6 +79,70 @@ function RatingBar({ star, count, total }: { star: number; count: number; total:
         <div className="h-full bg-accent rounded-full" style={{ width: `${percentage}%` }} />
       </div>
       <span className="text-xs text-muted-foreground w-7 text-right">{percentage}%</span>
+    </div>
+  )
+}
+
+function ViewsTab({
+  data,
+  loading,
+}: {
+  data: ViewsAnalytics | undefined
+  loading: boolean
+}) {
+  if (loading) return <p className="text-muted-foreground text-sm text-center py-12">Loading...</p>
+  if (!data) return null
+
+  const { totals, events } = data
+
+  return (
+    <div>
+      <div className="mx-4 mt-4 bg-card rounded-2xl shadow-sm">
+        <div className="flex divide-x divide-border py-4">
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-accent">{totals.total_views}</p>
+            <p className="text-xs text-muted-foreground mt-1">Total Views</p>
+          </div>
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-accent">{totals.unique_viewers}</p>
+            <p className="text-xs text-muted-foreground mt-1">Unique Viewers</p>
+          </div>
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-accent">{totals.avg_views_per_event}</p>
+            <p className="text-xs text-muted-foreground mt-1">Avg Views/Event</p>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-sm font-bold text-primary mx-4 mt-5 mb-2">Events</p>
+      {events.length === 0 ? (
+        <p className="text-muted-foreground text-sm text-center py-8">No events yet.</p>
+      ) : (
+        <div className="mx-4 space-y-2">
+          {events.map(e => (
+            <div
+              key={e.id}
+              className="w-full bg-card rounded-2xl shadow-sm flex items-center gap-3 p-3"
+            >
+              <EventThumbnail url={e.image_url} name={e.name} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{e.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{formatDate(e.date)}</p>
+              </div>
+              <div className="flex-shrink-0 text-right space-y-0.5">
+                <div className="flex items-center justify-end gap-1">
+                  <Eye className="w-3.5 h-3.5 text-primary" />
+                  <p className="text-sm font-bold text-primary">{e.total_views}</p>
+                </div>
+                <div className="flex items-center justify-end gap-1">
+                  <Users className="w-3 h-3 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">{e.unique_viewers} unique</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -260,10 +326,11 @@ export default function OrganizerAnalyticsPage() {
 
   const { data: attendanceData, isLoading: attendanceLoading } = useAttendanceAnalyticsQuery()
   const { data: feedbackData, isLoading: feedbackLoading } = useFeedbackAnalyticsQuery()
+  const { data: viewsData, isLoading: viewsLoading } = useViewsAnalyticsQuery()
 
   const tabs: { key: Tab; label: string; disabled?: boolean }[] = [
     { key: 'attendance', label: 'Attendance' },
-    { key: 'views', label: 'Views', disabled: true },
+    { key: 'views', label: 'Views' },
     { key: 'reach', label: 'Reach', disabled: true },
     { key: 'feedback', label: 'Feedback' },
   ]
@@ -305,6 +372,9 @@ export default function OrganizerAnalyticsPage() {
           loading={attendanceLoading}
           onRowClick={id => navigate(`/organizer/events/${id}/analytics?view=attendance`)}
         />
+      )}
+      {tab === 'views' && (
+        <ViewsTab data={viewsData} loading={viewsLoading} />
       )}
       {tab === 'feedback' && (
         <FeedbackTab

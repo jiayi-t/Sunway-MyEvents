@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { eq, sql, desc } from 'drizzle-orm'
+import { eq, sql, desc, count, countDistinct } from 'drizzle-orm'
 import { db } from '../db'
-import { events, registrations, feedback, feedback_forms, users } from '../database/schema'
+import { events, registrations, feedback, feedback_forms, users, event_views } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
 
@@ -253,6 +253,47 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
         rating_distribution: ratingDist,
         questions: questionAnalyses,
       },
+    })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/analytics/views
+router.get('/views', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const rows = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        date: events.date,
+        image_url: events.image_url,
+        total_views: count(event_views.id),
+        unique_viewers: countDistinct(event_views.user_id),
+      })
+      .from(events)
+      .leftJoin(event_views, eq(event_views.event_id, events.id))
+      .where(eq(events.organizer_id, req.user!.id))
+      .groupBy(events.id, events.name, events.date, events.image_url)
+      .orderBy(desc(events.date))
+
+    const total_views = rows.reduce((s, r) => s + Number(r.total_views), 0)
+    const unique_viewers = rows.reduce((s, r) => s + Number(r.unique_viewers), 0)
+    const eventCount = rows.filter(r => Number(r.total_views) > 0).length
+    const avg_views_per_event = eventCount > 0 ? Math.round((total_views / eventCount) * 10) / 10 : 0
+
+    res.json({
+      totals: { total_views, unique_viewers, avg_views_per_event },
+      events: rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        date: r.date,
+        image_url: r.image_url,
+        total_views: Number(r.total_views),
+        unique_viewers: Number(r.unique_viewers),
+      })),
     })
   } catch {
     res.status(500).json({ error: 'Server error' })

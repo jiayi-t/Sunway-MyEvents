@@ -175,7 +175,7 @@ export default function OrganizerProfilePage() {
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Users /></div>
                     <span className="text-xs text-foreground">Attendance</span>
                   </button>
-                  <button className="flex flex-col items-center gap-1 opacity-40" disabled>
+                  <button onClick={() => navigate('/organizer/analytics?tab=views')} className="flex flex-col items-center gap-1">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Eye /></div>
                     <span className="text-xs text-foreground">Views</span>
                   </button>
