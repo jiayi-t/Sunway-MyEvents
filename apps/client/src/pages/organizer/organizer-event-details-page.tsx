@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
 import { Archive, ArrowLeft, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
@@ -124,7 +123,6 @@ export default function OrganizerEventDetailsPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../../api/queries'
 import { Calendar, Clock, Bookmark, Settings } from 'lucide-react'
@@ -24,7 +23,6 @@ export default function StudentProfilePage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Profile Banner */}
       <div className="bg-primary px-4 py-5">

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
-import Header from '../../components/header'
 import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
 import { useCheckinMutation } from '../../api/mutations'
 import { ArrowLeft, Users, TicketCheck, XCircle } from 'lucide-react'
@@ -82,7 +81,6 @@ export default function OrganizerCheckinScannerPage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

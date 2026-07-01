@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { ArrowLeft } from 'lucide-react'
 import { useProfileQuery, useInterestsQuery, useTimePreferencesQuery, type NotificationPreferences } from '../../api/queries'
@@ -125,7 +124,6 @@ export default function StudentSettingsPage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

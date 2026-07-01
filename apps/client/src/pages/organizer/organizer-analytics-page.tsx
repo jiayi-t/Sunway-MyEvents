@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { ArrowLeft, ChevronRight, ImageOff, Star } from 'lucide-react'
 import {
   useAttendanceAnalyticsQuery,
@@ -271,7 +270,6 @@ export default function OrganizerAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-surface pb-8">
-      <Header />
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white">

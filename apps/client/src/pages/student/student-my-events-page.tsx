@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
 import { Calendar, Clock, ImageOff, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
 
@@ -209,7 +208,6 @@ export default function MyEventsPage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

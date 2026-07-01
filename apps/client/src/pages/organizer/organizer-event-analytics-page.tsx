@@ -1,5 +1,4 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { ArrowLeft, Star } from 'lucide-react'
 import { useEventAnalyticsQuery, type QuestionAnalysis } from '../../api/queries'
 
@@ -92,7 +91,6 @@ export default function OrganizerEventAnalyticsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface">
-        <Header />
         {subHeader('Analytics')}
         <div className="flex items-center justify-center h-40">
           <p className="text-muted-foreground text-sm">Loading...</p>
@@ -104,7 +102,6 @@ export default function OrganizerEventAnalyticsPage() {
   if (isError || !data) {
     return (
       <div className="min-h-screen bg-surface">
-        <Header />
         {subHeader('Analytics')}
         <div className="flex items-center justify-center h-40">
           <p className="text-muted-foreground text-sm">Analytics not available.</p>
@@ -118,7 +115,6 @@ export default function OrganizerEventAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-surface pb-10">
-      <Header />
 
       {/* Sub-header shows event name */}
       {subHeader(event.name)}

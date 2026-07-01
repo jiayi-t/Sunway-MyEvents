@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { ArrowLeft, Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
@@ -127,7 +126,6 @@ export default function OrganizerEditProfilePage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

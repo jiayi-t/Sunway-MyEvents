@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useMyRegistrationsQuery, useCheckinTokenQuery } from '../../api/queries'
 import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react'
@@ -66,7 +65,6 @@ export default function StudentCheckinPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">

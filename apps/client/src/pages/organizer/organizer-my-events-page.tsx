@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
-import Header from '../../components/header'
 import api from '../../services/api'
 import { useOrganizerEventsQuery, type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
@@ -336,7 +335,6 @@ export default function OrganizerEventsPage() {
 
   return (
     <div className="bg-surface">
-      <Header />
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('/organizer/dashboard')} className="text-white">
           <ArrowLeft />

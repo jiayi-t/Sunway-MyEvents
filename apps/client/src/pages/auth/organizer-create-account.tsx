@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import api from '../../services/api'
+import LoginFooter from '../../components/login-footer'
 
 const CNS_CATEGORIES = ['Accounting & Finance', 'Art & Music', 'Business', 'Cultural', 'General Interest', 'Martial Art', 'Nature', 'Religious', 'Sports', 'Uniform/Affiliate']
 
@@ -64,14 +65,15 @@ export default function OrganizerCreateAccount() {
   }
 
   return (
-    <div className="bg-surface flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 bg-primary text-center">
         <span className="text-white font-bold text-lg">Sunway </span>
         <span className="font-bold text-lg text-accent">MyEvents</span>
       </div>
 
-      <div className="flex-1 px-4 py-4">
+      <div className="flex-1 flex flex-col items-center px-4 py-6">
+        <div className="w-full max-w-md">
         <h2 className="text-primary font-bold text-xl mb-4">Create Account</h2>
 
         <div className="bg-white rounded-xl shadow p-6 w-full space-y-4">
@@ -205,7 +207,10 @@ export default function OrganizerCreateAccount() {
             </button>
           </div>
         </div>
+        </div>
       </div>
+      
+      <LoginFooter />
 
       {/* Success popup */}
       {success && (

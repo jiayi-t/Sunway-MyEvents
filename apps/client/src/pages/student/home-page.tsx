@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from '../../components/header'
 import { useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
@@ -81,7 +80,6 @@ export default function HomePage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       {/* Hero Section */}
       <div className="bg-primary px-4 pt-4 pb-3">

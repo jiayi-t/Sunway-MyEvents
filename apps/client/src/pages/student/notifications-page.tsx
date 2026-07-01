@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from '../../components/header'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
 import { ArrowLeft, Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
@@ -109,7 +108,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="bg-surface min-h-screen">
-      <Header />
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white">

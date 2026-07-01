@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, type SocialLinks } from '../../api/queries'
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
@@ -57,8 +56,7 @@ export default function OrganizerProfilePage() {
   const following = notifyStatus?.following ?? false
 
   return (
-    <div className="bg-surface min-h-screen">
-      <Header />
+    <div className="bg-surface">
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm text-center mt-12">Loading...</p>

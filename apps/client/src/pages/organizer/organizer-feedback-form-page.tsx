@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import Header from '../../components/header'
 import { useFeedbackFormQuery, DEFAULT_QUESTIONS, type FeedbackQuestion, type QuestionType } from '../../api/queries'
 import { useSaveFeedbackFormMutation } from '../../api/mutations'
 import { ArrowLeft, Trash2, Star, Lock, Plus, X } from 'lucide-react'
@@ -233,7 +232,6 @@ export default function OrganizerFeedbackFormPage() {
   if (!isNewEvent && isLoading) {
     return (
       <div className="bg-surface min-h-screen">
-        <Header />
         <div className="flex items-center justify-center h-40">
           <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
@@ -243,7 +241,6 @@ export default function OrganizerFeedbackFormPage() {
 
   return (
     <div className="bg-surface min-h-screen">
-      <Header />
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={handleCancel} className="text-white"><ArrowLeft /></button>

@@ -28,6 +28,7 @@ import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form
 import OrganizerAnalyticsPage from './pages/organizer/organizer-analytics-page'
 import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analytics-page'
 import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
+import Header from './components/header'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
 
@@ -38,7 +39,10 @@ const queryClient = new QueryClient({
   },
 })
 
-const LOGIN_PATHS = ['/login', '/login/student', '/login/organizer', '/select-interests']
+const AUTH_PATHS = [
+  '/login', '/login/student', '/login/organizer', '/login/organizer/register',
+  '/select-interests', '/forgot-password', '/reset-password',
+]
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth()
@@ -53,12 +57,18 @@ function ScrollToTop() {
 
 function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
-  const hideFooter = LOGIN_PATHS.includes(pathname)
+
+  if (AUTH_PATHS.includes(pathname)) {
+    return <>{children}</>
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface">
-      <div className="flex-1">{children}</div>
-      {!hideFooter && <Footer />}
+    <div className="min-h-screen flex flex-col lg:bg-slate-100">
+      <Header />
+      <div className="flex-1 w-full max-w-2xl mx-auto bg-surface">
+        {children}
+      </div>
+      <Footer />
     </div>
   )
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import Header from '../../components/header'
 import { useEventQuery, useMyRegistrationsQuery, useMyFeedbackQuery, useFeedbackFormQuery, type FeedbackQuestion } from '../../api/queries'
 import { useSubmitFeedbackMutation } from '../../api/mutations'
 import { ArrowLeft, Star } from 'lucide-react'
@@ -163,7 +162,6 @@ export default function StudentFeedbackPage() {
   if (isLoading) {
     return (
       <div className="bg-surface min-h-screen">
-        <Header />
         <div className="flex items-center justify-center h-40">
           <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
@@ -176,7 +174,6 @@ export default function StudentFeedbackPage() {
   if (alreadySubmitted) {
     return (
       <div className="bg-surface min-h-screen">
-        <Header />
         <div className="bg-primary px-4 py-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
@@ -194,7 +191,6 @@ export default function StudentFeedbackPage() {
   if (!checkedIn) {
     return (
       <div className="bg-surface min-h-screen">
-        <Header />
         <div className="bg-primary px-4 py-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
@@ -210,7 +206,6 @@ export default function StudentFeedbackPage() {
 
   return (
     <div className="bg-surface min-h-screen">
-      <Header />
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>

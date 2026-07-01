@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { ArrowLeft, Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
@@ -164,7 +163,6 @@ export default function BrowseEventsPage() {
 
   return (
     <div className="bg-surface">
-      <Header />
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white">

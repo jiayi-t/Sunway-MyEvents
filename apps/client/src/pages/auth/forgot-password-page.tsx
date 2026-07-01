@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForgotPasswordMutation } from '../../api/mutations'
+import LoginFooter from '../../components/login-footer'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
@@ -16,17 +17,17 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="bg-surface flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       <div className="px-4 py-3 text-center bg-primary">
         <span className="text-white font-bold text-lg">Sunway </span>
         <span className="font-bold text-lg text-accent">MyEvents</span>
       </div>
 
-      <div className="flex-1 flex flex-col px-6 py-8">
+      <div className="flex-1 flex flex-col items-center px-6 py-8">
         {submitted ? (
-          <>
+          <div className="w-full max-w-sm">
             <h1 className="text-primary text-xl font-bold mb-6">Check your email</h1>
-            <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
+            <div className="bg-white rounded-xl shadow p-6">
               <p className="text-sm text-muted-foreground mb-6">
                 If that email address is registered to an organiser account, we've sent a password reset link. Kindly check your inbox (and spam folder).
               </p>
@@ -37,11 +38,11 @@ export default function ForgotPasswordPage() {
                 Back to Login
               </button>
             </div>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="w-full max-w-sm">
             <h1 className="text-primary text-xl font-bold mb-6">Forgot Password</h1>
-            <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
+            <div className="bg-white rounded-xl shadow p-6">
               <p className="text-sm text-muted-foreground mb-5">
                 Enter your registered email address and we'll send you a reset link.
               </p>
@@ -77,10 +78,11 @@ export default function ForgotPasswordPage() {
                 </button>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
-
+      
+      <LoginFooter />
     </div>
   )
 }

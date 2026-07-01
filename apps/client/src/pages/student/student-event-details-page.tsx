@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Header from '../../components/header'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
@@ -104,7 +103,6 @@ export default function StudentEventDetailsPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <Header />
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
