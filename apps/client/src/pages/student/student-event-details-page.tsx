@@ -79,6 +79,10 @@ export default function StudentEventDetailsPage() {
   }, [id])
 
   const handleRegister = () => {
+    if (Number((event as any)?.pricing) > 0) {
+      navigate(`/events/${id}/pay`)
+      return
+    }
     setError('')
     registerMutation.mutate(undefined, {
       onSuccess: () => setSuccess('Successfully registered for this event!'),

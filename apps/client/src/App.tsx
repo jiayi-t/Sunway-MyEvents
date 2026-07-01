@@ -11,6 +11,7 @@ import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
 import StudentCheckinPage from './pages/student/student-checkin-page'
+import MockPaymentPage from './pages/student/mock-payment-page'
 import StudentFeedbackPage from './pages/student/student-feedback-page'
 import SettingsPage from './pages/student/student-settings-page'
 import NotificationsPage from './pages/student/notifications-page'
@@ -65,7 +66,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col lg:bg-slate-100">
       <Header />
-      <div className="flex-1 w-full max-w-2xl mx-auto bg-surface">
+      <div className="flex-1 w-full max-w-2xl mx-auto bg-surface flex flex-col">
         {children}
       </div>
       <Footer />
@@ -103,6 +104,13 @@ function AppRoutes() {
         element={
         <ProtectedRoute>
           <StudentEventDetailsPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/events/:id/pay"
+        element={
+        <ProtectedRoute>
+          <MockPaymentPage />
         </ProtectedRoute>
         }
       />
