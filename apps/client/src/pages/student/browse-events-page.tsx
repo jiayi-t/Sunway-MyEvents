@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../../components/header'
 import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft, Calendar, Clock, ImageOff, MapPin, Search } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
   id: number
@@ -19,7 +19,8 @@ interface Event {
   cancelled_at?: string | null
 }
 
-const CATEGORIES = ['All Events', 'For You', 'Academics', 'Arts', ' Cultural', 'Entertainment', 'Social', 'Sports']
+const EVENT_CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
+const CATEGORIES = ['All Events', 'For You', ...EVENT_CATEGORIES]
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
@@ -40,6 +41,20 @@ const formatTimeRange = (start?: string, end?: string) =>
 
 const toImageUrl = (url?: string) => url ?? ''
 
+interface Filters {
+  categories: string[]
+  dateFrom: string
+  dateTo: string
+  upcoming: boolean
+  past: boolean
+}
+
+const EMPTY_FILTERS: Filters = { categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false }
+
+function filtersActive(f: Filters) {
+  return f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past
+}
+
 export default function BrowseEventsPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -48,6 +63,21 @@ export default function BrowseEventsPage() {
   const [activeCategory, setActiveCategory] = useState('All Events')
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [searchApplied, setSearchApplied] = useState(!!searchParams.get('q'))
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
+  const [draftFilters, setDraftFilters] = useState<Filters>(EMPTY_FILTERS)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterOpen && panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setFilterOpen(false)
+        setDraftFilters(filters)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [filterOpen, filters])
 
   const { data: eventsData, isLoading: loading } = useEventsQuery()
   const events = (eventsData ?? []) as Event[]
@@ -59,16 +89,48 @@ export default function BrowseEventsPage() {
   const isLoading = loading || (isForYouActive && recLoading)
 
   const filtered = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    let base: Event[]
     if (searchApplied) {
-      return events.filter(e =>
+      base = events.filter(e =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.venue?.toLowerCase().includes(search.toLowerCase())
       )
+    } else if (activeCategory === 'All Events') {
+      base = events
+    } else if (activeCategory === 'For You') {
+      base = recommendations
+    } else {
+      base = events.filter(e => e.category?.toLowerCase() === activeCategory.toLowerCase())
     }
-    if (activeCategory === 'All Events') return events
-    if (activeCategory === 'For You') return recommendations
-    return events.filter(e => e.category?.toLowerCase() === activeCategory.toLowerCase())
-  }, [events, activeCategory, recommendations, search, searchApplied])
+
+    if (!filtersActive(filters)) return base
+
+    return base.filter(e => {
+      const eventDate = new Date(e.date)
+      eventDate.setHours(0, 0, 0, 0)
+
+      if (filters.upcoming && !filters.past && eventDate < today) return false
+      if (filters.past && !filters.upcoming && eventDate >= today) return false
+
+      if (filters.dateFrom) {
+        const from = new Date(filters.dateFrom)
+        from.setHours(0, 0, 0, 0)
+        if (eventDate < from) return false
+      }
+      if (filters.dateTo) {
+        const to = new Date(filters.dateTo)
+        to.setHours(0, 0, 0, 0)
+        if (eventDate > to) return false
+      }
+
+      if (filters.categories.length > 0 && !filters.categories.includes(e.category)) return false
+
+      return true
+    })
+  }, [events, activeCategory, recommendations, search, searchApplied, filters])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
@@ -76,12 +138,28 @@ export default function BrowseEventsPage() {
     setSearch('')
   }
 
-  const handleSearch = () => 
-    setSearchApplied(true)
+  const handleSearch = () => setSearchApplied(true)
 
   const handleClearSearch = () => {
     setSearch('')
     setSearchApplied(false)
+  }
+
+  const toggleDraftCategory = (cat: string) =>
+    setDraftFilters(f => ({
+      ...f,
+      categories: f.categories.includes(cat) ? f.categories.filter(c => c !== cat) : [...f.categories, cat],
+    }))
+
+  const applyFilters = () => {
+    setFilters(draftFilters)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    setFilters(EMPTY_FILTERS)
+    setDraftFilters(EMPTY_FILTERS)
+    setFilterOpen(false)
   }
 
   return (
@@ -97,34 +175,127 @@ export default function BrowseEventsPage() {
       </div>
 
       {/* Search */}
-      <div className="bg-surface px-4 py-3">
-        <div className="flex items-center bg-white rounded-full shadow border border-border px-3 py-2">
-          <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Search events"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && search.trim() && handleSearch()}
-            className="flex-1 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
-          />
-          {searchApplied ? (
-            <button
-              onClick={handleClearSearch}
-              className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold"
-            >
-              Clear
-            </button>
-          ) : (
-            <button
-              onClick={handleSearch}
-              disabled={!search.trim()}
-              className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Search
-            </button>
-          )}
+      <div className="bg-surface px-4 py-3 relative">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center bg-white rounded-full shadow border border-border px-3 py-2">
+            <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search events"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && search.trim() && handleSearch()}
+              className="flex-1 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
+            />
+            {searchApplied ? (
+              <button
+                onClick={handleClearSearch}
+                className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold"
+              >
+                Clear
+              </button>
+            ) : (
+              <button
+                onClick={handleSearch}
+                disabled={!search.trim()}
+                className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Search
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => { setDraftFilters(filters); setFilterOpen(o => !o) }}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow border transition-colors ${
+              filtersActive(filters) ? 'bg-primary border-primary text-white' : 'bg-white border-border text-gray-500'
+            }`}
+            aria-label="Open filters"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
         </div>
+
+        {/* Filter panel */}
+        {filterOpen && (
+          <div
+            ref={panelRef}
+            className="absolute left-4 right-4 top-full mt-1 bg-white rounded-2xl shadow-xl border border-border z-30 p-4"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-bold text-foreground text-sm">Filters</span>
+              <button onClick={() => { setFilterOpen(false); setDraftFilters(filters) }}>
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Timing */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Timing</p>
+            <div className="flex gap-4 mb-4">
+              {(['upcoming', 'past'] as const).map(key => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={draftFilters[key]}
+                    onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
+                    className="w-4 h-4 accent-primary rounded"
+                  />
+                  <span className="text-sm capitalize text-foreground">{key}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Date range */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Date range</p>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="date"
+                value={draftFilters.dateFrom}
+                onChange={e => setDraftFilters(f => ({ ...f, dateFrom: e.target.value }))}
+                className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <span className="text-muted-foreground text-xs">to</span>
+              <input
+                type="date"
+                value={draftFilters.dateTo}
+                min={draftFilters.dateFrom || undefined}
+                onChange={e => setDraftFilters(f => ({ ...f, dateTo: e.target.value }))}
+                className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Categories */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Category</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
+              {EVENT_CATEGORIES.map(cat => (
+                <label key={cat} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={draftFilters.categories.includes(cat)}
+                    onChange={() => toggleDraftCategory(cat)}
+                    className="w-4 h-4 accent-primary rounded"
+                  />
+                  <span className="text-sm text-foreground">{cat}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={clearFilters}
+                className="flex-1 py-2 rounded-full border border-border text-sm font-semibold text-muted-foreground"
+              >
+                Clear all
+              </button>
+              <button
+                onClick={applyFilters}
+                className="flex-1 py-2 rounded-full bg-accent text-white text-sm font-semibold"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Category Filters */}
