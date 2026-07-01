@@ -6,6 +6,7 @@ import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
 import SelectInterestsPage from './pages/student/select-interests-page'
 import HomePage from './pages/student/home-page'
+import BrowseEventsPage from './pages/student/browse-events-page'
 import StudentEventDetailsPage from './pages/student/student-event-details-page'
 import StudentProfilePage from './pages/student/student-profile-page'
 import MyEventsPage from './pages/student/student-my-events-page'
@@ -71,6 +72,13 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/browse"
+        element={
+          <ProtectedRoute>
+            <BrowseEventsPage />
           </ProtectedRoute>
         }
       />
