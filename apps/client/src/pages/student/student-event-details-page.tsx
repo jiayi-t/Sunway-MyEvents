@@ -248,19 +248,34 @@ export default function StudentEventDetailsPage() {
         )}
 
         {/* Register Button */}
-        {!typedEvent.cancelled_at && (
-          <button
-            onClick={registered ? undefined : handleRegister}
-            disabled={registerMutation.isPending || registered}
-            className={`w-full py-3 rounded-full text-white font-semibold text-sm transition-colors
-              ${registered
-                ? 'bg-green-500 cursor-default'
-                : 'bg-accent hover:bg-orange-600 disabled:opacity-50'
-              }`}
-          >
-            {registered ? 'Registered' : registerMutation.isPending ? 'Registering...' : 'Register Now!'}
-          </button>
-        )}
+        {!typedEvent.cancelled_at && (() => {
+          const deadlinePassed = typedEvent.registration_deadline
+            ? new Date() > new Date(typedEvent.registration_deadline)
+            : false
+          if (registered) {
+            return (
+              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default">
+                Registered
+              </button>
+            )
+          }
+          if (deadlinePassed) {
+            return (
+              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed">
+                Registration Deadline Passed
+              </button>
+            )
+          }
+          return (
+            <button
+              onClick={handleRegister}
+              disabled={registerMutation.isPending}
+              className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors"
+            >
+              {registerMutation.isPending ? 'Registering...' : 'Register Now!'}
+            </button>
+          )
+        })()}
       </div>
 
       {/* Organized By */}
