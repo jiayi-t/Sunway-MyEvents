@@ -6,6 +6,7 @@ import { Calendar, Clock, Bookmark, Settings } from 'lucide-react'
 interface Registration {
   id: number
   event_date: string
+  checked_in_at: string | null
 }
 
 export default function StudentProfilePage() {
@@ -19,7 +20,7 @@ export default function StudentProfilePage() {
 
   const now = new Date()
   const upcoming = registrations.filter(r => new Date(r.event_date) >= now)
-  const past = registrations.filter(r => new Date(r.event_date) < now)
+  const attended = registrations.filter(r => r.checked_in_at !== null)
 
   return (
     <div className="bg-surface">
@@ -45,7 +46,7 @@ export default function StudentProfilePage() {
                   <p className="text-blue-200 text-xs">Upcoming</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-bold text-lg">{past.length}</p>
+                  <p className="text-white font-bold text-lg">{attended.length}</p>
                   <p className="text-blue-200 text-xs">Attended</p>
                 </div>
                 <div className="text-center">
