@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft, Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
+import api from '../../services/api'
 
 const LINK_TYPES: SocialLinks['type'][] = ['instagram', 'website', 'linkedin', 'tiktok', 'rednote', 'facebook', 'others']
 
@@ -17,6 +18,19 @@ const LINK_LABELS: Record<SocialLinks['type'], string> = {
   facebook: 'Facebook',
   others: 'Others',
 }
+
+const CS_CATEGORIES = [
+  'Accounting & Finance',
+  'Art & Music',
+  'Business',
+  'Cultural',
+  'General Interest',
+  'Martial Art',
+  'Nature',
+  'Religious',
+  'Sports',
+  'Uniform/Affiliate',
+]
 
 function LinkTypeIcon({ type, className }: { type: SocialLinks['type']; className?: string }) {
   if (type === 'instagram') return <InstagramLogo className={className} />
@@ -71,16 +85,25 @@ function LinkTypePicker({ value, onChange }: { value: SocialLinks['type']; onCha
 }
 
 export default function OrganizerEditProfilePage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const navigate = useNavigate()
 
   const { data: profile, isLoading } = useOrganizerProfileQuery()
   const updateMutation = useUpdateOrganizerProfileMutation()
 
+  const [name, setName] = useState('')
+  const [sunwayId, setSunwayId] = useState('')
+  const [email, setEmail] = useState('')
+  const [orgType, setOrgType] = useState<'SLB' | 'CS'>('CS')
+  const [subCategory, setSubCategory] = useState('')
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageUploading, setImageUploading] = useState(false)
   const [links, setLinks] = useState<SocialLinks[]>([])
   const [about, setAbout] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const profileInitialized = useRef(false)
-  const [linksSaved, setLinksSaved] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const linkDragStateRef = useRef<{ index: number; startY: number; targetIndex: number } | null>(null)
   const linkRowRefs = useRef<(HTMLDivElement | null)[]>([])
   const [linkActiveDrag, setLinkActiveDrag] = useState<{ index: number; deltaY: number; targetIndex: number } | null>(null)
@@ -88,16 +111,48 @@ export default function OrganizerEditProfilePage() {
   useEffect(() => {
     if (profile && !profileInitialized.current) {
       profileInitialized.current = true
+      setName(profile.name ?? '')
+      setSunwayId(profile.sunway_id ?? '')
+      setEmail(profile.email ?? '')
+      const isSLB = profile.category === 'SLB'
+      setOrgType(isSLB ? 'SLB' : 'CS')
+      setSubCategory(isSLB ? '' : (profile.category ?? ''))
+      setImageUrl(profile.image_url ?? null)
       setLinks(profile.social_links ?? [])
       setAbout(profile.about ?? '')
     }
   }, [profile])
 
+  const currentCategory = orgType === 'SLB' ? 'SLB' : (subCategory || null)
+
   const hasChanges =
+    name !== (profile?.name ?? '') ||
+    sunwayId !== (profile?.sunway_id ?? '') ||
+    email !== (profile?.email ?? '') ||
+    currentCategory !== (profile?.category ?? null) ||
+    imageUrl !== (profile?.image_url ?? null) ||
     JSON.stringify(links) !== JSON.stringify(profile?.social_links ?? []) ||
     about !== (profile?.about ?? '')
 
-  useEffect(() => { if (hasChanges) setLinksSaved(false) }, [hasChanges])
+  useEffect(() => { if (hasChanges) setSaved(false) }, [hasChanges])
+
+  const handleImageClick = () => fileInputRef.current?.click()
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      // uploads the image to the server as multipart/form-data to POST /uploads endpoint which returns the URL of the uploaded image
+      const res = await api.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      setImageUrl(res.data.url)
+    } finally {
+      setImageUploading(false)
+      e.target.value = ''
+    }
+  }
 
   const addLink = () => setLinks(prev => [...prev, { type: 'instagram', url: '' }])
 
@@ -112,7 +167,6 @@ export default function OrganizerEditProfilePage() {
   const reorderLinks = (from: number, to: number) =>
     setLinks(prev => {
       const next = [...prev]
-      // removes the dragged item and inserts it at the new position
       const [moved] = next.splice(from, 1)
       next.splice(to, 0, moved)
       return next
@@ -128,6 +182,33 @@ export default function OrganizerEditProfilePage() {
     if (dragIdx > targetIndex && i >= targetIndex && i < dragIdx) return draggedHeight
     return 0
   }
+
+  const handleSave = () => {
+    if (!name.trim()) { setSaveError('Organisation name cannot be blank'); return }
+    setSaveError('')
+    updateMutation.mutate(
+      {
+        name,
+        sunway_id: sunwayId,
+        email,
+        category: currentCategory,
+        image_url: imageUrl,
+        social_links: links,
+        about: about || null,
+      },
+      {
+        onSuccess: (data: any) => {
+          setSaved(true)
+          updateUser({ name: data.name, sunway_id: data.sunway_id, image_url: data.image_url })
+        },
+        onError: (err: any) => setSaveError(err.response?.data?.error || 'Failed to save'),
+      }
+    )
+  }
+
+  const avatarSrc = imageUrl
+    ? (imageUrl.startsWith('/uploads/') ? `http://localhost:3001${imageUrl}` : imageUrl)
+    : (user?.image_url ?? '/Default Icon.jpg')
 
   return (
     <div className="bg-surface">
@@ -146,30 +227,109 @@ export default function OrganizerEditProfilePage() {
           <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
         ) : (
           <>
+            {/* Avatar */}
             <div className="flex flex-col items-center mb-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-surface mb-2">
-                <img
-                  src={user?.image_url ?? '/Default Icon.jpg'}
-                  alt={user?.name ?? ''}
-                  className="w-full h-full object-cover"
-                  onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-                />
+              <div className="relative w-16 h-16 mb-2">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-surface">
+                  <img
+                    src={avatarSrc}
+                    alt={user?.name ?? ''}
+                    className="w-full h-full object-cover"
+                    onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
+                  />
+                  {imageUploading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleImageClick}
+                  disabled={imageUploading}
+                  className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
+                >
+                  <Pencil className="w-3 h-3 text-white" />
+                </button>
               </div>
-              <p className="text-primary font-bold text-lg">{user?.name}</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Organisation name"
+                className="text-primary font-bold text-lg text-center bg-transparent border-b border-border focus:outline-none focus:border-primary w-full max-w-xs"
+              />
             </div>
 
             <div className="bg-card rounded-xl shadow">
-              {[
-                { label: 'Username', value: profile?.sunway_id },
-                { label: 'Email', value: profile?.email },
-                { label: 'Category', value: profile?.category === 'SLB' ? 'SLB' : profile?.category ? 'C&S' : null },
-                { label: 'Sub-category', value: profile?.category === 'SLB' ? 'N/A' : profile?.category ?? null },
-              ].map(({ label, value }, index) => (
-                <div key={label} className={`flex border-b border-border ${index === 0 ? 'rounded-t-xl' : ''}`}>
-                  <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">{label}</span>
-                  <span className="pl-1 pr-4 py-3 text-sm text-foreground">{value ?? '—'}</span>
+              {/* Username */}
+              <div className="flex items-center border-b border-border rounded-t-xl">
+                <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Username</span>
+                <div className="pl-1 pr-4 py-2 flex-1 min-w-0">
+                  <input
+                    type="text"
+                    value={sunwayId}
+                    onChange={e => setSunwayId(e.target.value)}
+                    placeholder="Min. 3 characters"
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  />
                 </div>
-              ))}
+              </div>
+
+              {/* Email */}
+              <div className="flex items-center border-b border-border">
+                <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Email</span>
+                <div className="pl-1 pr-4 py-2 flex-1 min-w-0">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="flex items-center border-b border-border">
+                <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Category</span>
+                <div className="pl-1 pr-4 py-2 flex-1 min-w-0">
+                  <select
+                    value={orgType}
+                    onChange={e => { setOrgType(e.target.value as 'SLB' | 'CS'); if (e.target.value === 'SLB') setSubCategory('') }}
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary bg-white"
+                  >
+                    <option value="SLB">SLB</option>
+                    <option value="CS">C&S</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Sub-category (only for C&S) */}
+              {orgType === 'CS' && (
+                <div className="flex items-center border-b border-border">
+                  <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Sub-category</span>
+                  <div className="pl-1 pr-4 py-2 flex-1 min-w-0">
+                    <select
+                      value={subCategory}
+                      onChange={e => setSubCategory(e.target.value)}
+                      className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary bg-white"
+                    >
+                      <option value="">Select sub-category</option>
+                      {CS_CATEGORIES.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               {/* About */}
               <div className="flex border-b border-border">
@@ -270,13 +430,15 @@ export default function OrganizerEditProfilePage() {
               </div>
             </div>
 
+            {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
+
             <div className="flex justify-end">
               <button
-                onClick={() => updateMutation.mutate({ social_links: links, about: about || null }, { onSuccess: () => setLinksSaved(true) })}
-                disabled={!hasChanges || updateMutation.isPending}
+                onClick={handleSave}
+                disabled={!hasChanges || updateMutation.isPending || imageUploading}
                 className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {updateMutation.isPending ? 'Saving...' : linksSaved ? 'Saved' : 'Save'}
+                {updateMutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Save'}
               </button>
             </div>
           </>

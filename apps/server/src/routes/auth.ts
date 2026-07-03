@@ -2,7 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
-import { and, eq, gt, isNull } from 'drizzle-orm'
+import { and, eq, gt, isNull, ne } from 'drizzle-orm'
 import { db } from '../db'
 import { users, password_reset_tokens } from '../database/schema'
 import { authenticate, type AuthRequest } from '../middleware/auth'
@@ -220,13 +220,50 @@ router.get('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
 // PUT /api/auth/organizer-profile
 router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
-  const { social_links, about } = req.body
-  if (!Array.isArray(social_links)) {
-    return res.status(400).json({ error: 'social_links must be an array' })
+  const name: string | undefined = typeof req.body.name === 'string' ? req.body.name.trim() || undefined : undefined
+  const sunway_id: string | undefined = typeof req.body.sunway_id === 'string' ? req.body.sunway_id.trim() : undefined
+  const email: string | undefined = typeof req.body.email === 'string' ? req.body.email.trim() : undefined
+  const { category, social_links, about, image_url } = req.body
+
+  if (!Array.isArray(social_links)) return res.status(400).json({ error: 'social_links must be an array' })
+
+  if (sunway_id !== undefined) {
+    if (sunway_id.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' })
+    const [taken] = await db.select({ id: users.id }).from(users)
+      .where(and(eq(users.sunway_id, sunway_id), ne(users.id, req.user!.id))).limit(1)
+    if (taken) return res.status(400).json({ error: 'Username already taken' })
   }
+
+  if (email !== undefined) {
+    if (!email.includes('@')) return res.status(400).json({ error: 'Invalid email address' })
+    const [taken] = await db.select({ id: users.id }).from(users)
+      .where(and(eq(users.email, email), ne(users.id, req.user!.id))).limit(1)
+    if (taken) return res.status(400).json({ error: 'Email already in use' })
+  }
+
   try {
-    await db.update(users).set({ social_links, about: about ?? null }).where(eq(users.id, req.user!.id))
-    res.json({ social_links, about: about ?? null })
+    const updates: Record<string, unknown> = { social_links, about: about ?? null }
+    if (name !== undefined) updates.name = name
+    if (sunway_id !== undefined) updates.sunway_id = sunway_id
+    if (email !== undefined) updates.email = email
+    if (category !== undefined) updates.category = category
+    if (image_url !== undefined) updates.image_url = image_url
+
+    await db.update(users).set(updates).where(eq(users.id, req.user!.id))
+
+    const [updated] = await db.select({
+      id: users.id,
+      name: users.name,
+      sunway_id: users.sunway_id,
+      email: users.email,
+      role: users.role,
+      category: users.category,
+      image_url: users.image_url,
+      social_links: users.social_links,
+      about: users.about,
+    }).from(users).where(eq(users.id, req.user!.id))
+
+    res.json(updated)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

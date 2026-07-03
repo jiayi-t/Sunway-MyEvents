@@ -13,11 +13,21 @@ export function useUpdateNotificationPreferencesMutation() {
   })
 }
 
+export interface OrganizerProfileUpdate {
+  name?: string
+  sunway_id?: string
+  email?: string
+  category?: string | null
+  image_url?: string | null
+  social_links: SocialLinks[]
+  about: string | null
+}
+
 export function useUpdateOrganizerProfileMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ social_links, about }: { social_links: SocialLinks[]; about: string | null }) =>
-      api.put('/auth/organizer-profile', { social_links, about }).then(res => res.data),
+    mutationFn: (data: OrganizerProfileUpdate) =>
+      api.put('/auth/organizer-profile', data).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.organizerProfile })
     },
