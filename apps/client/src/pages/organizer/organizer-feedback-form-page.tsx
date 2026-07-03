@@ -183,7 +183,7 @@ function QuestionEditor({
                   // gives the dragged option a 10 z-index, while others remain at 0
                   zIndex: optionActiveDrag?.index === idx ? 10 : 0,
                 }}
-                className={`flex gap-2 items-center rounded-lg ${optionActiveDrag?.index === idx ? 'shadow-md opacity-90' : 'transition-transform duration-200'}`}
+                className={`flex gap-2 items-center rounded-lg ${optionActiveDrag?.index === idx ? 'shadow-md opacity-90' : optionActiveDrag ? 'transition-transform duration-200' : ''}`}
               >
                 <GripVertical
                   className="w-3.5 h-3.5 text-muted-foreground cursor-grab flex-shrink-0"
@@ -402,7 +402,7 @@ export default function OrganizerFeedbackFormPage() {
             key={q.id}
             ref={el => { cardRefs.current[idx] = el }}
             style={{ transform: getCardTransformY(idx) !== 0 ? `translateY(${getCardTransformY(idx)}px)` : undefined, position: 'relative', zIndex: activeDrag?.index === idx ? 10 : 0 }}
-            className={`rounded-xl ${activeDrag?.index === idx ? 'shadow-lg opacity-90' : 'transition-transform duration-200'}`}
+            className={`rounded-xl ${activeDrag?.index === idx ? 'shadow-lg opacity-90' : activeDrag ? 'transition-transform duration-200' : ''}`}
           >
             <QuestionEditor
               q={q}
