@@ -81,15 +81,9 @@ export default function OrganizerEditProfilePage() {
   const [about, setAbout] = useState('')
   const profileInitialized = useRef(false)
   const [linksSaved, setLinksSaved] = useState(false)
-  // track which row is being dragged for drag-and-drop reordering
-  const dragIndex = useRef<number | null>(null)
-  const rowRefs = useRef<(HTMLDivElement | null)[]>([])
-  // track which row is being dragged for drag-and-drop reordering (for styling)
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
-  // track the position of the dragged row for touch screens (for styling)
-  const [touchGhost, setTouchGhost] = useState<{
-    y: number; link: SocialLinks; left: number; width: number; height: number
-  } | null>(null)
+  const linkDragStateRef = useRef<{ index: number; startY: number; targetIndex: number } | null>(null)
+  const linkRowRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [linkActiveDrag, setLinkActiveDrag] = useState<{ index: number; deltaY: number; targetIndex: number } | null>(null)
 
   useEffect(() => {
     if (profile && !profileInitialized.current) {
@@ -123,6 +117,17 @@ export default function OrganizerEditProfilePage() {
       next.splice(to, 0, moved)
       return next
     })
+
+  const getLinkTransformY = (i: number): number => {
+    if (!linkActiveDrag) return 0
+    const { index: dragIdx, deltaY, targetIndex } = linkActiveDrag
+    if (i === dragIdx) return deltaY
+    const gap = 8
+    const draggedHeight = (linkRowRefs.current[dragIdx]?.offsetHeight ?? 0) + gap
+    if (dragIdx < targetIndex && i > dragIdx && i <= targetIndex) return -draggedHeight
+    if (dragIdx > targetIndex && i >= targetIndex && i < dragIdx) return draggedHeight
+    return 0
+  }
 
   return (
     <div className="bg-surface">
@@ -193,75 +198,53 @@ export default function OrganizerEditProfilePage() {
                       {profile?.email}
                     </span>
                   </div>
-                  {/* Dragged Row Ghost */}
-                  {touchGhost && (
-                    <div
-                      style={{ position: 'fixed', top: touchGhost.y, left: touchGhost.left, width: touchGhost.width, zIndex: 50, pointerEvents: 'none' }}
-                      className="flex items-center gap-2 bg-card shadow-xl ring-1 ring-primary/20 rounded-lg opacity-95"
-                    >
-                      <GripVertical className="w-4 h-4 text-primary flex-shrink-0" />
-                      <div className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-foreground flex-shrink-0">
-                        <LinkTypeIcon type={touchGhost.link.type} className="w-4 h-4" />
-                      </div>
-                      <span className="flex-1 min-w-0 border border-border rounded-lg px-2 py-1.5 text-sm text-foreground truncate">
-                        {touchGhost.link.url || 'https://'}
-                      </span>
-                      <div className="w-4 flex-shrink-0" />
-                    </div>
-                  )}
                   {/* Link Rows */}
                   {links.map((link, index) => (
                     <div
                       key={index}
                       // use ref to track the position of each row for drag-and-drop reordering
-                      ref={el => { rowRefs.current[index] = el }}
-                      draggable
-                      onDragStart={() => { dragIndex.current = index; setDraggingIndex(index) }}
-                      onDragOver={e => {
-                        e.preventDefault()
-                        if (dragIndex.current === null || dragIndex.current === index) return
-                        reorderLinks(dragIndex.current, index)
-                        dragIndex.current = index
+                      ref={el => { linkRowRefs.current[index] = el }}
+                      style={{
+                        transform: getLinkTransformY(index) !== 0 ? `translateY(${getLinkTransformY(index)}px)` : undefined,
+                        position: 'relative',
+                        zIndex: linkActiveDrag?.index === index ? 10 : 0,
                       }}
-                      onDragEnd={() => { dragIndex.current = null; setDraggingIndex(null) }}
-                      className={`flex items-center gap-2 rounded-lg transition-all ${
-                        draggingIndex === index && touchGhost
-                          ? 'opacity-0'
-                          : draggingIndex === index
-                          ? 'shadow-xl ring-1 ring-border bg-card scale-[1.03] z-10 relative px-1 -mx-1'
-                          : draggingIndex !== null
-                          ? 'opacity-40'
-                          : ''
-                      }`}
+                      className={`flex items-center gap-2 rounded-lg ${linkActiveDrag?.index === index ? 'opacity-50' : linkActiveDrag ? 'transition-transform duration-200' : ''}`}
                     >
                       {/* Drag Handle */}
                       <GripVertical
                         className="w-4 h-4 text-muted-foreground cursor-grab flex-shrink-0"
                         // stops the browser from scrolling when dragging on touch screens
                         style={{ touchAction: 'none' }}
-                        onTouchStart={e => {
-                          const touch = e.touches[0]
-                          // get the position of the row being dragged to position the ghost element correctly
-                          const rect = rowRefs.current[index]?.getBoundingClientRect()
-                          dragIndex.current = index
-                          setDraggingIndex(index)
-                          if (rect) setTouchGhost({ y: touch.clientY - rect.height / 2, link: links[index], left: rect.left, width: rect.width, height: rect.height })
+                        onPointerDown={e => {
+                          e.preventDefault()
+                          e.currentTarget.setPointerCapture(e.pointerId)
+                          linkDragStateRef.current = { index, startY: e.clientY, targetIndex: index }
+                          setLinkActiveDrag({ index, deltaY: 0, targetIndex: index })
                         }}
-                        onTouchMove={e => {
-                          if (dragIndex.current === null) return
-                          const touch = e.touches[0]
-                          setTouchGhost(prev => prev ? { ...prev, y: touch.clientY - prev.height / 2 } : null)
-                          const target = rowRefs.current.findIndex(el => {
-                            if (!el) return false
+                        onPointerMove={e => {
+                          if (!linkDragStateRef.current || linkDragStateRef.current.index !== index) return
+                          const deltaY = e.clientY - linkDragStateRef.current.startY
+                          let newTarget = index
+                          for (let i = 0; i < linkRowRefs.current.length; i++) {
+                            if (i === index) continue
+                            const el = linkRowRefs.current[i]
+                            if (!el) continue
                             const rect = el.getBoundingClientRect()
-                            return touch.clientY >= rect.top && touch.clientY <= rect.bottom
-                          })
-                          if (target !== -1 && target !== dragIndex.current) {
-                            reorderLinks(dragIndex.current, target)
-                            dragIndex.current = target
+                            const mid = rect.top + rect.height / 2
+                            if (i < index && e.clientY < mid) { newTarget = i; break }
+                            if (i > index && e.clientY > mid) newTarget = i
                           }
+                          linkDragStateRef.current.targetIndex = newTarget
+                          setLinkActiveDrag({ index, deltaY, targetIndex: newTarget })
                         }}
-                        onTouchEnd={() => { dragIndex.current = null; setDraggingIndex(null); setTouchGhost(null) }}
+                        onPointerUp={() => {
+                          if (!linkDragStateRef.current) return
+                          const { index: from, targetIndex: to } = linkDragStateRef.current
+                          linkDragStateRef.current = null
+                          if (to !== from) reorderLinks(from, to)
+                          setLinkActiveDrag(null)
+                        }}
                       />
                       <LinkTypePicker
                         value={link.type}
