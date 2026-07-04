@@ -1,8 +1,7 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
-import { ArrowLeft, Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
+import { Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -91,7 +90,6 @@ function Section({ label, items }: { label: string; items: any[] }) {
 }
 
 export default function NotificationsPage() {
-  const navigate = useNavigate()
   const { data: notifications = [], isLoading } = useNotificationsQuery()
   const markAllReadMutation = useMarkAllNotificationsReadMutation()
 
@@ -110,11 +108,7 @@ export default function NotificationsPage() {
     <div className="bg-surface min-h-screen">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Notifications</h1>
-        <div className="w-5" />
       </div>
 
       {isLoading ? (

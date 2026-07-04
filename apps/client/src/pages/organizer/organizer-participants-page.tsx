@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
-import { ArrowLeft, Search, TicketCheck } from 'lucide-react'
+import { Search, TicketCheck } from 'lucide-react'
 
 type FilterTab = 'all' | 'registered' | 'checked-in'
 
@@ -34,7 +34,6 @@ const formatCheckinDate = (value?: string | null) => {
 
 export default function OrganizerParticipantsPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [search, setSearch] = useState('')
 
@@ -66,11 +65,7 @@ export default function OrganizerParticipantsPage() {
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Participants</h1>
-        <div className="w-5" />
       </div>
 
       {/* Event name + summary */}

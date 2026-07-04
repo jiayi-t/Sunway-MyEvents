@@ -1,5 +1,5 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Star } from 'lucide-react'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Star } from 'lucide-react'
 import { useEventAnalyticsQuery, type QuestionAnalysis } from '../../api/queries'
 
 function RatingBar({ star, count, total }: { star: number; count: number; total: number }) {
@@ -74,7 +74,6 @@ function QuestionBreakdown({ q }: { q: QuestionAnalysis }) {
 
 export default function OrganizerEventAnalyticsPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const view = searchParams.get('view') ?? 'attendance'
 
@@ -82,9 +81,7 @@ export default function OrganizerEventAnalyticsPage() {
 
   const subHeader = (title: string) => (
     <div className="bg-primary px-4 py-3 flex items-center gap-3">
-      <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
       <h1 className="text-white font-bold text-base flex-1 text-center truncate">{title}</h1>
-      <div className="w-5" />
     </div>
   )
 

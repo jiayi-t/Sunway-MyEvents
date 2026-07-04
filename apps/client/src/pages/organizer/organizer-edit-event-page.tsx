@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../services/api'
 import { useEventQuery } from '../../api/queries'
 import { useUpdateEventMutation } from '../../api/mutations'
-import { ArrowLeft, Upload, ClipboardPen } from 'lucide-react'
+import { Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {
   name: string
@@ -163,11 +163,7 @@ export default function OrganizerEditEventPage() {
     <div className="bg-surface min-h-screen">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white flex-shrink-0">
-          <ArrowLeft />
-        </button>
-        <h1 className="text-white font-bold text-sm flex-1 text-center truncate">{eventName}</h1>
-        <div className="w-5 flex-shrink-0" />
+        <h1 className="text-white font-bold text-base flex-1 text-center truncate">{eventName}</h1>
       </div>
 
       <div className="px-4 py-4 space-y-4">

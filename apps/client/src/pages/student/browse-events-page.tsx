@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft, Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
   id: number
@@ -164,11 +164,7 @@ export default function BrowseEventsPage() {
     <div className="bg-surface">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Browse Events</h1>
-        <div className="w-5" />
       </div>
 
       {/* Search */}

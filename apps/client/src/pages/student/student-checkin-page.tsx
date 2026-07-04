@@ -1,8 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../../context/auth-context'
 import { useMyRegistrationsQuery, useCheckinTokenQuery } from '../../api/queries'
-import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react'
+import { Calendar, Clock, MapPin } from 'lucide-react'
 
 interface Registration {
   id: number
@@ -43,7 +43,6 @@ const formatTime = (value?: string) => {
 
 export default function StudentCheckinPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { data, isLoading: regsLoading } = useMyRegistrationsQuery()
   const { data: token, isLoading: tokenLoading } = useCheckinTokenQuery(id)
@@ -52,27 +51,23 @@ export default function StudentCheckinPage() {
   const registration = registrations.find(r => r.event_id === Number(id))
 
   if (regsLoading || tokenLoading) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
+    <div className="bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Loading...</p>
     </div>
   )
 
   if (!registration) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
+    <div className="bg-surface flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Registration not found</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="bg-surface">
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Check In</h1>
-        <div className="w-5" />
       </div>
 
       {/* Check-in Card */}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
-import { Calendar, Clock, ImageOff, MapPin, ArrowLeft, ScanQrCode, MessageSquare } from 'lucide-react'
+import { Calendar, Clock, ImageOff, MapPin, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -211,11 +211,7 @@ export default function MyEventsPage() {
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/profile')} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">My Events</h1>
-        <div className="w-5" />
       </div>
 
       {/* Tabs */}

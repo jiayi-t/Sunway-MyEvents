@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { useProfileQuery, useInterestsQuery, useTimePreferencesQuery, type NotificationPreferences } from '../../api/queries'
 import { interestKeys, timePreferenceKeys } from '../../api/queries/interests.queries'
 import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation, useUpdateTimePreferencesMutation } from '../../api/mutations'
@@ -33,7 +33,6 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boo
 }
 
 export default function StudentSettingsPage() {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, updateUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -165,11 +164,7 @@ export default function StudentSettingsPage() {
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Settings</h1>
-        <div className="w-5" />
       </div>
 
       {/* Tabs */}

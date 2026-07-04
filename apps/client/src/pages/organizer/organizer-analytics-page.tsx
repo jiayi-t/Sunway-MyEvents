@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Eye, ImageOff, Star, Users } from 'lucide-react'
+import { ChevronRight, Eye, ImageOff, Star, Users } from 'lucide-react'
 import {
   useAttendanceAnalyticsQuery,
   useFeedbackAnalyticsQuery,
@@ -339,11 +339,7 @@ export default function OrganizerAnalyticsPage() {
     <div className="min-h-screen bg-surface pb-8">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Analytics</h1>
-        <div className="w-5" />
       </div>
 
       {/* Tabs */}

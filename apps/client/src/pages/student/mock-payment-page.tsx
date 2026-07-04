@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEventQuery } from '../../api/queries'
 import { useRegisterEventMutation } from '../../api/mutations'
-import { ArrowLeft, Lock, Check } from 'lucide-react'
+import { Lock, Check } from 'lucide-react'
 
 export default function MockPaymentPage() {
   const { id } = useParams<{ id: string }>()
@@ -47,11 +47,7 @@ export default function MockPaymentPage() {
   return (
     <div className="bg-surface flex flex-col">
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Payment</h1>
-        <div className="w-5" />
       </div>
 
       <div className="flex-1 px-4 py-6 max-w-sm mx-auto w-full">

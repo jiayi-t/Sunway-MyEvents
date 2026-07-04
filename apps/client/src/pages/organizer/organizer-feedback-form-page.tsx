@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, type HTMLAttributes } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useFeedbackFormQuery, DEFAULT_QUESTIONS, type FeedbackQuestion, type QuestionType } from '../../api/queries'
 import { useSaveFeedbackFormMutation } from '../../api/mutations'
-import { ArrowLeft, Trash2, Star, Lock, Plus, X, GripVertical } from 'lucide-react'
+import { Trash2, Star, Lock, Plus, X, GripVertical } from 'lucide-react'
 
 const TYPE_LABELS: Record<QuestionType, string> = {
   rating: 'Rating',
@@ -387,9 +387,7 @@ export default function OrganizerFeedbackFormPage() {
     <div className="bg-surface min-h-screen">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={handleCancel} className="text-white"><ArrowLeft /></button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
-        <div className="w-5" />
       </div>
 
       <div className="px-4 py-4 space-y-3 pb-8">

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEventQuery, useMyRegistrationsQuery, useMyFeedbackQuery, useFeedbackFormQuery, type FeedbackQuestion } from '../../api/queries'
 import { useSubmitFeedbackMutation } from '../../api/mutations'
-import { ArrowLeft, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hover, setHover] = useState(0)
@@ -175,9 +175,7 @@ export default function StudentFeedbackPage() {
     return (
       <div className="bg-surface min-h-screen">
         <div className="bg-primary px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
-          <div className="w-5" />
         </div>
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
           <Star className="w-10 h-10 fill-accent text-accent" />
@@ -192,9 +190,7 @@ export default function StudentFeedbackPage() {
     return (
       <div className="bg-surface min-h-screen">
         <div className="bg-primary px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
-          <div className="w-5" />
         </div>
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
           <p className="text-foreground font-semibold text-center">You must check in to the event before submitting feedback.</p>
@@ -208,9 +204,7 @@ export default function StudentFeedbackPage() {
     <div className="bg-surface min-h-screen">
 
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white"><ArrowLeft /></button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
-        <div className="w-5" />
       </div>
 
       <div className="px-4 py-4 space-y-4 pb-8">

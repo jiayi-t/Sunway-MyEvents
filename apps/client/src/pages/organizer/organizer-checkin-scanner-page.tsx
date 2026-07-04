@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
 import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
 import { useCheckinMutation } from '../../api/mutations'
-import { ArrowLeft, Users, TicketCheck, XCircle } from 'lucide-react'
+import { Users, TicketCheck, XCircle } from 'lucide-react'
 
 interface OrganizerEvent {
   id: number
@@ -84,11 +84,7 @@ export default function OrganizerCheckinScannerPage() {
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Check In</h1>
-        <div className="w-5" />
       </div>
 
       {/* Camera viewfinder */}

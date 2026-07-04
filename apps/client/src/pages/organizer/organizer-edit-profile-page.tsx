@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft, Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil } from 'lucide-react'
+import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
@@ -86,7 +85,6 @@ function LinkTypePicker({ value, onChange }: { value: SocialLinks['type']; onCha
 
 export default function OrganizerEditProfilePage() {
   const { user, updateUser } = useAuth()
-  const navigate = useNavigate()
 
   const { data: profile, isLoading } = useOrganizerProfileQuery()
   const updateMutation = useUpdateOrganizerProfileMutation()
@@ -223,12 +221,8 @@ export default function OrganizerEditProfilePage() {
     <div className="bg-surface">
 
       {/* Sub-header */}
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
+      <div className="bg-primary px-4 py-3 flex items-center">
         <h1 className="text-white font-bold text-base flex-1 text-center">Profile</h1>
-        <div className="w-5" />
       </div>
 
       <div className="px-4 py-4 space-y-4">

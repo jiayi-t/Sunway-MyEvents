@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import { useOrganizerEventsQuery, type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
-import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ArrowLeft, ClipboardPen, ImageOff } from 'lucide-react'
+import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ClipboardPen, ImageOff } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
 
@@ -336,9 +336,6 @@ export default function OrganizerEventsPage() {
   return (
     <div className="bg-surface">
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/organizer/dashboard')} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">My Events</h1>
       </div>
 

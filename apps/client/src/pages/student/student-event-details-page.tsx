@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
-import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2, ArrowLeft } from 'lucide-react'
+import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
 
 interface Event {
   id: number
@@ -110,11 +110,7 @@ export default function StudentEventDetailsPage() {
 
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-white">
-          <ArrowLeft />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
-        <div className="w-5" />
       </div>
 
       {/* Event Poster */}
