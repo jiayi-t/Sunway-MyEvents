@@ -63,7 +63,6 @@ export default function BrowseEventsPage() {
 
   const [activeCategory, setActiveCategory] = useState('All Events')
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
-  const [searchApplied, setSearchApplied] = useState(!!searchParams.get('q'))
   const [filterOpen, setFilterOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [draftFilters, setDraftFilters] = useState<Filters>(EMPTY_FILTERS)
@@ -83,7 +82,7 @@ export default function BrowseEventsPage() {
   const { data: eventsData, isLoading: loading } = useEventsQuery()
   const events = (eventsData ?? []) as Event[]
 
-  const isForYouActive = activeCategory === 'For You' && !searchApplied
+  const isForYouActive = activeCategory === 'For You' && !search.trim()
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(isForYouActive && !!user)
   const recommendations = (recommendationsData ?? []) as Event[]
 
@@ -94,7 +93,7 @@ export default function BrowseEventsPage() {
     today.setHours(0, 0, 0, 0)
 
     let base: Event[]
-    if (searchApplied) {
+    if (search.trim()) {
       base = events.filter(e =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.venue?.toLowerCase().includes(search.toLowerCase())
@@ -135,20 +134,14 @@ export default function BrowseEventsPage() {
 
       return true
     })
-  }, [events, activeCategory, recommendations, search, searchApplied, filters])
+  }, [events, activeCategory, recommendations, search, filters])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
-    setSearchApplied(false)
     setSearch('')
   }
 
-  const handleSearch = () => setSearchApplied(true)
-
-  const handleClearSearch = () => {
-    setSearch('')
-    setSearchApplied(false)
-  }
+  const handleClearSearch = () => setSearch('')
 
   const toggleDraftCategory = (cat: string) =>
     setDraftFilters(f => ({
@@ -188,25 +181,14 @@ export default function BrowseEventsPage() {
               placeholder="Search events"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && search.trim() && handleSearch()}
               className="flex-1 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
             />
-            {searchApplied ? (
-              <button
-                onClick={handleClearSearch}
-                className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold"
-              >
-                Clear
-              </button>
-            ) : (
-              <button
-                onClick={handleSearch}
-                disabled={!search.trim()}
-                className="ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Search
-              </button>
-            )}
+            <button
+              onClick={handleClearSearch}
+              className={`ml-3 bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold ${!search ? 'invisible' : ''}`}
+            >
+              Clear
+            </button>
           </div>
           <button
             onClick={() => { setDraftFilters(filters); setFilterOpen(o => !o) }}
@@ -326,7 +308,7 @@ export default function BrowseEventsPage() {
               key={cat}
               onClick={() => handleCategoryFilter(cat)}
               className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
-                ${activeCategory === cat && !searchApplied
+                ${activeCategory === cat && !search.trim()
                   ? 'bg-primary text-white'
                   : 'bg-white text-primary'
                 }`}
