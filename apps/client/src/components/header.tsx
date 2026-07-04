@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
@@ -6,7 +6,23 @@ import { Menu, Bell, ChevronDown } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const desktopMenuRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuth()
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (
+        !mobileMenuRef.current?.contains(e.target as Node) &&
+        !desktopMenuRef.current?.contains(e.target as Node)
+      ) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
   const navigate = useNavigate()
   const location = useLocation()
   const { data: notifications = [] } = useNotificationsQuery()
@@ -106,7 +122,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-secondary shadow border-b border-gray-200">
       {/* Mobile */}
       <div className="lg:hidden px-4 py-3 flex items-center justify-between relative">
-        <div className="relative flex items-center">
+        <div className="relative flex items-center" ref={mobileMenuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="text-black focus:outline-none"
@@ -179,7 +195,7 @@ export default function Header() {
               )}
             </button>
           )}
-          <div className="relative">
+          <div className="relative" ref={desktopMenuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors"
