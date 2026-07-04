@@ -98,12 +98,14 @@ export default function OrganizerEditProfilePage() {
   const [subCategory, setSubCategory] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageUploading, setImageUploading] = useState(false)
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false)
   const [links, setLinks] = useState<SocialLinks[]>([])
   const [about, setAbout] = useState('')
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
   const profileInitialized = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photoMenuRef = useRef<HTMLDivElement>(null)
   const linkDragStateRef = useRef<{ index: number; startY: number; targetIndex: number } | null>(null)
   const linkRowRefs = useRef<(HTMLDivElement | null)[]>([])
   const [linkActiveDrag, setLinkActiveDrag] = useState<{ index: number; deltaY: number; targetIndex: number } | null>(null)
@@ -136,7 +138,14 @@ export default function OrganizerEditProfilePage() {
 
   useEffect(() => { if (hasChanges) setSaved(false) }, [hasChanges])
 
-  const handleImageClick = () => fileInputRef.current?.click()
+  useEffect(() => {
+    if (!showPhotoMenu) return
+    const handler = (e: MouseEvent) => {
+      if (!photoMenuRef.current?.contains(e.target as Node)) setShowPhotoMenu(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showPhotoMenu])
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -243,14 +252,36 @@ export default function OrganizerEditProfilePage() {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handleImageClick}
-                  disabled={imageUploading}
-                  className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
-                >
-                  <Pencil className="w-3 h-3 text-white" />
-                </button>
+                <div ref={photoMenuRef} className="absolute bottom-0 right-0">
+                  <button
+
+                    onClick={() => setShowPhotoMenu(m => !m)}
+                    disabled={imageUploading}
+                    className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
+                  >
+                    <Pencil className="w-3 h-3 text-white" />
+                  </button>
+                  {showPhotoMenu && (
+                    <div className="absolute left-full ml-1 bottom-0 bg-white rounded-lg shadow-lg border border-border text-sm overflow-hidden z-10 w-36">
+                      <button
+    
+                        onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click() }}
+                        className="w-full text-left px-3 py-2 hover:bg-surface text-foreground"
+                      >
+                        Upload photo
+                      </button>
+                      {imageUrl && (
+                        <button
+      
+                          onClick={() => { setShowPhotoMenu(false); setImageUrl(null) }}
+                          className="w-full text-left px-3 py-2 hover:bg-surface text-red-500"
+                        >
+                          Remove photo
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <input
                 ref={fileInputRef}
