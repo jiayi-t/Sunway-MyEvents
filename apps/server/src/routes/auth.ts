@@ -179,6 +179,21 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// PUT /api/auth/profile
+router.put('/profile', authenticate, async (req: AuthRequest, res) => {
+  const { image_url } = req.body
+  if (image_url !== undefined && image_url !== null && typeof image_url !== 'string') {
+    return res.status(400).json({ error: 'Invalid image_url' })
+  }
+  try {
+    await db.update(users).set({ image_url: image_url ?? null }).where(eq(users.id, req.user!.id))
+    const [updated] = await db.select({ image_url: users.image_url }).from(users).where(eq(users.id, req.user!.id))
+    res.json(updated)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 // PUT /api/auth/notification-preferences
 router.put('/notification-preferences', authenticate, async (req: AuthRequest, res) => {
   const { email_enabled, email_channel, course_related, interest_related, suggested } = req.body

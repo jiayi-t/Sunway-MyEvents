@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/auth-context'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import { useProfileQuery, useInterestsQuery, useTimePreferencesQuery, type NotificationPreferences } from '../../api/queries'
 import { interestKeys, timePreferenceKeys } from '../../api/queries/interests.queries'
 import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation, useUpdateTimePreferencesMutation } from '../../api/mutations'
+import { useUpdateStudentProfileImageMutation } from '../../api/mutations/users.mutations'
+import api from '../../services/api'
 
 type Tab = 'profile' | 'notifications' | 'interests'
 
@@ -33,7 +35,43 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boo
 export default function StudentSettingsPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const photoMenuRef = useRef<HTMLDivElement>(null)
+  const [imageUploading, setImageUploading] = useState(false)
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false)
+  const updateImageMutation = useUpdateStudentProfileImageMutation()
+
+  useEffect(() => {
+    if (!showPhotoMenu) return
+    const handler = (e: MouseEvent) => {
+      if (!photoMenuRef.current?.contains(e.target as Node)) setShowPhotoMenu(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showPhotoMenu])
+
+  const avatarSrc = user?.image_url
+    ? user.image_url.startsWith('/uploads/') ? `http://localhost:3001${user.image_url}` : user.image_url
+    : '/Default Icon.jpg'
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await api.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const newUrl: string = res.data.url
+      updateImageMutation.mutate(newUrl, {
+        onSuccess: () => updateUser({ image_url: newUrl }),
+      })
+    } finally {
+      setImageUploading(false)
+      e.target.value = ''
+    }
+  }
   const [searchParams, setSearchParams] = useSearchParams()
   const initialTab = (searchParams.get('tab') as Tab) ?? 'profile'
   const [activeTab, setActiveTab] = useState<Tab>(initialTab)
@@ -159,13 +197,52 @@ export default function StudentSettingsPage() {
           ) : (
             <>
             <div className="flex flex-col items-center mb-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 mb-2">
-                <img
-                  src={user?.image_url ?? '/Default Icon.jpg'}
-                  alt={user?.name ?? ''}
-                  className="w-full h-full object-cover"
-                  onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-                />
+              <div className="relative w-16 h-16 mb-2">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                  <img
+                    src={avatarSrc}
+                    alt={user?.name ?? ''}
+                    className="w-full h-full object-cover"
+                    onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
+                  />
+                  {imageUploading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <div ref={photoMenuRef} className="absolute bottom-0 right-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowPhotoMenu(m => !m)}
+                    disabled={imageUploading}
+                    className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
+                  >
+                    <Pencil className="w-3 h-3 text-white" />
+                  </button>
+                  {showPhotoMenu && (
+                    <div className="absolute left-full ml-1 bottom-0 bg-white rounded-lg shadow-lg border border-border text-sm overflow-hidden z-10 w-36">
+                      <button
+                        onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click() }}
+                        className="w-full text-left px-3 py-2 hover:bg-surface text-foreground"
+                      >
+                        Upload photo
+                      </button>
+                      {user?.image_url && (
+                        <button
+                          onClick={() => {
+                            setShowPhotoMenu(false)
+                            updateImageMutation.mutate(null, { onSuccess: () => updateUser({ image_url: null }) })
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-surface text-red-500"
+                        >
+                          Remove photo
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
               </div>
               <p className="text-primary font-bold text-lg">{user?.name}</p>
             </div>

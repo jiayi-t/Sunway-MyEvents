@@ -23,6 +23,13 @@ export interface OrganizerProfileUpdate {
   about: string | null
 }
 
+export function useUpdateStudentProfileImageMutation() {
+  return useMutation({
+    mutationFn: (image_url: string | null) =>
+      api.put('/auth/profile', { image_url }).then(res => res.data),
+  })
+}
+
 export function useUpdateOrganizerProfileMutation() {
   const queryClient = useQueryClient()
   return useMutation({
