@@ -99,7 +99,7 @@ export default function Header() {
   const desktopMenuItems = (
     <>
       {user && <div className="px-4 py-2 text-sm text-gray-600 border-b">{user.name}</div>}
-      {user?.role === 'student' && (
+      {(user?.role === 'student' || user?.role === 'public') && (
         <>
           <button 
             onClick={() => { navigate('/profile'); setMenuOpen(false) }} 
@@ -143,7 +143,7 @@ export default function Header() {
           </div>
         </div>
 
-        {user?.role === 'student' ? (
+        {(user?.role === 'student' || user?.role === 'public') ? (
           <button onClick={() => navigate('/notifications')} className="relative w-10 flex items-center justify-center">
             <Bell className="w-5 h-5 text-foreground" />
             {unreadCount > 0 && (
@@ -185,7 +185,7 @@ export default function Header() {
 
         {/* User */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
-          {user?.role === 'student' && (
+          {(user?.role === 'student' || user?.role === 'public') && (
             <button onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center">
               <Bell className="w-5 h-5 text-foreground" />
               {unreadCount > 0 && (
