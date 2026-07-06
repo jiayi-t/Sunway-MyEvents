@@ -16,7 +16,7 @@ interface Participant {
   checked_in_at: string | null
 }
 
-type ScanStatus = { type: 'success'; name: string; sunway_id: string } | { type: 'error'; message: string } | null
+type ScanStatus = { type: 'success'; name: string; identifier: string } | { type: 'error'; message: string } | null
 
 export default function OrganizerCheckinScannerPage() {
   const { id } = useParams()
@@ -47,8 +47,9 @@ export default function OrganizerCheckinScannerPage() {
         cooldownRef.current = true
 
         checkinMutation.mutate(decodedText, {
-          onSuccess: (data: { student_name: string; sunway_id: string }) => {
-            setScanStatus({ type: 'success', name: data.student_name, sunway_id: data.sunway_id })
+          onSuccess: (data: { student_name: string; sunway_id: string; email: string; role: string }) => {
+            const identifier = data.role === 'public' ? data.email : data.sunway_id
+            setScanStatus({ type: 'success', name: data.student_name, identifier })
           },
           onError: (err: unknown) => {
             const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Scan failed'
@@ -116,7 +117,7 @@ export default function OrganizerCheckinScannerPage() {
                 <TicketCheck className="w-5 h-5 text-white flex-shrink-0" />
                 <div>
                   <p className="text-white text-sm font-semibold">{scanStatus.name}</p>
-                  <p className="text-white/80 text-xs">{scanStatus.sunway_id} - Checked In</p>
+                  <p className="text-white/80 text-xs">{scanStatus.identifier} - Checked In</p>
                 </div>
               </>
             ) : (

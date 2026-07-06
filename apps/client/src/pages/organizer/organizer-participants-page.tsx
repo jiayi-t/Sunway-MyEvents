@@ -17,6 +17,7 @@ interface Participant {
   user_name: string
   sunway_id: string
   email: string
+  role: string
   image_url: string | null
   registered_at: string
   checked_in_at: string | null
@@ -49,7 +50,7 @@ export default function OrganizerParticipantsPage() {
     if (activeTab === 'checked-in' && !p.checked_in_at) return false
     if (search) {
       const q = search.toLowerCase()
-      return p.user_name.toLowerCase().includes(q) || p.sunway_id.toLowerCase().includes(q)
+      return p.user_name.toLowerCase().includes(q) || (p.sunway_id ?? '').toLowerCase().includes(q) || (p.email ?? '').toLowerCase().includes(q)
     }
     return true
   })
@@ -84,7 +85,7 @@ export default function OrganizerParticipantsPage() {
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search by name or student ID..."
+            placeholder="Search by name, student ID, or email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"

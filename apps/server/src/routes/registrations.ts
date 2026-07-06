@@ -57,6 +57,7 @@ router.get('/event/:eventId', authenticate, async (req: AuthRequest, res) => {
         user_name: users.name,
         sunway_id: users.sunway_id,
         email: users.email,
+        role: users.role,
         image_url: users.image_url
       })
       .from(registrations)
@@ -98,19 +99,19 @@ router.post('/checkin', authenticate, async (req: AuthRequest, res) => {
     if (!registration) return res.status(404).json({ error: 'Registration not found' })
 
     if (registration.checked_in_at) {
-      const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id })
+      const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id, email: users.email, role: users.role })
         .from(users).where(eq(users.id, payload.userId)).limit(1)
-      return res.status(409).json({ error: 'Already checked in', student_name: student?.name, sunway_id: student?.sunway_id })
+      return res.status(409).json({ error: 'Already checked in', student_name: student?.name, sunway_id: student?.sunway_id, email: student?.email, role: student?.role })
     }
 
     await db.update(registrations)
       .set({ checked_in_at: new Date() })
       .where(eq(registrations.id, registration.id))
 
-    const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id })
+    const [student] = await db.select({ name: users.name, sunway_id: users.sunway_id, email: users.email, role: users.role })
       .from(users).where(eq(users.id, payload.userId)).limit(1)
 
-    res.json({ success: true, student_name: student?.name, sunway_id: student?.sunway_id })
+    res.json({ success: true, student_name: student?.name, sunway_id: student?.sunway_id, email: student?.email, role: student?.role })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
