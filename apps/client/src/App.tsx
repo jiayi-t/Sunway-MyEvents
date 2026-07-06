@@ -31,6 +31,7 @@ import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analy
 import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
 import PublicLoginPage from './pages/auth/public-login-page'
 import PublicCreateAccount from './pages/auth/public-create-account'
+import PublicSettingsPage from './pages/general-public/public-settings-page'
 import Header from './components/header'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
@@ -50,6 +51,12 @@ const AUTH_PATHS = [
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { token } = useAuth()
   return token ? children : <Navigate to="/login" replace />
+}
+
+// /settings renders a different page for students and the general public
+function SettingsRoute() {
+  const { user } = useAuth()
+  return user?.role === 'public' ? <PublicSettingsPage /> : <SettingsPage />
 }
 
 function ScrollToTop() {
@@ -147,7 +154,7 @@ function AppRoutes() {
       <Route path="/settings"
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <SettingsRoute />
           </ProtectedRoute>
         }
       />

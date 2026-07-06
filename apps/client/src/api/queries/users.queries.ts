@@ -23,6 +23,7 @@ export interface UserProfile {
   mobile_number: string | null
   personal_email: string | null
   notification_preferences: NotificationPreferences | null
+  alumni: boolean | null
 }
 
 export interface Notification {
