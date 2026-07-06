@@ -22,7 +22,13 @@ router.post('/login', async (req, res) => {
 
   try {
     const result = await db.select().from(users).where(eq(users.sunway_id, sunwayId))
-    const user = result[0]
+    let user = result[0]
+
+    // public accounts have no Sunway ID and log in with their email instead
+    if (!user && sunwayId.includes('@')) {
+      const byEmail = await db.select().from(users).where(eq(users.email, sunwayId))
+      user = byEmail[0]
+    }
 
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' })
@@ -43,6 +49,7 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         sunway_id: user.sunway_id,
+        email: user.email,
         name: user.name,
         role: user.role,
         image_url: user.image_url ?? null,
@@ -91,6 +98,51 @@ router.post('/register/organizer', async (req, res) => {
   } catch (error: any) {
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Username already taken' })
+    }
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/auth/register/public
+router.post('/register/public', async (req, res) => {
+  const { name, email, password, gender, mobile_number, alumni } = req.body
+
+  if (!name || !email || !password || !gender || !mobile_number || typeof alumni !== 'boolean') {
+    return res.status(400).json({ error: 'All fields are required' })
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address' })
+  }
+
+  try {
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email))
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    // public accounts have no real Sunway ID, generate a placeholder to satisfy the NOT NULL UNIQUE
+    const sunwayId = 'pub' + crypto.randomBytes(4).toString('hex').slice(0, 5)
+
+    const result = await db.insert(users).values({
+      sunway_id: sunwayId,
+      email,
+      password: hashedPassword,
+      name,
+      role: 'public',
+      gender,
+      mobile_number,
+      alumni
+    }).returning({ id: users.id, email: users.email, name: users.name, role: users.role })
+
+    res.status(201).json({
+      message: 'Account created successfully',
+      user: result[0]
+    })
+  } catch (error: any) {
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Email already registered' })
     }
     res.status(500).json({ error: 'Server error' })
   }
@@ -168,6 +220,7 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
         mobile_number: users.mobile_number,
         personal_email: users.personal_email,
         notification_preferences: users.notification_preferences,
+        alumni: users.alumni,
       })
       .from(users)
       .where(eq(users.id, req.user!.id))
@@ -290,12 +343,12 @@ router.post('/forgot-password', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email is required' })
 
   // Always return 200, don't reveal whether the email exists
-  res.json({ message: 'If that email is registered as an organizer, a reset link has been sent.' })
+  res.json({ message: 'If that email is registered, a reset link has been sent.' })
 
   try {
     const [user] = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role })
       .from(users).where(eq(users.email, email)).limit(1)
-    if (!user || user.role !== 'organizer') return
+    if (!user || (user.role !== 'organizer' && user.role !== 'public')) return
 
     const rawToken = crypto.randomBytes(32).toString('hex')
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex')
