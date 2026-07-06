@@ -32,6 +32,8 @@ import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-p
 import PublicLoginPage from './pages/auth/public-login-page'
 import PublicCreateAccount from './pages/auth/public-create-account'
 import PublicSettingsPage from './pages/general-public/public-settings-page'
+import PublicProfilePage from './pages/general-public/public-profile-page'
+import PublicCheckinPage from './pages/general-public/public-checkin-page'
 import Header from './components/header'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
@@ -57,6 +59,18 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 function SettingsRoute() {
   const { user } = useAuth()
   return user?.role === 'public' ? <PublicSettingsPage /> : <SettingsPage />
+}
+
+// /profile renders a different page for students and the general public
+function ProfileRoute() {
+  const { user } = useAuth()
+  return user?.role === 'public' ? <PublicProfilePage /> : <StudentProfilePage />
+}
+
+// /events/:id/checkin renders a different page for students and the general public
+function CheckinRoute() {
+  const { user } = useAuth()
+  return user?.role === 'public' ? <PublicCheckinPage /> : <StudentCheckinPage />
 }
 
 function ScrollToTop() {
@@ -126,7 +140,7 @@ function AppRoutes() {
       <Route path="/events/:id/checkin"
         element={
         <ProtectedRoute>
-          <StudentCheckinPage />
+          <CheckinRoute />
         </ProtectedRoute>
         }
       />
@@ -137,12 +151,12 @@ function AppRoutes() {
         </ProtectedRoute>
         }
       />
-      <Route path="/profile" 
+      <Route path="/profile"
         element={
         <ProtectedRoute>
-          <StudentProfilePage />
+          <ProfileRoute />
         </ProtectedRoute>
-        } 
+        }
       />
       <Route path="/my-events" 
         element={
