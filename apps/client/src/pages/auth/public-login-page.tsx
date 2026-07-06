@@ -4,8 +4,8 @@ import { useAuth } from '../../context/auth-context'
 import LoginFooter from '../../components/login-footer'
 import api from '../../services/api'
 
-export default function OrganizerLoginPage() {
-  const [form, setForm] = useState({ sunwayId: '', password: '' })
+export default function PublicLoginPage() {
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -15,12 +15,13 @@ export default function OrganizerLoginPage() {
     setError('')
     setLoading(true)
     try {
-      const payload = { sunwayId: form.sunwayId, password: form.password }
+      const payload = { sunwayId: form.email, password: form.password }
       const res = await api.post('/auth/login', payload)
       login(res.data.user, res.data.token)
-      navigate('/organizer/dashboard')
+      const interests = res.data.user.interests
+      navigate((!interests || interests.length === 0) ? '/select-interests' : '/')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid username or password')
+      setError(err.response?.data?.error || 'Invalid email or password')
     } finally {
       setLoading(false)
     }
@@ -45,18 +46,18 @@ export default function OrganizerLoginPage() {
         </div>
 
         <h1 className="text-primary text-xl font-bold mb-6">
-          Sign in with your Username
+          Sign in with your Email
         </h1>
 
         {/* Form Card */}
         <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">SLB / C&S Username</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              type="text"
-              placeholder="Use: ssa"
-              value={form.sunwayId}
-              onChange={e => setForm({ ...form, sunwayId: e.target.value })}
+              type="email"
+              placeholder="Use: public@gmail.com"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm  focus:outline-none focus:border-primary"
             />
@@ -76,7 +77,7 @@ export default function OrganizerLoginPage() {
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline"
-                onClick={() => navigate('/forgot-password?role=organizer')}
+                onClick={() => navigate('/forgot-password?role=public')}
               >
                 Forgot?
               </button>
@@ -97,7 +98,7 @@ export default function OrganizerLoginPage() {
         <p className="text-sm text-muted-foreground mt-4">
           Don't have an account?{' '}
           <button
-            onClick={() => navigate('/login/organizer/register')}
+            onClick={() => navigate('/login/public/register')}
             className="text-accent font-semibold underline"
           >
             Create one now!

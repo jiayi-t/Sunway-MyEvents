@@ -29,6 +29,8 @@ import OrganizerFeedbackFormPage from './pages/organizer/organizer-feedback-form
 import OrganizerAnalyticsPage from './pages/organizer/organizer-analytics-page'
 import OrganizerEventAnalyticsPage from './pages/organizer/organizer-event-analytics-page'
 import OrganizerEditProfilePage from './pages/organizer/organizer-edit-profile-page'
+import PublicLoginPage from './pages/auth/public-login-page'
+import PublicCreateAccount from './pages/auth/public-create-account'
 import Header from './components/header'
 import Footer from './components/footer'
 import type { ReactNode } from 'react'
@@ -41,7 +43,7 @@ const queryClient = new QueryClient({
 })
 
 const AUTH_PATHS = [
-  '/login', '/login/student', '/login/organizer', '/login/organizer/register',
+  '/login', '/login/student', '/login/organizer', '/login/organizer/register', '/login/public', '/login/public/register',
   '/select-interests', '/forgot-password', '/reset-password',
 ]
 
@@ -244,6 +246,8 @@ function AppRoutes() {
         </ProtectedRoute>
         }
       />
+      <Route path="/login/public" element={<PublicLoginPage />} />
+      <Route path="/login/public/register" element={<PublicCreateAccount />} />
     </Routes>
   )
 }

@@ -56,9 +56,16 @@ export default function SelectLoginPage() {
 
             <button
               onClick={() => navigate('/login/organizer')}
-              className="w-full bg-accent text-white font-semibold py-3 rounded-lg text-sm"
+              className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm"
             >
               Organizer (SLB / C&S)
+            </button>
+
+            <button
+              onClick={() => navigate('/login/public')}
+              className="w-full bg-accent text-white font-semibold py-3 rounded-lg text-sm"
+            >
+              General Public
             </button>
           </div>
           

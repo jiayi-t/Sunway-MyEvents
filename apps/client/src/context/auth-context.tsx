@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 interface User {
   id: number
   sunway_id: string
+  email?: string
   name: string
   role: string
   image_url?: string | null

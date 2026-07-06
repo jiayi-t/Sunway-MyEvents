@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForgotPasswordMutation } from '../../api/mutations'
 import LoginFooter from '../../components/login-footer'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const role = searchParams.get('role')
+  const accountPhrase = role === 'organizer' ? 'as an organizer account' : role === 'public' ? 'as a general public account' : ''
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const mutation = useForgotPasswordMutation()
@@ -29,7 +32,7 @@ export default function ForgotPasswordPage() {
             <h1 className="text-primary text-xl font-bold mb-6">Check your email</h1>
             <div className="bg-white rounded-xl shadow p-6">
               <p className="text-sm text-muted-foreground mb-6">
-                If that email address is registered to an organiser account, we've sent a password reset link. Kindly check your inbox (and spam folder).
+                If that email address is registered{accountPhrase ? ` ${accountPhrase}` : ''}, we've sent a password reset link. Kindly check your inbox (and spam folder).
               </p>
               <button
                 onClick={() => navigate('/login')}
@@ -48,7 +51,7 @@ export default function ForgotPasswordPage() {
               </p>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Organizer email address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
                 <input
                   type="email"
                   value={email}
