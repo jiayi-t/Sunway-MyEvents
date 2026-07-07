@@ -126,7 +126,7 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
 
 // POST /api/events/:id/view - record student's event views
 router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
-  if (req.user?.role !== 'student') return res.status(403).json({ error: 'Forbidden' })
+  if (req.user?.role !== 'student' && req.user?.role !== 'public') return res.status(403).json({ error: 'Forbidden' })
   const eventId = parseInt(req.params.id as string)
   try {
     await db.insert(event_views).values({ user_id: req.user!.id, event_id: eventId })
