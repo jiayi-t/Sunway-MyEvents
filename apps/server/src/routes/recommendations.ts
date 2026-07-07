@@ -221,6 +221,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
           isNull(events.archived_at),
           isNull(events.cancelled_at),
           gt(events.date, now),
+          ...(req.user!.role === 'public' ? [ne(events.audience, 'students_only')] : []),
         )
       )
 

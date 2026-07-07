@@ -1,15 +1,17 @@
 import { Router } from 'express'
-import { eq, asc, desc, and, isNull, gt, getTableColumns } from 'drizzle-orm'
+import { eq, asc, desc, and, isNull, gt, ne, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
-import { authenticate, AuthRequest } from '../middleware/auth'
+import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
 import { sendEmail, getEmailAddresses, eventCancelledEmail, eventUpdatedEmail, newEventEmail } from '../email'
 
 const router = Router()
 
+const AUDIENCES = ['everyone', 'students_only']
+
 // GET /api/events - get all events
-router.get('/', async (_req, res) => {
+router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
     const result = await db
       .select({
@@ -19,7 +21,11 @@ router.get('/', async (_req, res) => {
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
-      .where(isNull(events.archived_at))
+      .where(
+        req.user?.role === 'public'
+          ? and(isNull(events.archived_at), ne(events.audience, 'students_only'))
+          : isNull(events.archived_at)
+      )
       .orderBy(desc(events.created_at))
     res.json(result)
   } catch {
@@ -28,7 +34,7 @@ router.get('/', async (_req, res) => {
 })
 
 // GET /api/events/featured
-router.get('/featured', async (_req, res) => {
+router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
     const now = new Date()
     const rows = await db
@@ -41,7 +47,11 @@ router.get('/featured', async (_req, res) => {
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
-      .where(and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now)))
+      .where(
+        req.user?.role === 'public'
+          ? and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now), ne(events.audience, 'students_only'))
+          : and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now))
+      )
 
     const scored = rows
       .map(e => {
@@ -127,7 +137,7 @@ router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
 })
 
 // GET /api/events/:id - get single event
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
   const id = parseInt(req.params.id as string)
   try {
     const result = await db
@@ -142,6 +152,9 @@ router.get('/:id', async (req, res) => {
       .where(eq(events.id, id))
 
     if (result.length === 0) {
+      return res.status(404).json({ error: 'Event not found' })
+    }
+    if (req.user?.role === 'public' && result[0].audience === 'students_only') {
       return res.status(404).json({ error: 'Event not found' })
     }
     res.json(result[0])
@@ -173,12 +186,15 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   const eventId = parseInt(req.params.id as string)
   try {
     const [event] = await db
-      .select({ cancelled_at: events.cancelled_at, registration_deadline: events.registration_deadline, capacity: events.capacity })
+      .select({ cancelled_at: events.cancelled_at, registration_deadline: events.registration_deadline, capacity: events.capacity, audience: events.audience })
       .from(events)
       .where(eq(events.id, eventId))
       .limit(1)
 
     if (!event) return res.status(404).json({ error: 'Event not found' })
+    if (event.audience === 'students_only' && req.user!.role !== 'student') {
+      return res.status(403).json({ error: 'This event is open to students only' })
+    }
     if (event.cancelled_at) return res.status(400).json({ error: 'This event has been cancelled' })
     if (event.registration_deadline && new Date(event.registration_deadline) < new Date()) {
       return res.status(400).json({ error: 'Registration deadline has passed' })
@@ -284,11 +300,14 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   const {
     name, description, date, start_time, end_time, venue, pricing,
-    category, capacity, registration_deadline, image_url
+    category, audience, capacity, registration_deadline, image_url
   } = req.body
 
   if (!name || !date || !start_time || !end_time || !venue || pricing == null || !category || !image_url) {
     return res.status(400).json({ error: 'Please fill in all required fields' })
+  }
+  if (audience !== undefined && !AUDIENCES.includes(audience)) {
+    return res.status(400).json({ error: 'Invalid audience' })
   }
 
   try {
@@ -301,6 +320,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       venue,
       pricing: pricing ?? 0,
       category,
+      audience: audience ?? 'everyone',
       capacity,
       registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
       image_url,
@@ -368,11 +388,14 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 
     const {
       name, description, date, start_time, end_time, venue, pricing,
-      category, capacity, registration_deadline, image_url, notify_participants
+      category, audience, capacity, registration_deadline, image_url, notify_participants
     } = req.body
 
     if (!name || !date || !start_time || !end_time || !venue || pricing == null || !category || !image_url) {
       return res.status(400).json({ error: 'Please fill in all required fields' })
+    }
+    if (audience !== undefined && !AUDIENCES.includes(audience)) {
+      return res.status(400).json({ error: 'Invalid audience' })
     }
 
     const result = await db.update(events).set({
@@ -384,6 +407,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       venue,
       pricing: pricing ?? 0,
       category,
+      audience: audience ?? 'everyone',
       capacity,
       registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
       image_url: image_url || null

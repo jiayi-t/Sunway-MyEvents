@@ -34,6 +34,7 @@ export const events = pgTable('events', {
   venue: varchar('venue', { length: 255 }).notNull(),
   pricing: numeric('pricing', { precision: 10, scale: 2 }).notNull(),
   category: varchar('category', { length: 100 }).notNull(),
+  audience: varchar('audience', { length: 20 }).notNull().default('everyone'),
   capacity: integer('capacity'),
   registration_deadline: timestamp('registration_deadline'),
   image_url: text('image_url'),
