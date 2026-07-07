@@ -14,6 +14,7 @@ interface Event {
   end_time: string
   venue: string
   category: string
+  audience: string
   pricing: number
   capacity: number
   registration_deadline: string
@@ -161,6 +162,9 @@ export default function StudentEventDetailsPage() {
               {typedEvent.category}
             </span>
           )}
+          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+            {typedEvent.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+          </span>
           <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
             {Number(typedEvent.pricing) === 0 ? 'Free' : 'Paid'}
           </span>

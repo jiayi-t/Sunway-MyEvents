@@ -13,6 +13,7 @@ interface OrganizerEventDetail {
   end_time: string
   venue: string
   category: string
+  audience: string
   pricing: number | string
   capacity: number
   registration_deadline: string
@@ -219,6 +220,9 @@ export default function OrganizerEventDetailsPage() {
               {event.category}
             </span>
           )}
+          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+            {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+          </span>
           <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
             {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
           </span>

@@ -12,6 +12,7 @@ interface Event {
   end_time: string
   venue: string
   category: string
+  audience: string
   pricing: number
   image_url: string
   organizer_name?: string
@@ -366,6 +367,9 @@ export default function BrowseEventsPage() {
                   {event.category && (
                     <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{event.category}</span>
                   )}
+                  <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+                    {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+                  </span>
                   <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
                     {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
                   </span>
