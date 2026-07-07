@@ -14,6 +14,7 @@ interface Event {
   venue: string
   pricing: number | null
   category: string
+  audience: string
   capacity: number | null
   registration_deadline: string | null
   image_url: string | null
@@ -42,7 +43,7 @@ const toImageUrl = (url?: string | null) => {
 
 const EMPTY_FORM = {
   name: '', description: '', date: '', start_time: '', end_time: '',
-  venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
+  venue: '', pricing: '', category: '', audience: 'everyone', capacity: '', registration_deadline: '', image_url: ''
 }
 
 export default function OrganizerEditEventPage() {
@@ -81,6 +82,7 @@ export default function OrganizerEditEventPage() {
       venue: e.venue || '',
       pricing: e.pricing != null ? String(e.pricing) : '',
       category: e.category || '',
+      audience: e.audience || 'everyone',
       capacity: e.capacity != null ? String(e.capacity) : '',
       registration_deadline: toLocalDateStr(e.registration_deadline),
       image_url: e.image_url || ''
@@ -137,6 +139,7 @@ export default function OrganizerEditEventPage() {
       venue: form.venue,
       pricing: Number(form.pricing) || 0,
       category: form.category,
+      audience: form.audience,
       capacity: Number(form.capacity),
       registration_deadline: form.registration_deadline || null,
       image_url: form.image_url || null,
@@ -213,6 +216,14 @@ export default function OrganizerEditEventPage() {
             className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.category ? 'border-red-400' : 'border-border'}`}>
             <option value="">Select a category</option>
             {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">Audience</label>
+          <select value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white">
+            <option value="everyone">Open to Public</option>
+            <option value="students_only">Students Only</option>
           </select>
         </div>
         <div>

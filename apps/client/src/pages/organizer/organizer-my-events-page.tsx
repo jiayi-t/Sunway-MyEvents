@@ -15,6 +15,7 @@ interface OrganizerEvent {
   end_time: string
   venue: string
   category: string
+  audience: string
   pricing: number
   image_url?: string | null
   organizer_id: number
@@ -212,7 +213,7 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
 
 const EMPTY_FORM = {
   name: '', description: '', date: '', start_time: '', end_time: '',
-  venue: '', pricing: '', category: '', capacity: '', registration_deadline: '', image_url: ''
+  venue: '', pricing: '', category: '', audience: 'everyone', capacity: '', registration_deadline: '', image_url: ''
 }
 
 export default function OrganizerEventsPage() {
@@ -267,6 +268,7 @@ export default function OrganizerEventsPage() {
       venue: form.venue,
       pricing: Number(form.pricing) || 0,
       category: form.category,
+      audience: form.audience,
       capacity: Number(form.capacity),
       registration_deadline: form.registration_deadline,
       image_url: form.image_url || null
@@ -409,6 +411,14 @@ export default function OrganizerEventsPage() {
               className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.category ? 'border-red-400' : 'border-border'}`}>
               <option value="">Select a category</option>
               {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Audience</label>
+            <select value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white">
+              <option value="everyone">Open to Public</option>
+              <option value="students_only">Students Only</option>
             </select>
           </div>
           <div>
