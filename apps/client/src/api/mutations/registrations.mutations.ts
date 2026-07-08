@@ -12,3 +12,14 @@ export function useCheckinMutation(eventId: string | undefined) {
     },
   })
 }
+
+export function useManualCheckinMutation(eventId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (registrationId: number) =>
+      api.post('/registrations/checkin/manual', { registrationId }).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: registrationKeys.eventParticipants(eventId) })
+    },
+  })
+}

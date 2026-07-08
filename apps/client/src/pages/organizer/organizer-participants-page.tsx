@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
+import { useManualCheckinMutation } from '../../api/mutations'
 import { Search, TicketCheck } from 'lucide-react'
 
 type FilterTab = 'all' | 'registered' | 'checked-in'
@@ -37,11 +38,27 @@ export default function OrganizerParticipantsPage() {
   const { id } = useParams()
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [search, setSearch] = useState('')
+  const [confirmTarget, setConfirmTarget] = useState<Participant | null>(null)
+  const [checkinError, setCheckinError] = useState('')
 
   const { data: eventData } = useEventQuery(id)
   const event = eventData as OrganizerEvent | undefined
   const { data, isLoading } = useEventParticipantsQuery(id)
   const participants = (data || []) as Participant[]
+
+  const manualCheckinMutation = useManualCheckinMutation(id)
+
+  const handleManualCheckin = () => {
+    if (!confirmTarget) return
+    setCheckinError('')
+    manualCheckinMutation.mutate(confirmTarget.id, {
+      onSuccess: () => setConfirmTarget(null),
+      onError: (err: unknown) => {
+        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Check-in failed'
+        setCheckinError(msg)
+      },
+    })
+  }
 
   const checkedInCount = participants.filter(p => p.checked_in_at).length
 
@@ -147,12 +164,48 @@ export default function OrganizerParticipantsPage() {
                   </div>
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground flex-shrink-0">Not checked in</span>
+                <button
+                  onClick={() => { setCheckinError(''); setConfirmTarget(p) }}
+                  className="flex-shrink-0 text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1.5 hover:bg-primary hover:text-white transition-colors"
+                >
+                  Check In
+                </button>
               )}
             </div>
           ))
         )}
       </div>
+
+      {/* Manual check-in confirmation modal */}
+      {confirmTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-card rounded-xl p-6 w-full max-w-sm">
+            <h3 className="font-bold text-foreground text-base mb-2">Check In Participant?</h3>
+            <p className="text-muted-foreground text-sm mb-1">
+              <span className="font-semibold text-foreground">{confirmTarget.user_name}</span> will be marked as checked in.
+            </p>
+            <p className="text-muted-foreground text-xs mb-5 truncate">{confirmTarget.email}</p>
+            {checkinError && (
+              <p className="text-red-500 text-sm mb-4">{checkinError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmTarget(null)}
+                className="flex-1 border border-border rounded-lg py-2.5 text-sm font-medium text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleManualCheckin}
+                disabled={manualCheckinMutation.isPending}
+                className="flex-1 bg-accent text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50"
+              >
+                {manualCheckinMutation.isPending ? 'Processing...' : 'Check In'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

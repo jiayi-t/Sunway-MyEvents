@@ -117,4 +117,39 @@ router.post('/checkin', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// POST /api/registrations/checkin/manual - manual check-in fallback if QR scan fails (organizer only)
+router.post('/checkin/manual', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const { registrationId } = req.body as { registrationId: number }
+  if (!registrationId) return res.status(400).json({ error: 'Registration ID required' })
+
+  try {
+    const [registration] = await db
+      .select({
+        id: registrations.id,
+        user_id: registrations.user_id,
+        checked_in_at: registrations.checked_in_at,
+        organizer_id: events.organizer_id
+      })
+      .from(registrations)
+      .innerJoin(events, eq(registrations.event_id, events.id))
+      .where(eq(registrations.id, registrationId))
+      .limit(1)
+    if (!registration || !registration.user_id) return res.status(404).json({ error: 'Registration not found' })
+    if (registration.organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+    if (registration.checked_in_at) return res.status(409).json({ error: 'Already checked in' })
+
+    await db.update(registrations)
+      .set({ checked_in_at: new Date() })
+      .where(eq(registrations.id, registration.id))
+
+    const [attendee] = await db.select({ name: users.name, sunway_id: users.sunway_id, email: users.email, role: users.role })
+      .from(users).where(eq(users.id, registration.user_id)).limit(1)
+
+    res.json({ success: true, student_name: attendee?.name, sunway_id: attendee?.sunway_id, email: attendee?.email, role: attendee?.role })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router
