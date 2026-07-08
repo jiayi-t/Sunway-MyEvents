@@ -180,11 +180,27 @@ export default function OrganizerParticipantsPage() {
       {confirmTarget && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-card rounded-xl p-6 w-full max-w-sm">
-            <h3 className="font-bold text-foreground text-base mb-2">Check In Participant?</h3>
-            <p className="text-muted-foreground text-sm mb-1">
-              <span className="font-semibold text-foreground">{confirmTarget.user_name}</span> will be marked as checked in.
-            </p>
-            <p className="text-muted-foreground text-xs mb-5 truncate">{confirmTarget.email}</p>
+            <h3 className="font-bold text-foreground text-base mb-3">Check In Participant?</h3>
+            <div className="flex items-center gap-3 bg-surface rounded-xl px-3 py-2.5 mb-3">
+              {confirmTarget.image_url ? (
+                <img
+                  src={confirmTarget.image_url}
+                  alt={confirmTarget.user_name}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center flex-shrink-0">
+                  <span className="text-primary font-bold text-sm">
+                    {confirmTarget.user_name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-foreground text-sm font-semibold truncate">{confirmTarget.user_name}</p>
+                <p className="text-muted-foreground text-xs truncate">{confirmTarget.email}</p>
+              </div>
+            </div>
+            <p className="text-muted-foreground text-sm mb-5">This participant will be marked as checked in.</p>
             {checkinError && (
               <p className="text-red-500 text-sm mb-4">{checkinError}</p>
             )}
