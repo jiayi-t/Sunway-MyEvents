@@ -401,7 +401,7 @@ export default function OrganizerEventsPage() {
             <label className="block text-sm font-medium text-foreground mb-1">Pricing</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">RM</span>
-              <input type="number" min="0" value={form.pricing} onChange={e => setForm({ ...form, pricing: e.target.value })}
+              <input type="number" min="0" value={form.pricing} onWheel={e => e.currentTarget.blur()} onChange={e => setForm({ ...form, pricing: e.target.value })}
                 className={`w-full border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && form.pricing === '' ? 'border-red-400' : 'border-border'}`} />
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function OrganizerEventsPage() {
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Capacity <span className="text-muted-foreground font-normal">(Optional)</span></label>
             <div className="relative">
-              <input type="number" min="1" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })}
+              <input type="number" min="1" value={form.capacity} onWheel={e => e.currentTarget.blur()} onChange={e => setForm({ ...form, capacity: e.target.value })}
                 className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary pr-24 bg-white" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">participants</span>
             </div>
