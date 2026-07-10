@@ -86,6 +86,15 @@ export const feedback_forms = pgTable('feedback_forms', {
   updated_at: timestamp('updated_at').defaultNow()
 })
 
+export const feedback_ai_summaries = pgTable('feedback_ai_summaries', {
+  id: serial('id').primaryKey(),
+  event_id: integer('event_id').references(() => events.id).unique().notNull(),
+  summary: jsonb('summary').notNull(),
+  // feedback row count at generation time, regenerate when the live count differs
+  feedback_count: integer('feedback_count').notNull(),
+  generated_at: timestamp('generated_at').defaultNow()
+})
+
 export const event_views = pgTable('event_views', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id').references(() => users.id),

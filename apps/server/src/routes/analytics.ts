@@ -1,11 +1,15 @@
 import { Router } from 'express'
 import { eq, sql, desc, count, countDistinct } from 'drizzle-orm'
 import { db } from '../db'
-import { events, registrations, feedback, feedback_forms, users, event_views } from '../database/schema'
+import { events, registrations, feedback, feedback_forms, feedback_ai_summaries, users, event_views } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
+import { aiAvailable, summarizeFeedback, type AiSummary, type OpenEndedGroup } from '../ai'
 
 const router = Router()
+
+// an open-ended question needs this many responses before it gets an AI response summary
+const MIN_RESPONSES_PER_QUESTION = 3
 
 // GET /api/analytics/attendance
 router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
@@ -254,6 +258,102 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
         questions: questionAnalyses,
       },
     })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/analytics/events/:id/ai-summary - AI summary of open-ended feedback, cached per event
+router.get('/events/:id/ai-summary', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+  const eventId = parseInt(req.params.id as string)
+
+  try {
+    const [eventRow] = await db
+      .select({ id: events.id, name: events.name, organizer_id: events.organizer_id })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1)
+
+    if (!eventRow) return res.status(404).json({ error: 'Event not found' })
+    if (eventRow.organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    if (!aiAvailable()) return res.json({ available: false, reason: 'not_configured' })
+
+    const feedbackRows = await db
+      .select({ answers: feedback.answers })
+      .from(feedback)
+      .where(eq(feedback.event_id, eventId))
+
+    const currentCount = feedbackRows.length
+
+    const [formRow] = await db
+      .select({ questions: feedback_forms.questions })
+      .from(feedback_forms)
+      .where(eq(feedback_forms.event_id, eventId))
+      .limit(1)
+
+    const questions: FeedbackQuestion[] = formRow
+      ? (formRow.questions as FeedbackQuestion[])
+      : DEFAULT_QUESTIONS
+
+    // collect open-ended answers grouped per question, only questions with enough responses get summarized
+    const groups: OpenEndedGroup[] = []
+    for (const q of questions) {
+      if (q.type !== 'open_ended') continue
+      const responses: string[] = []
+      for (const fb of feedbackRows) {
+        const ans = fb.answers as Record<string, unknown> | null
+        const val = ans?.[q.id]
+        if (val != null && String(val).trim()) responses.push(String(val).trim())
+      }
+      if (responses.length >= MIN_RESPONSES_PER_QUESTION) groups.push({ question: q.question, responses })
+    }
+
+    if (groups.length === 0) return res.json({ available: false, reason: 'not_enough_responses' })
+
+    const [cached] = await db
+      .select()
+      .from(feedback_ai_summaries)
+      .where(eq(feedback_ai_summaries.event_id, eventId))
+      .limit(1)
+
+    if (cached && cached.feedback_count === currentCount) {
+      return res.json({
+        available: true,
+        summary: cached.summary as AiSummary,
+        feedback_count: cached.feedback_count,
+        generated_at: cached.generated_at,
+      })
+    }
+
+    let summary: AiSummary
+    try {
+      summary = await summarizeFeedback(eventRow.name, groups)
+    } catch {
+      // Gemini down / rate limited / timed out: serve the stale cache if there is one
+      if (cached) {
+        return res.json({
+          available: true,
+          summary: cached.summary as AiSummary,
+          feedback_count: cached.feedback_count,
+          generated_at: cached.generated_at,
+        })
+      }
+      return res.json({ available: false, reason: 'generation_failed' })
+    }
+
+    // cache the response summary, simultaneous generation requests just overwrite each other
+    const generated_at = new Date()
+    await db
+      .insert(feedback_ai_summaries)
+      .values({ event_id: eventId, summary, feedback_count: currentCount, generated_at })
+      .onConflictDoUpdate({
+        target: feedback_ai_summaries.event_id,
+        set: { summary, feedback_count: currentCount, generated_at },
+      })
+
+    res.json({ available: true, summary, feedback_count: currentCount, generated_at })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
