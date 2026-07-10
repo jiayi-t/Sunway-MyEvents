@@ -6,6 +6,7 @@ export const analyticsKeys = {
   feedback: ['analytics', 'feedback'] as const,
   views: ['analytics', 'views'] as const,
   eventAnalytics: (id: string | undefined) => ['analytics', 'event', id] as const,
+  eventAiSummary: (id: string | undefined) => ['analytics', 'event', id, 'ai-summary'] as const,
 }
 
 export interface AttendanceEvent {
@@ -71,6 +72,19 @@ export interface EventAnalytics {
   } | null
 }
 
+export interface AiSummaryQuestion {
+  question: string
+  points: string[]
+}
+
+export interface EventAiSummary {
+  available: boolean
+  reason?: string
+  summary?: { questions: AiSummaryQuestion[] }
+  feedback_count?: number
+  generated_at?: string
+}
+
 export interface ViewsEvent {
   id: number
   name: string
@@ -118,6 +132,18 @@ export function useEventAnalyticsQuery(id: string | undefined, options?: Omit<Us
     queryKey: analyticsKeys.eventAnalytics(id),
     queryFn: () => api.get(`/analytics/events/${id}`).then(res => res.data),
     enabled: !!id,
+    ...options,
+  })
+}
+
+export function useEventAiSummaryQuery(id: string | undefined, options?: Omit<UseQueryOptions<EventAiSummary>, 'queryKey' | 'queryFn'>) {
+  return useQuery<EventAiSummary>({
+    queryKey: analyticsKeys.eventAiSummary(id),
+    queryFn: () => api.get(`/analytics/events/${id}/ai-summary`).then(res => res.data),
+    enabled: !!id,
+    // each retry is a potential Gemini API call
+    retry: false, 
+    staleTime: 5 * 60 * 1000,
     ...options,
   })
 }

@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from 'react-router-dom'
-import { Star } from 'lucide-react'
-import { useEventAnalyticsQuery, type QuestionAnalysis } from '../../api/queries'
+import { Sparkles, Star } from 'lucide-react'
+import { useEventAiSummaryQuery, useEventAnalyticsQuery, type QuestionAnalysis } from '../../api/queries'
 
 function RatingBar({ star, count, total }: { star: number; count: number; total: number }) {
   const percentage = total > 0 ? Math.round((count / total) * 100) : 0
@@ -31,7 +31,58 @@ function OptionBar({ label, count, max }: { label: string; count: number; max: n
   )
 }
 
-function QuestionBreakdown({ q }: { q: QuestionAnalysis }) {
+// AI response summary shown inside an open-ended question card
+function QuestionAiSummary({ query, question, responseCount }: {
+  query: ReturnType<typeof useEventAiSummaryQuery>
+  question: string
+  responseCount: number
+}) {
+  const { data, isLoading } = query
+
+  // only summarize questions with at least 3 responses, else the response summary card is not shown at all
+  if (responseCount < 3) return null
+
+  if (isLoading) {
+    return (
+      <div className="bg-surface rounded-xl p-3 space-y-2">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-accent" />
+          <p className="text-xs font-bold text-foreground">Response Summary</p>
+        </div>
+        <div className="space-y-1.5 animate-pulse">
+          <div className="h-2.5 bg-card rounded-full w-full" />
+          <div className="h-2.5 bg-card rounded-full w-5/6" />
+          <div className="h-2.5 bg-card rounded-full w-2/3" />
+        </div>
+      </div>
+    )
+  }
+
+  const points = data?.summary?.questions.find(s => s.question === question)?.points
+  if (!data?.available || !points || points.length === 0) return null
+
+  return (
+    <div className="bg-surface rounded-xl p-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <Sparkles className="w-3.5 h-3.5 text-accent" />
+        <p className="text-xs font-bold text-foreground">Response Summary</p>
+      </div>
+      <ul className="space-y-1">
+        {points.map((pt, i) => (
+          <li key={i} className="text-xs text-muted-foreground pl-3 relative">
+            <span className="absolute left-0 text-accent">•</span>
+            {pt}
+          </li>
+        ))}
+      </ul>
+      <p className="text-[10px] text-muted-foreground">
+        Summarized by AI from {responseCount} responses. May contain inaccuracies.
+      </p>
+    </div>
+  )
+}
+
+function QuestionBreakdown({ q, aiSummary }: { q: QuestionAnalysis; aiSummary: ReturnType<typeof useEventAiSummaryQuery> }) {
   if (q.type === 'open_ended') {
     const responses = q.responses as string[]
     return (
@@ -40,13 +91,16 @@ function QuestionBreakdown({ q }: { q: QuestionAnalysis }) {
         {responses.length === 0 ? (
           <p className="text-xs text-muted-foreground">No responses.</p>
         ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {responses.map((r, i) => (
-              <p key={i} className="text-xs text-muted-foreground bg-surface rounded-lg px-3 py-2">
-                {r}
-              </p>
-            ))}
-          </div>
+          <>
+            <QuestionAiSummary query={aiSummary} question={q.question} responseCount={responses.length} />
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {responses.map((r, i) => (
+                <p key={i} className="text-xs text-muted-foreground bg-surface rounded-lg px-3 py-2">
+                  {r}
+                </p>
+              ))}
+            </div>
+          </>
         )}
       </div>
     )
@@ -78,6 +132,9 @@ export default function OrganizerEventAnalyticsPage() {
   const view = searchParams.get('view') ?? 'attendance'
 
   const { data, isLoading, isError } = useEventAnalyticsQuery(id)
+  const aiSummary = useEventAiSummaryQuery(id, {
+    enabled: !!id && view === 'feedback' && (data?.feedback.count ?? 0) > 0,
+  })
 
   const subHeader = (title: string) => (
     <div className="bg-primary px-4 py-3 flex items-center gap-3">
@@ -245,7 +302,7 @@ export default function OrganizerEventAnalyticsPage() {
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase">Question Breakdown</p>
                 {feedback.questions.map((q, i) => (
-                  <QuestionBreakdown key={i} q={q} />
+                  <QuestionBreakdown key={i} q={q} aiSummary={aiSummary} />
                 ))}
               </div>
             )}
