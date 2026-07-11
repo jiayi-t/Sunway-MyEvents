@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
-import { Menu, Bell, ChevronDown } from 'lucide-react'
+import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2 } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -53,45 +53,74 @@ export default function Header() {
 
   const mobileMenuItems = (
     <>
-      {user && <div className="px-4 py-2 text-sm text-gray-600 border-b">{user.name}</div>}
+      {user && (
+        <div className="px-4 py-3 border-b flex items-center gap-3">
+          {user.image_url ? (
+            <img
+              src={user.image_url}
+              alt={user.name}
+              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-gray-500" aria-hidden="true" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+            <p className="text-xs text-gray-500 truncate">
+              {user.role === 'public' ? user.email : user.sunway_id}
+            </p>
+          </div>
+        </div>
+      )}
       {user?.role === 'organizer' ? (
         <>
-          <button 
-            onClick={() => { navigate('/organizer/dashboard'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Dashboard
+          <button
+            onClick={() => { navigate('/organizer/dashboard'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <LayoutDashboard className="w-4 h-4 text-gray-500" aria-hidden="true" />Dashboard
           </button>
-          <button 
-            onClick={() => { navigate('/organizer/events'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Events
+          <button
+            onClick={() => { navigate('/organizer/events'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <Calendar className="w-4 h-4 text-gray-500" aria-hidden="true" />My Events
           </button>
-          <button 
-            onClick={() => { navigate('/organizer/analytics'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Analytics
+          <button
+            onClick={() => { navigate('/organizer/analytics'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <BarChart2 className="w-4 h-4 text-gray-500" aria-hidden="true" />Analytics
           </button>
         </>
       ) : (
         <>
-          <button 
-            onClick={() => { navigate('/profile'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Profile
+          <button
+            onClick={() => { navigate('/profile'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <User className="w-4 h-4 text-gray-500" aria-hidden="true" />My Profile
           </button>
-          <button 
-            onClick={() => { navigate('/settings'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings
+          <button
+            onClick={() => { navigate('/'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <Home className="w-4 h-4 text-gray-500" aria-hidden="true" />Home
           </button>
-          <button 
-            onClick={() => { navigate('/'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Home
+          <button
+            onClick={() => { navigate('/my-events'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <Calendar className="w-4 h-4 text-gray-500" aria-hidden="true" />My Events
           </button>
-          <button 
-            onClick={() => { navigate('/my-events'); setMenuOpen(false) }} 
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Events
+          <button
+            onClick={() => { navigate('/settings'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <Settings className="w-4 h-4 text-gray-500" aria-hidden="true" />Settings
           </button>
         </>
       )}
-      <button 
-        onClick={handleLogout} 
-        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign Out
+      <div className="border-t my-1" />
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+        <LogOut className="w-4 h-4" aria-hidden="true" />Sign Out
       </button>
     </>
   )
@@ -122,7 +151,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-secondary shadow border-b border-gray-200">
       {/* Mobile */}
       <div className="lg:hidden px-4 py-3 flex items-center justify-between relative">
-        <div className="relative flex items-center" ref={mobileMenuRef}>
+        <div className="flex items-center" ref={mobileMenuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="text-black focus:outline-none"
@@ -130,11 +159,35 @@ export default function Header() {
           >
             <Menu className="w-6 h-6" aria-hidden="true" />
           </button>
-          {menuOpen && (
-            <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded shadow-lg z-50">
+          <div
+            className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
+              menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={() => setMenuOpen(false)}
+          />
+          <div
+            inert={!menuOpen}
+            className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50 flex flex-col transition-transform duration-300 ${
+              menuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            <div className="px-4 py-3 border-b flex items-center justify-between">
+              <span className="text-lg font-bold">
+                <span className="text-primary">Sunway </span>
+                <span className="text-accent">MyEvents</span>
+              </span>
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="text-gray-500 hover:text-black"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="py-2 overflow-y-auto">
               {mobileMenuItems}
             </div>
-          )}
+          </div>
         </div>
         <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
           <div className="pointer-events-auto">
