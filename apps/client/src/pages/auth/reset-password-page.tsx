@@ -95,6 +95,7 @@ export default function ResetPasswordPage() {
             type={showPassword ? 'text' : 'password'}
             value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm focus:outline-none focus:border-primary pr-10"
           />
           <button

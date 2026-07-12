@@ -64,6 +64,10 @@ export default function OrganizerCreateAccount() {
     }
   }
 
+  const submitOnEnter = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') handleSubmit()
+  }
+
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
@@ -76,7 +80,7 @@ export default function OrganizerCreateAccount() {
         <div className="w-full max-w-md">
         <h2 className="text-primary font-bold text-xl mb-4">Create Account</h2>
 
-        <div className="bg-white rounded-xl shadow p-6 w-full space-y-4">
+        <div className="bg-white rounded-xl shadow p-6 w-full space-y-4" onKeyDown={submitOnEnter}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">SLB / C&S Name</label>
             <input
