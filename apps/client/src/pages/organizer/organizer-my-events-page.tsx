@@ -25,7 +25,7 @@ interface OrganizerEvent {
   archived_at?: string | null
 }
 
-const CATEGORIES = ['Academics', 'Arts', ' Cultural', 'Entertainment', 'Social', 'Sports']
+const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
