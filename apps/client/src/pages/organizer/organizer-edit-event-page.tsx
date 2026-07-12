@@ -257,7 +257,7 @@ export default function OrganizerEditEventPage() {
                 <span className="text-xs">{uploading ? 'Uploading...' : 'Upload poster'}</span>
               </button>
             )}
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleFileChange} />
           </div>
         </div>
         <button

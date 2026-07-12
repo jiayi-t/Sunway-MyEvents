@@ -157,7 +157,7 @@ export function ProfilePhoto() {
             </div>
           )}
         </div>
-        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleImageChange} />
       </div>
       <p className="text-primary font-bold text-lg">{user?.name}</p>
     </div>

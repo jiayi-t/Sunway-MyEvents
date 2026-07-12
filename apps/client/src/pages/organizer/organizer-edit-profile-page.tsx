@@ -280,7 +280,7 @@ export default function OrganizerEditProfilePage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png"
                 className="hidden"
                 onChange={handleImageChange}
               />
