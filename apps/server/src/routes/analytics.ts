@@ -72,7 +72,7 @@ router.get('/feedback', authenticate, async (req: AuthRequest, res) => {
         date: events.date,
         image_url: events.image_url,
         registrations: sql<number>`COUNT(DISTINCT ${registrations.id})`,
-        feedback_count: sql<number>`COUNT(${feedback.id})`,
+        feedback_count: sql<number>`COUNT(DISTINCT ${feedback.id})`,
         avg_rating: sql<number>`COALESCE(AVG(${feedback.rating}), 0)`,
       })
       .from(events)
