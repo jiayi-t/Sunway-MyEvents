@@ -6,6 +6,7 @@ import { Calendar, Clock, Bookmark, Settings } from 'lucide-react'
 interface Registration {
   id: number
   event_date: string
+  event_end_time: string
   checked_in_at: string | null
 }
 
@@ -19,7 +20,8 @@ export function ProfileBanner({ identifier }: { identifier?: string }) {
   const feedbackCount = (myFeedbackData || []).length
 
   const now = new Date()
-  const upcoming = registrations.filter(r => new Date(r.event_date) >= now)
+  // an event counts as upcoming until it ends, not until midnight of its date
+  const upcoming = registrations.filter(r => new Date(r.event_end_time || r.event_date) >= now)
   const attended = registrations.filter(r => r.checked_in_at !== null)
 
   // Profile Banner

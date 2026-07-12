@@ -196,9 +196,9 @@ export default function MyEventsPage() {
 
   const now = new Date()
   const upcoming = useMemo(() =>
-    registrations.filter(r => new Date(r.event_date) >= now), [registrations])
+    registrations.filter(r => new Date(r.event_end_time || r.event_date) >= now), [registrations])
   const past = useMemo(() =>
-    registrations.filter(r => new Date(r.event_date) < now), [registrations])
+    registrations.filter(r => new Date(r.event_end_time || r.event_date) < now), [registrations])
 
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: 'upcoming', label: 'Upcoming', count: upcoming.length },

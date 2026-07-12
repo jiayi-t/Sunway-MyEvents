@@ -561,9 +561,10 @@ router.post('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
   }
 
   try {
-    const [event] = await db.select({ date: events.date }).from(events).where(eq(events.id, eventId)).limit(1)
+    const [event] = await db.select({ end_time: events.end_time }).from(events).where(eq(events.id, eventId)).limit(1)
     if (!event) return res.status(404).json({ error: 'Event not found' })
-    if (new Date(event.date) >= new Date()) return res.status(400).json({ error: 'Event has not ended yet' })
+    // gate on end_time, not date (midnight), so feedback opens when the event actually ends
+    if (new Date(event.end_time) >= new Date()) return res.status(400).json({ error: 'Event has not ended yet' })
 
     const [reg] = await db
       .select({ id: registrations.id, checked_in_at: registrations.checked_in_at })
