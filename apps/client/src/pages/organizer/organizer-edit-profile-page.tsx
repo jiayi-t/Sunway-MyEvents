@@ -302,7 +302,8 @@ export default function OrganizerEditProfilePage() {
                     type="text"
                     value={sunwayId}
                     onChange={e => setSunwayId(e.target.value)}
-                    placeholder="Min. 3 characters"
+                    placeholder="3 - 8 characters"
+                    maxLength={8}
                     className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>

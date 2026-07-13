@@ -318,6 +318,7 @@ router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
 
   if (sunway_id !== undefined) {
     if (sunway_id.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' })
+    if (sunway_id.length > 8) return res.status(400).json({ error: 'Username must be 8 characters or less. Try using your SLB or C&S shortform.' })
     const [taken] = await db.select({ id: users.id }).from(users)
       .where(and(eq(users.sunway_id, sunway_id), ne(users.id, req.user!.id))).limit(1)
     if (taken) return res.status(400).json({ error: 'Username already taken' })
