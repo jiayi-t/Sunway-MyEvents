@@ -186,7 +186,7 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   const eventId = parseInt(req.params.id as string)
   try {
     const [event] = await db
-      .select({ cancelled_at: events.cancelled_at, registration_deadline: events.registration_deadline, capacity: events.capacity, audience: events.audience })
+      .select({ cancelled_at: events.cancelled_at, end_time: events.end_time, registration_deadline: events.registration_deadline, capacity: events.capacity, audience: events.audience })
       .from(events)
       .where(eq(events.id, eventId))
       .limit(1)
@@ -196,6 +196,7 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'This event is open to students only' })
     }
     if (event.cancelled_at) return res.status(400).json({ error: 'This event has been cancelled' })
+    if (new Date(event.end_time) < new Date()) return res.status(400).json({ error: 'This event has already ended' })
     if (event.registration_deadline && new Date(event.registration_deadline) < new Date()) {
       return res.status(400).json({ error: 'Registration deadline has passed' })
     }

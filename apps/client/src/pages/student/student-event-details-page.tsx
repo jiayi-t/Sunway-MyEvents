@@ -249,6 +249,9 @@ export default function StudentEventDetailsPage() {
 
         {/* Register Button */}
         {!typedEvent.cancelled_at && (() => {
+          const eventEnded = typedEvent.end_time
+            ? new Date() > new Date(typedEvent.end_time)
+            : false
           const deadlinePassed = typedEvent.registration_deadline
             ? new Date() > new Date(typedEvent.registration_deadline)
             : false
@@ -256,6 +259,13 @@ export default function StudentEventDetailsPage() {
             return (
               <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default">
                 Registered
+              </button>
+            )
+          }
+          if (eventEnded) {
+            return (
+              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed">
+                Event Ended
               </button>
             )
           }
