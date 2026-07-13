@@ -70,14 +70,27 @@ router.post('/register/organizer', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' })
   }
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address' })
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' })
+  }
+
   try {
     if (username.length > 8) {
       return res.status(400).json({ error: 'Username must be 8 characters or less. Try using your SLB or C&S shortform.' })
     }
 
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.sunway_id, username))
-    if (existing.length > 0) {
+    const existingUsername = await db.select({ id: users.id }).from(users).where(eq(users.sunway_id, username))
+    if (existingUsername.length > 0) {
       return res.status(400).json({ error: 'Username already taken' })
+    }
+
+    const existingEmail = await db.select({ id: users.id }).from(users).where(eq(users.email, email))
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -96,7 +109,11 @@ router.post('/register/organizer', async (req, res) => {
       user: result[0]
     })
   } catch (error: any) {
+    // if two users try to register with the same email or username at the same time, the database will throw a unique constraint violation error
     if (error.code === '23505') {
+      if (typeof error.constraint === 'string' && error.constraint.includes('email')) {
+        return res.status(400).json({ error: 'Email already registered' })
+      }
       return res.status(400).json({ error: 'Username already taken' })
     }
     res.status(500).json({ error: 'Server error' })
@@ -113,6 +130,10 @@ router.post('/register/public', async (req, res) => {
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address' })
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' })
   }
 
   try {
