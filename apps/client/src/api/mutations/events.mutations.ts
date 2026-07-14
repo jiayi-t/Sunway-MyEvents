@@ -1,6 +1,7 @@
 import api from '../../services/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { eventKeys } from '../queries/events.queries'
+import { registrationKeys } from '../queries/registrations.queries'
 
 export function useRegisterEventMutation(id: string | undefined) {
   const queryClient = useQueryClient()
@@ -9,6 +10,8 @@ export function useRegisterEventMutation(id: string | undefined) {
     onSuccess: () => {
       queryClient.setQueryData(eventKeys.registrationStatus(id), true)
       queryClient.invalidateQueries({ queryKey: eventKeys.recommendations })
+      queryClient.invalidateQueries({ queryKey: registrationKeys.my })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
     },
   })
 }
@@ -57,6 +60,7 @@ export function useCancelEventMutation(id: string | undefined) {
     mutationFn: () => api.patch(`/events/${id}/cancel`).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
     },
   })
 }
