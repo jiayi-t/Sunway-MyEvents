@@ -6,6 +6,9 @@ import { and, eq, gt, isNull, ne } from 'drizzle-orm'
 import { db } from '../db'
 import { users, password_reset_tokens } from '../database/schema'
 import { authenticate, type AuthRequest } from '../middleware/auth'
+import {
+  loginLimiter, loginAccountLimiter, forgotPasswordLimiter, registerLimiter, resetPasswordLimiter,
+} from '../middleware/rate-limit'
 import { sendEmail, forgotPasswordEmail } from '../email'
 
 const router = Router()
@@ -13,7 +16,7 @@ const router = Router()
 const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '1d') as jwt.SignOptions['expiresIn']
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
   const { sunwayId, password } = req.body
 
   if (!sunwayId || !password) {
@@ -63,7 +66,7 @@ router.post('/login', async (req, res) => {
 })
 
 // POST /api/auth/register/organizer
-router.post('/register/organizer', async (req, res) => {
+router.post('/register/organizer', registerLimiter, async (req, res) => {
   const { name, username, email, category, password } = req.body
 
   if (!name || !username || !email || !category || !password) {
@@ -121,7 +124,7 @@ router.post('/register/organizer', async (req, res) => {
 })
 
 // POST /api/auth/register/public
-router.post('/register/public', async (req, res) => {
+router.post('/register/public', registerLimiter, async (req, res) => {
   const { name, email, password, gender, mobile_number, alumni } = req.body
 
   if (!name || !email || !password || !gender || !mobile_number || typeof alumni !== 'boolean') {
@@ -360,7 +363,7 @@ router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
 })
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
   const { email } = req.body
   if (!email) return res.status(400).json({ error: 'Email is required' })
 
@@ -412,7 +415,7 @@ router.get('/validate-reset-token', async (req, res) => {
 })
 
 // POST /api/auth/reset-password
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   const { token, password } = req.body
   if (!token || !password) return res.status(400).json({ error: 'Password reset token and new password are required' })
   if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })

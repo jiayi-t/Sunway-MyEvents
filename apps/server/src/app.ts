@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import { globalLimiter } from './middleware/rate-limit'
 import authRoutes from './routes/auth'
 import eventRoutes from './routes/events'
 import registrationRoutes from './routes/registrations'
@@ -16,6 +17,9 @@ const app = express()
 
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : true }))
 app.use(express.json())
+
+// blanket per-IP rate limit on all API traffic (specific routes add stricter limits)
+app.use('/api', globalLimiter)
 
 // Routes
 app.use('/api/auth', authRoutes)
