@@ -2,7 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
-import { and, eq, gt, isNull, ne } from 'drizzle-orm'
+import { and, eq, gt, isNull, ne, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { users, password_reset_tokens } from '../database/schema'
 import { authenticate, type AuthRequest } from '../middleware/auth'
@@ -43,7 +43,7 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, sunway_id: user.sunway_id, role: user.role },
+      { id: user.id, sunway_id: user.sunway_id, role: user.role, tv: user.token_version },
       process.env.JWT_SECRET!,
       { expiresIn: jwtExpiresIn }
     )
@@ -435,8 +435,15 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     if (!row) return res.status(400).json({ error: 'Invalid or expired reset link.' })
 
     const hashedPassword = await bcrypt.hash(password, 10)
-    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, row.user_id))
-    await db.update(password_reset_tokens).set({ used_at: new Date() }).where(eq(password_reset_tokens.id, row.id))
+    // bump token_version so any JWTs issued before this reset are rejected by authenticate
+    await db.update(users)
+      .set({ password: hashedPassword, token_version: sql`${users.token_version} + 1` })
+      .where(eq(users.id, row.user_id))
+    // void every outstanding reset token for this user, not just the one used,
+    // so any other reset links already sent can't be replayed
+    await db.update(password_reset_tokens)
+      .set({ used_at: new Date() })
+      .where(and(eq(password_reset_tokens.user_id, row.user_id), isNull(password_reset_tokens.used_at)))
 
     res.json({ message: 'Password reset successfully.' })
   } catch {

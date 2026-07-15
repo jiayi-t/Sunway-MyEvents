@@ -22,6 +22,7 @@ export const users = pgTable('users', {
   about: text('about'),
   preferred_time_ranges: jsonb('preferred_time_ranges'),
   alumni: boolean('alumni'),
+  token_version: integer('token_version').default(0).notNull(),
 })
 
 export const events = pgTable('events', {
