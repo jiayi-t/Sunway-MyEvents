@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
@@ -31,6 +31,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('token')
   })
+
+  // localStorage is shared across tabs, when another tab logs in/out, redirect this tab onto the new session instead of keeping stale UI
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'token' || e.oldValue === e.newValue) return
+      if (!e.newValue) {
+        // logged out in another tab
+        window.location.href = '/login'
+        return
+      }
+      // logged in / switched account in another tab, reload onto the new account's home
+      const saved = localStorage.getItem('user')
+      const role = saved ? JSON.parse(saved).role : null
+      window.location.href = role === 'organizer' ? '/organizer/dashboard' : '/'
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
 
   const login = (user: User, token: string) => {
     setUser(user)
