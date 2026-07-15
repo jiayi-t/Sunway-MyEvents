@@ -13,11 +13,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// auto-logout on expired/invalid token
+// auto-logout on expired/invalid token only when a session actually existed
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && localStorage.getItem('token')) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login?reason=session_expired'

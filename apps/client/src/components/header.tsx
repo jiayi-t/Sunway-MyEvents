@@ -25,7 +25,7 @@ export default function Header() {
   }, [menuOpen])
   const navigate = useNavigate()
   const location = useLocation()
-  const { data: notifications = [] } = useNotificationsQuery()
+  const { data: notifications = [] } = useNotificationsQuery(!!user)
   const unreadCount = (notifications as any[]).filter(n => !n.read_at).length
 
   const handleLogout = () => {

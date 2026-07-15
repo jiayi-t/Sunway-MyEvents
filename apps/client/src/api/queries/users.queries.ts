@@ -87,10 +87,11 @@ export function useOrganizerProfileQuery() {
   })
 }
 
-export function useNotificationsQuery() {
+export function useNotificationsQuery(enabled = true) {
   return useQuery({
     queryKey: userKeys.notifications,
     queryFn: () => api.get('/notifications').then(res => res.data as Notification[]),
+    enabled,
   })
 }
 
