@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Sparkles, Star } from 'lucide-react'
 import { useEventAiSummaryQuery, useEventAnalyticsQuery, type QuestionAnalysis } from '../../api/queries'
+import { AnalyticsTabSkeleton } from '../../components/skeletons'
 
 function RatingBar({ star, count, total }: { star: number; count: number; total: number }) {
   const percentage = total > 0 ? Math.round((count / total) * 100) : 0
@@ -146,9 +147,7 @@ export default function OrganizerEventAnalyticsPage() {
     return (
       <div className="min-h-screen bg-surface">
         {subHeader('Analytics')}
-        <div className="flex items-center justify-center h-40">
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        </div>
+        <AnalyticsTabSkeleton />
       </div>
     )
   }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
+import { EventDetailsSkeleton } from '../../components/skeletons'
 import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
@@ -108,8 +109,11 @@ export default function OrganizerEventDetailsPage() {
   }
 
   if (isLoading) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">Loading event...</p>
+    <div className="min-h-screen bg-surface">
+      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
+      </div>
+      <EventDetailsSkeleton />
     </div>
   )
 

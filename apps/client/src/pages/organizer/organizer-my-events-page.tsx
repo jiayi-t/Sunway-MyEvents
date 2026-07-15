@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import { useOrganizerEventsQuery, type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
+import { EventListSkeleton } from '../../components/skeletons'
 import { Upload, BarChart2, ScanQrCode, Calendar, Clock, MapPin, ClipboardPen, ImageOff } from 'lucide-react'
 
 type Tab = 'new' | 'upcoming' | 'past'
@@ -487,7 +488,7 @@ export default function OrganizerEventsPage() {
       {activeTab === 'upcoming' && (
         <div className="px-4 py-4 space-y-3">
           {eventsLoading ? (
-            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+            <EventListSkeleton />
           ) : upcomingEvents.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center">No upcoming events yet</p>
           ) : (
@@ -502,7 +503,7 @@ export default function OrganizerEventsPage() {
       {activeTab === 'past' && (
         <div className="px-4 py-4 space-y-3">
           {eventsLoading ? (
-            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+            <EventListSkeleton />
           ) : pastEvents.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center">No past events yet</p>
           ) : (

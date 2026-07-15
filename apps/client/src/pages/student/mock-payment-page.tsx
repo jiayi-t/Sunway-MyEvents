@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEventQuery } from '../../api/queries'
 import { useRegisterEventMutation } from '../../api/mutations'
+import { FormSkeleton } from '../../components/skeletons'
 import { Lock, Check } from 'lucide-react'
 
 export default function MockPaymentPage() {
@@ -23,7 +24,11 @@ export default function MockPaymentPage() {
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen text-muted-foreground text-sm">Loading...</div>
+    return (
+      <div className="min-h-screen bg-surface px-4 py-6">
+        <FormSkeleton sections={1} />
+      </div>
+    )
   }
 
   if (paid) {

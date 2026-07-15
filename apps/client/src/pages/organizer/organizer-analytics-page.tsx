@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronRight, Eye, ImageOff, Star, Users } from 'lucide-react'
+import { AnalyticsTabSkeleton } from '../../components/skeletons'
 import {
   useAttendanceAnalyticsQuery,
   useFeedbackAnalyticsQuery,
@@ -90,7 +91,7 @@ function ViewsTab({
   data: ViewsAnalytics | undefined
   loading: boolean
 }) {
-  if (loading) return <p className="text-muted-foreground text-sm text-center py-12">Loading...</p>
+  if (loading) return <AnalyticsTabSkeleton />
   if (!data) return null
 
   const { totals, events } = data
@@ -156,7 +157,7 @@ function AttendanceTab({
   loading: boolean
   onRowClick: (id: number) => void
 }) {
-  if (loading) return <p className="text-muted-foreground text-sm text-center py-12">Loading...</p>
+  if (loading) return <AnalyticsTabSkeleton />
   if (!data) return null
 
   const { totals, events } = data
@@ -222,7 +223,7 @@ function FeedbackTab({
   loading: boolean
   onRowClick: (id: number) => void
 }) {
-  if (loading) return <p className="text-muted-foreground text-sm text-center py-12">Loading...</p>
+  if (loading) return <AnalyticsTabSkeleton />
   if (!data) return null
 
   const { totals, rating_distribution, events } = data

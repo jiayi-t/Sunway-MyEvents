@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
+import { FeaturedEventSkeleton, EventListSkeleton } from '../../components/skeletons'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface Event {
@@ -129,7 +130,7 @@ export default function HomePage() {
         <h2 className="font-bold text-white mb-2 text-center">Featured Events</h2>
 
         {isLoading ? (
-          <p className="text-blue-100 text-sm text-center">Loading events...</p>
+          <FeaturedEventSkeleton />
         ) : featuredEvents.length > 0 && featured ? (
           <div className="max-w-3xl mx-auto">
             <div
@@ -241,7 +242,7 @@ export default function HomePage() {
           </button>
         </div>
         {recLoading ? (
-          <p className="text-muted-foreground text-sm">Loading recommendations...</p>
+          <EventListSkeleton />
         ) : recommendations.length === 0 ? (
           <p className="text-muted-foreground text-sm">No recommendations yet, explore events to get personalised suggestions.</p>
         ) : (

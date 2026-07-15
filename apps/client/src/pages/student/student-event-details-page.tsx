@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
+import { EventDetailsSkeleton } from '../../components/skeletons'
 import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
 
 interface Event {
@@ -92,8 +93,11 @@ export default function StudentEventDetailsPage() {
   }
 
   if (isLoading) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">Loading event...</p>
+    <div className="min-h-screen bg-surface">
+      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
+      </div>
+      <EventDetailsSkeleton />
     </div>
   )
 

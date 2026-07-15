@@ -4,6 +4,7 @@ import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil } from 
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
+import { ProfileInfoSkeleton } from '../../components/skeletons'
 import api from '../../services/api'
 
 const LINK_TYPES: SocialLinks['type'][] = ['instagram', 'website', 'linkedin', 'tiktok', 'rednote', 'facebook', 'others']
@@ -227,7 +228,7 @@ export default function OrganizerEditProfilePage() {
 
       <div className="px-4 py-4 space-y-4">
         {isLoading ? (
-          <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
+          <ProfileInfoSkeleton rows={6} />
         ) : (
           <>
             {/* Avatar */}

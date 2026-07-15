@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useResetPasswordMutation } from '../../api/mutations'
 import { useValidateResetTokenQuery } from '../../api/queries'
 import LoginFooter from '../../components/login-footer'
+import { Skeleton } from '../../components/skeletons'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -49,7 +50,9 @@ export default function ResetPasswordPage() {
   if (tokenCheck.isLoading) {
     return shell(
       <div className="bg-white rounded-xl shadow p-6">
-        <p className="text-sm text-muted-foreground">Verifying reset link...</p>
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-3 w-2/3 mt-3" />
+        <Skeleton className="h-10 w-full mt-4" />
       </div>
     )
   }

@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../context/auth-context'
 import { useMyRegistrationsQuery, useCheckinTokenQuery } from '../api/queries'
+import { CheckinCardSkeleton } from './skeletons'
 import { Calendar, Clock, MapPin } from 'lucide-react'
 
 interface Registration {
@@ -50,11 +51,7 @@ export default function CheckinCard({ identifier }: { identifier?: string }) {
   const registrations = (data || []) as Registration[]
   const registration = registrations.find(r => r.event_id === Number(id))
 
-  if (regsLoading || tokenLoading) return (
-    <div className="bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">Loading...</p>
-    </div>
-  )
+  if (regsLoading || tokenLoading) return <CheckinCardSkeleton />
 
   if (!registration) return (
     <div className="bg-surface flex items-center justify-center">

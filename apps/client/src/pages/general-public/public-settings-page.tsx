@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/auth-context'
 import { useProfileQuery } from '../../api/queries'
 import { useSettingsTab, SettingsTabBar, ProfilePhoto, NotificationsTab, InterestsTab } from '../../components/settings-tabs'
+import { ProfileInfoSkeleton } from '../../components/skeletons'
 
 export default function PublicSettingsPage() {
   const { user } = useAuth()
@@ -22,7 +23,7 @@ export default function PublicSettingsPage() {
       <div className={activeTab === 'profile' ? '' : 'hidden'}>
         <div className="px-4 py-4">
           {profileLoading ? (
-            <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
+            <ProfileInfoSkeleton rows={4} />
           ) : (
             <>
             <ProfilePhoto />

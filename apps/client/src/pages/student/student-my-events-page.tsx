@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
+import { EventListSkeleton } from '../../components/skeletons'
 import { Calendar, Clock, ImageOff, MapPin, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
@@ -237,7 +238,7 @@ export default function MyEventsPage() {
       {activeTab === 'upcoming' && (
         <div className="px-4 py-4 space-y-3">
           {loading ? (
-            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+            <EventListSkeleton />
           ) : upcoming.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-sm">No upcoming events. Browse and register for events!</p>
@@ -258,7 +259,7 @@ export default function MyEventsPage() {
       {activeTab === 'past' && (
         <div className="px-4 py-4 space-y-3">
           {loading ? (
-            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+            <EventListSkeleton />
           ) : past.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center">No past events yet</p>
           ) : (
@@ -288,7 +289,7 @@ export default function MyEventsPage() {
       {activeTab === 'saved' && (
         <div className="px-4 py-4 space-y-3">
           {loading ? (
-            <p className="text-muted-foreground text-sm text-center">Loading events...</p>
+            <EventListSkeleton />
           ) : savedEvents.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-sm">No saved events yet. Bookmark events to save them!</p>

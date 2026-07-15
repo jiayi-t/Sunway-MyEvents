@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
+import { EventListSkeleton } from '../../components/skeletons'
 import { Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
@@ -319,7 +320,7 @@ export default function BrowseEventsPage() {
       {/* Events List */}
       <div className="px-4 py-3 space-y-3">
         {isLoading ? (
-          <p className="text-muted-foreground text-sm text-center mt-8">Loading events...</p>
+          <EventListSkeleton count={4} />
         ) : filtered.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center mt-8">No events found.</p>
         ) : (

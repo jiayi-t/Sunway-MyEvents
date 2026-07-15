@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useEventQuery, useEventParticipantsQuery } from '../../api/queries'
 import { useManualCheckinMutation } from '../../api/mutations'
+import { ListRowsSkeleton } from '../../components/skeletons'
 import { Search, TicketCheck } from 'lucide-react'
 
 type FilterTab = 'all' | 'registered' | 'checked-in'
@@ -132,7 +133,7 @@ export default function OrganizerParticipantsPage() {
       {/* Participant list */}
       <div className="px-4 py-2 space-y-2">
         {isLoading ? (
-          <p className="text-muted-foreground text-sm text-center py-8">Loading...</p>
+          <ListRowsSkeleton />
         ) : filtered.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center py-8">No participants found</p>
         ) : (

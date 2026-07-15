@@ -7,6 +7,7 @@ import { useProfileQuery, useInterestsQuery, useTimePreferencesQuery, type Notif
 import { interestKeys, timePreferenceKeys } from '../api/queries/interests.queries'
 import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation, useUpdateTimePreferencesMutation } from '../api/mutations'
 import { useUpdateStudentProfileImageMutation } from '../api/mutations/users.mutations'
+import { FormSkeleton } from './skeletons'
 import api from '../services/api'
 
 export type SettingsTab = 'profile' | 'notifications' | 'interests'
@@ -340,7 +341,7 @@ export function InterestsTab() {
   return (
     <div className="px-4 py-4 space-y-4">
       {interestsLoading || timeRangesLoading ? (
-        <p className="text-muted-foreground text-sm text-center mt-8">Loading...</p>
+        <FormSkeleton sections={2} />
       ) : (
         <>
           {/* Categories */}

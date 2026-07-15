@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
+import { NotificationListSkeleton } from '../../components/skeletons'
 import { Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
 
 function timeAgo(dateStr: string) {
@@ -112,7 +113,7 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm text-center mt-12">Loading...</p>
+        <NotificationListSkeleton />
       ) : all.length === 0 ? (
         <p className="text-muted-foreground text-sm text-center mt-12">No notifications yet.</p>
       ) : (

@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, type SocialLinks } from '../../api/queries'
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
+import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import { Pen, Bell, BellRing, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
@@ -59,7 +60,22 @@ export default function OrganizerProfilePage() {
     <div className="bg-surface">
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm text-center mt-12">Loading...</p>
+        <>
+          {/* banner skeleton on the primary background, lighter tones for contrast */}
+          <div className="bg-primary px-4 py-5">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full animate-pulse bg-white/20" />
+              <div className="flex-1">
+                <div className="animate-pulse bg-white/20 rounded h-4 w-1/3" />
+                <div className="animate-pulse bg-white/20 rounded h-3 w-1/4 mt-2" />
+              </div>
+            </div>
+          </div>
+          <div className="px-4 py-4 space-y-3">
+            <Skeleton className="h-16 w-full" />
+            <EventListSkeleton />
+          </div>
+        </>
       ) : !profile ? (
         <p className="text-muted-foreground text-sm text-center mt-12">Organizer not found.</p>
       ) : (

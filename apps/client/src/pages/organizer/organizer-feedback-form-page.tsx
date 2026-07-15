@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, type HTMLAttributes } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useFeedbackFormQuery, DEFAULT_QUESTIONS, type FeedbackQuestion, type QuestionType } from '../../api/queries'
 import { useSaveFeedbackFormMutation } from '../../api/mutations'
+import { FormSkeleton } from '../../components/skeletons'
 import { Trash2, Star, Lock, Plus, X, GripVertical } from 'lucide-react'
 
 const TYPE_LABELS: Record<QuestionType, string> = {
@@ -376,8 +377,11 @@ export default function OrganizerFeedbackFormPage() {
   if (!isNewEvent && isLoading) {
     return (
       <div className="bg-surface min-h-screen">
-        <div className="flex items-center justify-center h-40">
-          <p className="text-muted-foreground text-sm">Loading...</p>
+        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+          <h1 className="text-white font-bold text-base flex-1 text-center">Feedback Form</h1>
+        </div>
+        <div className="px-4 py-4">
+          <FormSkeleton sections={2} />
         </div>
       </div>
     )

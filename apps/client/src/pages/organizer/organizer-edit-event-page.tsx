@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../services/api'
 import { useEventQuery } from '../../api/queries'
 import { useUpdateEventMutation } from '../../api/mutations'
+import { FormSkeleton } from '../../components/skeletons'
 import { Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {
@@ -151,8 +152,13 @@ export default function OrganizerEditEventPage() {
   }
 
   if (isLoading) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">Loading...</p>
+    <div className="min-h-screen bg-surface">
+      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <h1 className="text-white font-bold text-base flex-1 text-center">Edit Event</h1>
+      </div>
+      <div className="px-4 py-4">
+        <FormSkeleton sections={3} />
+      </div>
     </div>
   )
 
