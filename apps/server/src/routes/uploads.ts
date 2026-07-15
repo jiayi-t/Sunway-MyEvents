@@ -1,16 +1,23 @@
 import { Router, type Request, type Response } from 'express'
-import multer, { type StorageEngine } from 'multer'
+import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
+import { createClient } from '@supabase/supabase-js'
 import { authenticate } from '../middleware/auth'
 
 const router = Router()
 
+// when Supabase is configured (UAT/prod), files go to a public Storage bucket, otherwise (local dev) they are written to apps/server/uploads and served by express.static
+const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null
+const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'uploads'
+
 const uploadDir = path.join(__dirname, '..', '..', 'uploads')
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
+if (!supabase && !fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
 
 // max upload size: 5MB
-const MAX_FILE_SIZE = 5 * 1024 * 1024 
+const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 // only JPG and PNG images are accepted
 const ALLOWED_TYPES: Record<string, string[]> = {
@@ -18,18 +25,8 @@ const ALLOWED_TYPES: Record<string, string[]> = {
   'image/png': ['.png'],
 }
 
-const storage: StorageEngine = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    // derive the extension from the validated MIME type, never from the client-supplied filename
-    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg'
-    const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`
-    cb(null, name)
-  }
-})
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (_req, file, cb) => {
     const allowedExts = ALLOWED_TYPES[file.mimetype]
@@ -42,7 +39,7 @@ const upload = multer({
 })
 // authenticate middleware is applied to ensure only logged-in users can upload files
 router.post('/', authenticate, (req: Request, res: Response) => {
-  upload.single('file')(req, res, (err: unknown) => {
+  upload.single('file')(req, res, async (err: unknown) => {
     if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ error: 'Image must be 5MB or smaller' })
     }
@@ -55,8 +52,24 @@ router.post('/', authenticate, (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No file uploaded' })
     }
 
-    const url = `/uploads/${file.filename}`
-    return res.json({ url })
+    // derive the extension from the validated MIME type, never from the client-supplied filename
+    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg'
+    const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`
+
+    if (supabase) {
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(name, file.buffer, { contentType: file.mimetype })
+      if (error) {
+        console.error('Supabase upload failed:', error.message)
+        return res.status(500).json({ error: 'Upload failed' })
+      }
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(name)
+      return res.json({ url: data.publicUrl })
+    }
+
+    fs.writeFileSync(path.join(uploadDir, name), file.buffer)
+    return res.json({ url: `/uploads/${name}` })
   })
 })
 
