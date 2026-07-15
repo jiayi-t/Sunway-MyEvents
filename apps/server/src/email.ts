@@ -26,6 +26,11 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
 
 export async function sendEmail(to: string | string[], subject: string, html: string): Promise<void> {
   if (DEV_MODE) {
+    // on a headless production server there is no browser to preview in, skip instead of hanging
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(`SMTP not configured, skipping email "${subject}"`)
+      return
+    }
     // build a temporary HTML file and open it in the browser for preview
     const tmp = path.join(os.tmpdir(), `myevents-email-${Date.now()}.html`)
     // render the email using preview-email

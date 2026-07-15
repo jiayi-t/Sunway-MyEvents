@@ -11,7 +11,9 @@
     "dev": "concurrently \"npm run dev --workspace=apps/server\" \"npm run dev --workspace=apps/client\"",
     "dev:server": "npm run dev --workspace=apps/server",
     "dev:client": "npm run dev --workspace=apps/client",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run build --workspace=apps/client && npm run build --workspace=apps/server",
+    "start": "npm run start --workspace=apps/server",
+    "test": "npm test --workspace=apps/server"
   },
   "keywords": [],
   "author": "Tiong Jia Yi",

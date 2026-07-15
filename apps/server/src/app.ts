@@ -39,4 +39,14 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Sunway MyEvents API running' })
 })
 
+// in production the server also serves the built client (single-origin deploy), the SPA fallback must skip /api and /uploads so unknown API routes still 404 as JSON
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '../../client/dist')
+  app.use(express.static(clientDist))
+  app.get('/{*splat}', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next()
+    res.sendFile(path.join(clientDist, 'index.html'))
+  })
+}
+
 export default app
