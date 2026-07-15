@@ -28,6 +28,13 @@ export default function Header() {
   const { data: notifications = [] } = useNotificationsQuery(!!user)
   const unreadCount = (notifications as any[]).filter(n => !n.read_at).length
 
+  // logo click: go to the role's home page, or scroll to top if already there
+  const goHome = () => {
+    const home = user?.role === 'organizer' ? '/organizer/dashboard' : '/'
+    if (location.pathname === home) window.scrollTo({ top: 0, behavior: 'smooth' })
+    else navigate(home)
+  }
+
   const handleLogout = () => {
     logout()
     navigate('/login')
@@ -190,10 +197,10 @@ export default function Header() {
           </div>
         </div>
         <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
-          <div className="pointer-events-auto">
+          <button onClick={goHome} className="pointer-events-auto">
             <span className="text-primary">Sunway </span>
             <span className="text-accent">MyEvents</span>
-          </div>
+          </button>
         </div>
 
         {(user?.role === 'student' || user?.role === 'public') ? (
@@ -214,7 +221,7 @@ export default function Header() {
       <div className="hidden lg:block relative py-3 w-full">
         {/* Logo */}
         <button
-          onClick={() => navigate(user?.role === 'organizer' ? '/organizer/dashboard' : '/')}
+          onClick={goHome}
           className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold whitespace-nowrap"
         >
           <span className="text-primary">Sunway </span>
