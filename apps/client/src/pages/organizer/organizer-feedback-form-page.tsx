@@ -355,9 +355,11 @@ export default function OrganizerFeedbackFormPage() {
     const full = buildFullQuestions()
 
     if (isNewEvent) {
-      navigate('/organizer/events?tab=new', {
+      navigate(location.pathname, {
+        replace: true,
         state: { ...(location.state ?? {}), questions: full },
       })
+      initialQuestions.current = extraQuestions
     } else {
       saveMutation.mutate(full, {
         onSuccess: () => navigate(-1),
@@ -368,7 +370,7 @@ export default function OrganizerFeedbackFormPage() {
 
   const handleCancel = () => {
     if (isNewEvent) {
-      navigate('/organizer/events?tab=new', { state: location.state ?? {} })
+      navigate('/organizer/events/new', { state: location.state ?? {} })
     } else {
       navigate(-1)
     }

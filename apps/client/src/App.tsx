@@ -21,6 +21,7 @@ import ResetPasswordPage from './pages/auth/reset-password-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import OrganizerProfilePage from './pages/organizer/organizer-profile-page'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
+import OrganizerCreateEventPage from './pages/organizer/organizer-create-event-page'
 import OrganizerEventDetailsPage from './pages/organizer/organizer-event-details-page'
 import OrganizerEditEventPage from './pages/organizer/organizer-edit-event-page'
 import OrganizerCheckinScannerPage from './pages/organizer/organizer-checkin-scanner-page'
@@ -208,6 +209,13 @@ function AppRoutes() {
         element={
         <ProtectedRoute>
           <OrganizerEventsPage />
+        </ProtectedRoute>
+        }
+      />
+      <Route path="/organizer/events/new"
+        element={
+        <ProtectedRoute>
+          <OrganizerCreateEventPage />
         </ProtectedRoute>
         }
       />

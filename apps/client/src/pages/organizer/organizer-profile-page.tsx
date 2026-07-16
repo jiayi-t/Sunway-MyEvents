@@ -166,7 +166,7 @@ export default function OrganizerProfilePage() {
               <div className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
                 <h2 className="text-primary font-semibold text-sm mb-4">My Events</h2>
                 <div className="flex justify-around">
-                  <button onClick={() => navigate('/organizer/events?tab=new')} className="flex flex-col items-center gap-1">
+                  <button onClick={() => navigate('/organizer/events/new')} className="flex flex-col items-center gap-1">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><PlusSquare /></div>
                     <span className="text-xs text-foreground">New</span>
                   </button>
