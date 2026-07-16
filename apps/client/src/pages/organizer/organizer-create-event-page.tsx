@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import { type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
-import { Upload, ClipboardPen } from 'lucide-react'
+import { ChevronRight, Upload, ClipboardPen } from 'lucide-react'
 
 const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
@@ -205,7 +205,7 @@ export default function OrganizerCreateEventPage() {
             <ClipboardPen className="w-4 h-4" />
             Customize feedback questions
           </span>
-          <span>›</span>
+          <ChevronRight className="w-4 h-4" />
         </button>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}

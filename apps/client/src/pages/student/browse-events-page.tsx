@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { EventListSkeleton } from '../../components/skeletons'
-import { Calendar, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Calendar, ChevronRight, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
   id: number
@@ -377,7 +377,7 @@ export default function BrowseEventsPage() {
                 </div>
               </div>
 
-              <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
             </div>
           ))
         )}

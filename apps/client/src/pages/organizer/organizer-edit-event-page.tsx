@@ -4,7 +4,7 @@ import api from '../../services/api'
 import { useEventQuery } from '../../api/queries'
 import { useUpdateEventMutation } from '../../api/mutations'
 import { FormSkeleton } from '../../components/skeletons'
-import { Upload, ClipboardPen } from 'lucide-react'
+import { ChevronRight, Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {
   name: string
@@ -275,7 +275,7 @@ export default function OrganizerEditEventPage() {
             <ClipboardPen className="w-4 h-4" />
             Customize feedback questions
           </span>
-          <span>›</span>
+          <ChevronRight className="w-4 h-4" />
         </button>
 
         {uploadError && <p className="text-red-500 text-sm">{uploadError}</p>}

@@ -304,7 +304,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
               </div>
             ))}
           </div>

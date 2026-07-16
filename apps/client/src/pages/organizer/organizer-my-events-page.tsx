@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useOrganizerEventsQuery } from '../../api/queries'
 import { EventListSkeleton } from '../../components/skeletons'
-import { BarChart2, ScanQrCode, Calendar, Clock, MapPin, ImageOff, Plus } from 'lucide-react'
+import { BarChart2, ScanQrCode, Calendar, ChevronRight, Clock, MapPin, ImageOff, Plus } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past'
 
@@ -145,7 +145,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
           )}
       </div>
 
-      <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
     </div>
   )
 }
@@ -203,7 +203,7 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
         </button>
       </div>
 
-      <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
     </div>
   )
 }

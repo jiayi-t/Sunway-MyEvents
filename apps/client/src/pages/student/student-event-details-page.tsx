@@ -5,7 +5,7 @@ import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '.
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
+import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
 
 interface Event {
   id: number
@@ -312,7 +312,7 @@ export default function StudentEventDetailsPage() {
               {typedEvent.organizer_name ?? 'Organizer'}
             </p>
           </div>
-          <span className="text-muted-foreground flex-shrink-0">›</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMyRegistrationsQuery, useSavedEventsQuery, useMyFeedbackQuery } from '../../api/queries'
 import { EventListSkeleton } from '../../components/skeletons'
-import { Calendar, Clock, ImageOff, MapPin, ScanQrCode, MessageSquare } from 'lucide-react'
+import { Calendar, ChevronRight, Clock, ImageOff, MapPin, ScanQrCode, MessageSquare } from 'lucide-react'
 
 type Tab = 'upcoming' | 'past' | 'saved'
 
@@ -160,7 +160,7 @@ function RegistrationCard({ reg, showCheckin, showAttendance, feedbackAction }: 
         )}
       </div>
 
-      <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
     </div>
   )
 }

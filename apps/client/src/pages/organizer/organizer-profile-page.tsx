@@ -4,7 +4,7 @@ import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, t
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Pen, Bell, BellRing, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff } from 'lucide-react'
+import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
 function SocialIcon({ type }: { type: SocialLinks['type'] }) {
@@ -254,7 +254,7 @@ export default function OrganizerProfilePage() {
                         </div>
                       </div>
 
-                      <span className="text-muted-foreground self-center flex-shrink-0">›</span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
                     </div>
                   ))}
                 </div>
