@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEventQuery, useMyRegistrationsQuery, useMyFeedbackQuery, useFeedbackFormQuery, type FeedbackQuestion } from '../../api/queries'
 import { useSubmitFeedbackMutation } from '../../api/mutations'
 import { FormSkeleton } from '../../components/skeletons'
-import { Star } from 'lucide-react'
+import { Check, Star } from 'lucide-react'
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hover, setHover] = useState(0)
@@ -84,7 +84,7 @@ function QuestionCard({ q, answer, onChange }: {
                 <span className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
                   selected ? 'bg-primary border-primary' : 'border-border'
                 }`}>
-                  {selected && <span className="text-white text-[10px] font-bold">✓</span>}
+                  {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                 </span>
                 {opt}
               </button>

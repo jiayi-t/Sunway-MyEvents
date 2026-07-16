@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Check, Eye, EyeOff } from 'lucide-react'
 import api from '../../services/api'
 import LoginFooter from '../../components/login-footer'
 
@@ -215,7 +215,7 @@ export default function OrganizerCreateAccount() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg px-8 py-6 mx-6 text-center">
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-              <span className="text-green-500 text-2xl">✓</span>
+              <Check className="w-6 h-6 text-green-500" />
             </div>
             <h3 className="text-foreground font-bold text-base mb-1">Account Created!</h3>
             <p className="text-muted-foreground text-sm">Redirecting you back to sign in...</p>
