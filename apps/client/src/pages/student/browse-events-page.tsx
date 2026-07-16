@@ -203,7 +203,7 @@ export default function BrowseEventsPage() {
         {filterOpen && (
           <div
             ref={panelRef}
-            className="absolute left-4 right-4 top-full mt-1 bg-white rounded-2xl shadow-xl border border-border z-30 p-4"
+            className="absolute left-4 right-16 top-full -mt-3 bg-white rounded-2xl shadow-xl border border-border z-30 p-4"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="font-bold text-foreground text-sm">Filters</span>
@@ -235,7 +235,7 @@ export default function BrowseEventsPage() {
                 type="date"
                 value={draftFilters.dateFrom}
                 onChange={e => setDraftFilters(f => ({ ...f, dateFrom: e.target.value }))}
-                className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
               />
               <span className="text-muted-foreground text-xs">to</span>
               <input
@@ -243,7 +243,7 @@ export default function BrowseEventsPage() {
                 value={draftFilters.dateTo}
                 min={draftFilters.dateFrom || undefined}
                 onChange={e => setDraftFilters(f => ({ ...f, dateTo: e.target.value }))}
-                className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
