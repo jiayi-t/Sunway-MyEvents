@@ -61,24 +61,22 @@ export default function Header() {
   const mobileMenuItems = (
     <>
       {user && (
-        <div className="px-4 py-3 border-b flex items-center gap-3">
+        <div className="px-4 py-4 border-b flex flex-col items-start">
           {user.image_url ? (
             <img
               src={user.image_url}
               alt={user.name}
-              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+              className="w-16 h-16 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-gray-500" aria-hidden="true" />
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+              <User className="w-8 h-8 text-gray-500" aria-hidden="true" />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
-            <p className="text-xs text-gray-500 truncate">
-              {user.role === 'public' ? user.email : user.sunway_id}
-            </p>
-          </div>
+          <p className="text-sm font-semibold text-foreground truncate max-w-full mt-2">{user.name}</p>
+          <p className="text-xs text-gray-500 truncate max-w-full">
+            {user.role === 'public' ? user.email : user.sunway_id}
+          </p>
         </div>
       )}
       {user?.role === 'organizer' ? (
@@ -123,7 +121,7 @@ export default function Header() {
           </button>
         </>
       )}
-      <div className="border-t my-1" />
+      <div className="border-t my-2" />
       <button
         onClick={handleLogout}
         className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
@@ -191,7 +189,7 @@ export default function Header() {
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
-            <div className="py-2 overflow-y-auto">
+            <div className="py-3 overflow-y-auto">
               {mobileMenuItems}
             </div>
           </div>
