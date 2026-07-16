@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import { type FeedbackQuestion } from '../../api/queries'
 import { useCreateEventMutation } from '../../api/mutations'
-import { Upload, ClipboardPen, ArrowLeft } from 'lucide-react'
+import { Upload, ClipboardPen } from 'lucide-react'
 
 const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
@@ -100,11 +100,7 @@ export default function OrganizerCreateEventPage() {
   return (
     <div className="bg-surface">
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/organizer/events')} aria-label="Back to my events">
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
         <h1 className="text-white font-bold text-base flex-1 text-center">New Event</h1>
-        <div className="w-5" />
       </div>
 
       <div className="px-4 py-4 space-y-4">
