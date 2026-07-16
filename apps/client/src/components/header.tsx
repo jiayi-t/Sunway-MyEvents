@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
+import Avatar from './avatar'
 import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2 } from 'lucide-react'
 
 export default function Header() {
@@ -62,17 +63,7 @@ export default function Header() {
     <>
       {user && (
         <div className="px-4 py-4 border-b flex flex-col items-start">
-          {user.image_url ? (
-            <img
-              src={user.image_url}
-              alt={user.name}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-              <User className="w-8 h-8 text-gray-500" aria-hidden="true" />
-            </div>
-          )}
+          <Avatar src={user.image_url} alt={user.name} className="w-16 h-16" />
           <p className="text-sm font-semibold text-foreground truncate max-w-full mt-2">{user.name}</p>
           <p className="text-xs text-gray-500 truncate max-w-full">
             {user.role === 'public' ? user.email : user.sunway_id}

@@ -5,6 +5,7 @@ import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
 import { ProfileInfoSkeleton } from '../../components/skeletons'
+import Avatar from '../../components/avatar'
 import api from '../../services/api'
 
 const LINK_TYPES: SocialLinks['type'][] = ['instagram', 'website', 'linkedin', 'tiktok', 'rednote', 'facebook', 'others']
@@ -216,7 +217,7 @@ export default function OrganizerEditProfilePage() {
 
   const avatarSrc = imageUrl
     ? (imageUrl.startsWith('/uploads/') ? `http://localhost:3001${imageUrl}` : imageUrl)
-    : (user?.image_url ?? '/Default Icon.jpg')
+    : (user?.image_url ?? undefined)
 
   return (
     <div className="bg-surface">
@@ -235,12 +236,7 @@ export default function OrganizerEditProfilePage() {
             <div className="flex flex-col items-center mb-4">
               <div className="relative w-16 h-16 mb-2">
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-surface">
-                  <img
-                    src={avatarSrc}
-                    alt={user?.name ?? ''}
-                    className="w-full h-full object-cover"
-                    onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-                  />
+                  <Avatar src={avatarSrc} alt={user?.name ?? ''} className="w-full h-full" />
                   {imageUploading && (
                     <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

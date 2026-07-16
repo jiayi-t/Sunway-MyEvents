@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useMyRegistrationsQuery, useMyFeedbackQuery } from '../api/queries'
 import { Calendar, Clock, Bookmark, Settings } from 'lucide-react'
+import Avatar from './avatar'
 
 interface Registration {
   id: number
@@ -31,14 +32,7 @@ export function ProfileBanner({ identifier }: { identifier?: string }) {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-white/20">
-              <img
-                src={user?.image_url ?? '/Default Icon.jpg'}
-                alt={user?.name ?? 'Avatar'}
-                className="w-full h-full object-cover"
-                onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-              />
-            </div>
+            <Avatar src={user?.image_url} alt={user?.name ?? 'Avatar'} className="w-14 h-14" />
 
             <div className="flex gap-6">
               <div className="text-center">

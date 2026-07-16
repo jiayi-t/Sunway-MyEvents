@@ -8,6 +8,7 @@ import { interestKeys, timePreferenceKeys } from '../api/queries/interests.queri
 import { useUpdateNotificationPreferencesMutation, useUpdateInterestsMutation, useUpdateTimePreferencesMutation } from '../api/mutations'
 import { useUpdateStudentProfileImageMutation } from '../api/mutations/users.mutations'
 import { FormSkeleton } from './skeletons'
+import Avatar from './avatar'
 import api from '../services/api'
 
 export type SettingsTab = 'profile' | 'notifications' | 'interests'
@@ -91,7 +92,7 @@ export function ProfilePhoto() {
 
   const avatarSrc = user?.image_url
     ? user.image_url.startsWith('/uploads/') ? `http://localhost:3001${user.image_url}` : user.image_url
-    : '/Default Icon.jpg'
+    : undefined
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -115,12 +116,7 @@ export function ProfilePhoto() {
     <div className="flex flex-col items-center mb-4">
       <div className="relative w-16 h-16 mb-2">
         <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
-          <img
-            src={avatarSrc}
-            alt={user?.name ?? ''}
-            className="w-full h-full object-cover"
-            onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-          />
+          <Avatar src={avatarSrc} alt={user?.name ?? ''} className="w-full h-full" />
           {imageUploading && (
             <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

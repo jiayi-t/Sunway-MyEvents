@@ -3,6 +3,7 @@ import { useAuth } from '../../context/auth-context'
 import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, type SocialLinks } from '../../api/queries'
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
+import Avatar from '../../components/avatar'
 import { Pen, Bell, BellRing, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
@@ -85,14 +86,11 @@ export default function OrganizerProfilePage() {
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full overflow-hidden bg-white/20">
-                    <img
-                      src={toImageUrl(profile.image_url ?? undefined) || '/Default Icon.jpg'}
-                      alt={profile.name}
-                      className="w-full h-full object-cover"
-                      onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
-                    />
-                  </div>
+                  <Avatar
+                    src={toImageUrl(profile.image_url ?? undefined) || undefined}
+                    alt={profile.name}
+                    className="w-14 h-14"
+                  />
 
                   <div className="flex gap-6">
                     <div className="text-center">

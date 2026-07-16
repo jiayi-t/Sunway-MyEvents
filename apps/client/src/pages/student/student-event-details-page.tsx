@@ -4,6 +4,7 @@ import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
+import Avatar from '../../components/avatar'
 import { Calendar, CalendarClock, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
 
 interface Event {
@@ -299,12 +300,11 @@ export default function StudentEventDetailsPage() {
           className="flex items-center gap-3 w-full text-left"
           onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
-            <img
-              src={toImageUrl(typedEvent.organizer_image_url) || '/Default Icon.jpg'}
+          <div className="flex-shrink-0">
+            <Avatar
+              src={toImageUrl(typedEvent.organizer_image_url) || undefined}
               alt={typedEvent.organizer_name ?? 'Organizer'}
-              className="w-full h-full object-cover"
-              onError={e => { e.currentTarget.src = '/Default Icon.jpg' }}
+              className="w-12 h-12"
             />
           </div>
           <div className="flex-1">
