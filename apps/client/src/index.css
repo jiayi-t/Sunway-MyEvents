@@ -72,3 +72,66 @@
   }
   h1, h2, h3, h4 { letter-spacing: -0.01em; }
 }
+
+.driver-popover {
+  border-radius: 0.75rem;
+  padding: 1rem;
+  max-width: 300px;
+}
+.driver-popover-title {
+  color: var(--primary);
+  font-size: 0.95rem;
+  /* keep clear of the Skip button in the corner */
+  padding-right: 2.25rem; 
+  margin-bottom: 0.5rem;
+}
+.driver-popover-description {
+  color: var(--foreground);
+  font-size: 0.85rem;
+}
+.driver-popover-progress-text {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+/* driver.js auto-focuses a button on open and its own :focus rule outranks
+   plain element selectors, so every state here must style :focus explicitly */
+.driver-popover-footer button,
+.driver-popover-footer button:focus {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: 0.5rem;
+  text-shadow: none;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+}
+.driver-popover-footer button:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  opacity: 0.85;
+}
+.driver-popover-footer .driver-popover-prev-btn,
+.driver-popover-footer .driver-popover-prev-btn:focus {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+.driver-popover-footer .driver-popover-prev-btn:hover {
+  background-color: var(--surface);
+  color: var(--primary);
+}
+.driver-popover-skip-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background-color: transparent;
+  color: var(--muted-foreground);
+  border: none;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.driver-popover-skip-btn:hover,
+.driver-popover-skip-btn:focus {
+  color: var(--foreground);
+}

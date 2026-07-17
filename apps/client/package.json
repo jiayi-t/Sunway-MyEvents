@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.101.0",
     "axios": "^1.17.0",
+    "driver.js": "^1.7.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.17.0",
     "phosphor-react": "^1.4.1",

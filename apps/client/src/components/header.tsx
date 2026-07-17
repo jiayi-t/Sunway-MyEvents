@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
 import Avatar from './avatar'
-import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2 } from 'lucide-react'
+import { startOrganizerTour } from '../tours/organizer-tour'
+import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2, HelpCircle } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -40,6 +41,13 @@ export default function Header() {
     logout()
     navigate('/login')
     setMenuOpen(false)
+  }
+
+  // replay the walkthrough 
+  const handleReplayTour = () => {
+    setMenuOpen(false)
+    navigate('/organizer/dashboard')
+    startOrganizerTour(navigate)
   }
 
   const studentNav = [
@@ -87,6 +95,11 @@ export default function Header() {
             className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
             <BarChart2 className="w-4 h-4 text-gray-500" aria-hidden="true" />Analytics
           </button>
+          <button
+            onClick={handleReplayTour}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
+          </button>
         </>
       ) : (
         <>
@@ -126,15 +139,21 @@ export default function Header() {
       {user && <div className="px-4 py-2 text-sm text-gray-600 border-b">{user.name}</div>}
       {(user?.role === 'student' || user?.role === 'public') && (
         <>
-          <button 
-            onClick={() => { navigate('/profile'); setMenuOpen(false) }} 
+          <button
+            onClick={() => { navigate('/profile'); setMenuOpen(false) }}
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Profile
           </button>
-          <button 
-            onClick={() => { navigate('/settings'); setMenuOpen(false) }} 
+          <button
+            onClick={() => { navigate('/settings'); setMenuOpen(false) }}
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings
           </button>
         </>
+      )}
+      {user?.role === 'organizer' && (
+        <button
+          onClick={handleReplayTour}
+          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Website Tour
+        </button>
       )}
       <button 
         onClick={handleLogout} 
@@ -149,6 +168,7 @@ export default function Header() {
       <div className="lg:hidden px-4 py-3 flex items-center justify-between relative">
         <div className="flex items-center" ref={mobileMenuRef}>
           <button
+            data-tour="nav-menu"
             onClick={() => setMenuOpen(!menuOpen)}
             className="text-black focus:outline-none"
             aria-label="Open menu"
@@ -246,6 +266,7 @@ export default function Header() {
           )}
           <div className="relative" ref={desktopMenuRef}>
             <button
+              data-tour="nav-menu"
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors"
             >

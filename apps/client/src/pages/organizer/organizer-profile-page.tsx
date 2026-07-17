@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
+import { hasSeenOrganizerTour, startOrganizerTour } from '../../tours/organizer-tour'
 import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, type SocialLinks } from '../../api/queries'
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
@@ -57,6 +59,14 @@ export default function OrganizerProfilePage() {
 
   const following = notifyStatus?.following ?? false
 
+  // first-visit walkthrough, once the dashboard sections have rendered
+  useEffect(() => {
+    if (!isOwnProfile || user?.role !== 'organizer') return
+    if (isLoading || !profile) return
+    if (hasSeenOrganizerTour()) return
+    startOrganizerTour(navigate)
+  }, [isOwnProfile, user?.role, isLoading, profile, navigate])
+
   return (
     <div className="bg-surface">
 
@@ -110,6 +120,7 @@ export default function OrganizerProfilePage() {
               {/* Edit (own) / notifications (student) */}
               {isOwnProfile ? (
                 <button
+                  data-tour="edit-profile"
                   onClick={() => navigate('/organizer/profile')}
                   className="w-8 h-8 rounded-full border border-accent flex items-center justify-center"
                 >
@@ -165,24 +176,28 @@ export default function OrganizerProfilePage() {
               {/* My Events Section */}
               <div className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
                 <h2 className="text-primary font-semibold text-sm mb-4">My Events</h2>
-                <div className="flex justify-around">
-                  <button onClick={() => navigate('/organizer/events/new')} className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><PlusSquare /></div>
-                    <span className="text-xs text-foreground">New</span>
-                  </button>
-                  <button onClick={() => navigate('/organizer/events?tab=upcoming')} className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Calendar /></div>
-                    <span className="text-xs text-foreground">Upcoming</span>
-                  </button>
-                  <button onClick={() => navigate('/organizer/events?tab=past')} className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Clock /></div>
-                    <span className="text-xs text-foreground">Past</span>
-                  </button>
+                <div className="flex">
+                  <div className="flex-1 flex justify-around">
+                    <button data-tour="new-event" onClick={() => navigate('/organizer/events/new')} className="flex flex-col items-center gap-1">
+                      <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><PlusSquare /></div>
+                      <span className="text-xs text-foreground">New</span>
+                    </button>
+                  </div>
+                  <div data-tour="manage-events" className="flex-[2] flex justify-around">
+                    <button onClick={() => navigate('/organizer/events?tab=upcoming')} className="flex flex-col items-center gap-1">
+                      <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Calendar /></div>
+                      <span className="text-xs text-foreground">Upcoming</span>
+                    </button>
+                    <button onClick={() => navigate('/organizer/events?tab=past')} className="flex flex-col items-center gap-1">
+                      <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Clock /></div>
+                      <span className="text-xs text-foreground">Past</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Analytics Section */}
-              <div className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
+              <div data-tour="analytics" className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
                 <h2 className="text-primary font-bold text-sm mb-4">Analytics</h2>
                 <div className="flex justify-around">
                   <button onClick={() => navigate('/organizer/analytics?tab=attendance')} className="flex flex-col items-center gap-1">

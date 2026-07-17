@@ -284,6 +284,7 @@ export default function OrganizerEventsPage() {
 
           {/* Floating create event button */}
           <button
+            data-tour="create-event-fab"
             onClick={() => navigate('/organizer/events/new')}
             aria-label="Create new event"
             className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
