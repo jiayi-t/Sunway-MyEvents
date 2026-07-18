@@ -14,3 +14,11 @@ export function useResetPasswordMutation() {
       api.post('/auth/reset-password', data).then(res => res.data),
   })
 }
+
+// marks the first-login walkthrough as seen on the account (student/public)
+export function useCompleteTourMutation() {
+  return useMutation({
+    mutationFn: () =>
+      api.patch('/auth/tour-completed').then(res => res.data as { tour_completed_at: string }),
+  })
+}

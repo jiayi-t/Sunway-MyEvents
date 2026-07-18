@@ -59,6 +59,7 @@ export function SettingsTabBar({ activeTab, onTabChange }: { activeTab: Settings
       {tabs.map(tab => (
         <button
           key={tab.key}
+          data-tour={tab.key === 'interests' ? 'interests-tab' : tab.key === 'notifications' ? 'notifications-tab' : undefined}
           onClick={() => onTabChange(tab.key)}
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors
             ${activeTab === tab.key

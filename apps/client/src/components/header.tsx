@@ -4,13 +4,16 @@ import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
 import Avatar from './avatar'
 import { startOrganizerTour } from '../tours/organizer-tour'
+import { startStudentPublicTour } from '../tours/student-public-tour'
+import { useCompleteTourMutation } from '../api/mutations'
 import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2, HelpCircle } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const desktopMenuRef = useRef<HTMLDivElement>(null)
-  const { user, logout } = useAuth()
+  const { user, logout, updateUser } = useAuth()
+  const completeTourMutation = useCompleteTourMutation()
 
   useEffect(() => {
     if (!menuOpen) return
@@ -46,8 +49,20 @@ export default function Header() {
   // replay the walkthrough 
   const handleReplayTour = () => {
     setMenuOpen(false)
-    navigate('/organizer/dashboard')
-    startOrganizerTour(navigate)
+    if (user?.role === 'organizer') {
+      navigate('/organizer/dashboard')
+      startOrganizerTour(navigate)
+    } else {
+      navigate('/')
+      startStudentPublicTour(navigate, markStudentTourSeen)
+    }
+  }
+
+  // persist the account-wide seen flag and keep the cached user in sync
+  const markStudentTourSeen = () => {
+    completeTourMutation.mutate(undefined, {
+      onSuccess: data => updateUser({ tour_completed_at: data.tour_completed_at }),
+    })
   }
 
   const studentNav = [
@@ -66,6 +81,14 @@ export default function Header() {
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+
+  const mobileTourItem = (
+    <button
+      onClick={handleReplayTour}
+      className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+      <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
+    </button>
+  )
 
   const mobileMenuItems = (
     <>
@@ -95,11 +118,7 @@ export default function Header() {
             className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
             <BarChart2 className="w-4 h-4 text-gray-500" aria-hidden="true" />Analytics
           </button>
-          <button
-            onClick={handleReplayTour}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
-            <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
-          </button>
+          {mobileTourItem}
         </>
       ) : (
         <>
@@ -118,6 +137,7 @@ export default function Header() {
             className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
             <Calendar className="w-4 h-4 text-gray-500" aria-hidden="true" />My Events
           </button>
+          {mobileTourItem}
           <button
             onClick={() => { navigate('/settings'); setMenuOpen(false) }}
             className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
@@ -144,6 +164,10 @@ export default function Header() {
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Profile
           </button>
           <button
+            onClick={handleReplayTour}
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Website Tour
+          </button>
+          <button
             onClick={() => { navigate('/settings'); setMenuOpen(false) }}
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings
           </button>
@@ -155,8 +179,8 @@ export default function Header() {
           className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Website Tour
         </button>
       )}
-      <button 
-        onClick={handleLogout} 
+      <button
+        onClick={handleLogout}
         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign Out
       </button>
     </>
@@ -213,7 +237,7 @@ export default function Header() {
         </div>
 
         {(user?.role === 'student' || user?.role === 'public') ? (
-          <button onClick={() => navigate('/notifications')} className="relative w-10 flex items-center justify-center">
+          <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-10 flex items-center justify-center">
             <Bell className="w-5 h-5 text-foreground" />
             {unreadCount > 0 && (
               <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -255,7 +279,7 @@ export default function Header() {
         {/* User */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
           {(user?.role === 'student' || user?.role === 'public') && (
-            <button onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center">
+            <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center">
               <Bell className="w-5 h-5 text-foreground" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">

@@ -56,7 +56,8 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
         name: user.name,
         role: user.role,
         image_url: user.image_url ?? null,
-        interests: (user.interests as string[] | null) ?? null
+        interests: (user.interests as string[] | null) ?? null,
+        tour_completed_at: user.tour_completed_at ?? null
       },
       token
     })
@@ -168,6 +169,17 @@ router.post('/register/public', registerLimiter, async (req, res) => {
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Email already registered' })
     }
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PATCH /api/auth/tour-completed 
+router.patch('/tour-completed', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const tour_completed_at = new Date()
+    await db.update(users).set({ tour_completed_at }).where(eq(users.id, req.user!.id))
+    res.json({ tour_completed_at })
+  } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })

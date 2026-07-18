@@ -216,7 +216,7 @@ export default function MyEventsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-card px-4 py-3 flex gap-2">
+      <div data-tour="my-events-tabs" className="bg-card px-4 py-3 flex gap-2">
         {tabs.map(tab => (
           <button
             key={tab.key}

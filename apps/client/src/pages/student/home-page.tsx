@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
+import { useCompleteTourMutation } from '../../api/mutations'
 import { useAuth } from '../../context/auth-context'
+import { startStudentPublicTour } from '../../tours/student-public-tour'
 import { FeaturedEventSkeleton, EventListSkeleton } from '../../components/skeletons'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
@@ -41,7 +43,20 @@ export default function HomePage() {
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const touchStartX = useRef<number | null>(null)
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
+  const completeTourMutation = useCompleteTourMutation()
+
+  // first-login walkthrough, account-wide flag so it does not replay on new devices
+  useEffect(() => {
+    if (user?.role !== 'student' && user?.role !== 'public') return
+    if (user.tour_completed_at) return
+    startStudentPublicTour(navigate, () => {
+      completeTourMutation.mutate(undefined, {
+        onSuccess: data => updateUser({ tour_completed_at: data.tour_completed_at }),
+      })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate])
 
   const { data: featuredData, isLoading } = useFeaturedEventsQuery()
   const featuredEvents = (featuredData ?? []) as Event[]
@@ -233,8 +248,9 @@ export default function HomePage() {
       {/* For You */}
       <div className="px-4 pt-4 pb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-primary text-lg">For You</h2>
+          <h2 data-tour="for-you" className="font-bold text-primary text-lg">For You</h2>
           <button
+            data-tour="browse-all"
             onClick={() => navigate('/browse')}
             className="bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full"
           >

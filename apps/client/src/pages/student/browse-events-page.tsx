@@ -171,7 +171,7 @@ export default function BrowseEventsPage() {
 
       {/* Search */}
       <div className="bg-surface px-4 py-3 relative">
-        <div className="flex items-center gap-2">
+        <div data-tour="browse-search" className="flex items-center gap-2">
           <div className="flex-1 flex items-center bg-white rounded-full shadow border border-border px-3 py-2">
             <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
             <input

@@ -23,6 +23,8 @@ export const users = pgTable('users', {
   preferred_time_ranges: jsonb('preferred_time_ranges'),
   alumni: boolean('alumni'),
   token_version: integer('token_version').default(0).notNull(),
+  // students/public: first-login walkthrough seen (null = show it), organizers use a device-local flag instead
+  tour_completed_at: timestamp('tour_completed_at'),
 })
 
 export const events = pgTable('events', {

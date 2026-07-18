@@ -10,6 +10,7 @@ interface User {
   role: string
   image_url?: string | null
   interests?: string[] | null
+  tour_completed_at?: string | null
 }
 
 interface AuthContextType {
