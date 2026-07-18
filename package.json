@@ -13,6 +13,7 @@
     "dev:client": "npm run dev --workspace=apps/client",
     "build": "npm run build --workspace=apps/client && npm run build --workspace=apps/server",
     "start": "npm run start --workspace=apps/server",
+    "db:migrate": "npm run db:migrate --workspace=apps/server",
     "test": "npm test --workspace=apps/server"
   },
   "keywords": [],
