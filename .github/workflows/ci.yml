@@ -45,8 +45,8 @@ jobs:
         run: npm run build
         working-directory: apps/server
 
-      - name: Push database schema
-        run: npx drizzle-kit push --force
+      - name: Run database migrations
+        run: npx drizzle-kit migrate
         working-directory: apps/server
         env:
           DATABASE_HOST: localhost
