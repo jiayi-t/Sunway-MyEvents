@@ -22,7 +22,8 @@ router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        req.user?.role === 'public'
+        // hide students-only events from the public and from unauthenticated callers
+        !req.user || req.user.role === 'public'
           ? and(isNull(events.archived_at), ne(events.audience, 'students_only'))
           : isNull(events.archived_at)
       )
@@ -48,7 +49,8 @@ router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        req.user?.role === 'public'
+        // hide students-only events from the public and unauthenticated callers
+        !req.user || req.user.role === 'public'
           ? and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now), ne(events.audience, 'students_only'))
           : and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now))
       )
@@ -154,7 +156,8 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
     if (result.length === 0) {
       return res.status(404).json({ error: 'Event not found' })
     }
-    if (req.user?.role === 'public' && result[0].audience === 'students_only') {
+    // public and unauthenticated callers cannot view a students-only event by id 
+    if ((!req.user || req.user.role === 'public') && result[0].audience === 'students_only') {
       return res.status(404).json({ error: 'Event not found' })
     }
     res.json(result[0])
