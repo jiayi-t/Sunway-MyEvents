@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import path from 'path'
 import { globalLimiter } from './middleware/rate-limit'
 import authRoutes from './routes/auth'
@@ -14,6 +15,17 @@ import organizerRoutes from './routes/organizers'
 import recommendationRoutes from './routes/recommendations'
 
 const app = express()
+
+// in prod, trust the proxy's first hop so req.ip is the real client IP (needed for rate limiting)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
+// security headers, CSP off (would block the served SPA), CORP relaxed so uploaded images embed
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}))
 
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : true }))
 app.use(express.json())
