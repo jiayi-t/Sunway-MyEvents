@@ -13,11 +13,21 @@ export default function StudentLoginPage() {
 
   const handleSubmit = async () => {
     setError('')
+    // students sign in with their 8-digit Sunway student ID (auto-creates on first login)
+    const id = form.sunwayId.trim()
+    if (!/^\d{8}$/.test(id)) {
+      setError('Enter your 8-digit Sunway student ID')
+      return
+    }
     setLoading(true)
     try {
       const payload = { sunwayId: form.sunwayId, password: form.password }
       const res = await api.post('/auth/login', payload)
       login(res.data.user, res.data.token)
+      if (res.data.needs_onboarding) {
+        navigate('/student-onboarding')
+        return
+      }
       const interests = res.data.user.interests
       navigate((!interests || interests.length === 0) ? '/select-interests' : '/')
     } catch (err: any) {
@@ -55,9 +65,11 @@ export default function StudentLoginPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
             <input
               type="text"
-              placeholder="Use: 22055313"
+              inputMode="numeric"
+              maxLength={8}
+              placeholder="e.g. 22055313"
               value={form.sunwayId}
-              onChange={e => setForm({ ...form, sunwayId: e.target.value })}
+              onChange={e => setForm({ ...form, sunwayId: e.target.value.replace(/\D/g, '').slice(0, 8) })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm  focus:outline-none focus:border-primary"
             />
@@ -68,7 +80,7 @@ export default function StudentLoginPage() {
             <div className="relative">
               <input
                 type="password"
-                placeholder="Use: sunway123"
+                placeholder="Minimum 8 characters"
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -86,6 +98,11 @@ export default function StudentLoginPage() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+
+          <p className="text-xs text-muted-foreground mt-4 text-center leading-relaxed">
+            This FYP is not linked to your actual Sunway login. <br></br>Enter your student ID and a
+            password to create your account, then sign in with the same details next time.
+          </p>
         </div>
       </div>
 

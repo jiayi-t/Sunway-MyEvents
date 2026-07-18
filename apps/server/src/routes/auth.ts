@@ -33,6 +33,33 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
       user = byEmail[0]
     }
 
+    // UAT (no live Sunway DB): auto-provision a student for an unrecognised 8-digit student ID.
+    const studentId = sunwayId.trim()
+    if (!user && /^\d{8}$/.test(studentId)) {
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' })
+      }
+      // the password they typed becomes their password, so the check below passes
+      const hashedPassword = await bcrypt.hash(password, 10)
+      try {
+        const [created] = await db.insert(users).values({
+          sunway_id: studentId,
+          email: `${studentId}@imail.sunway.edu.my`,
+          password: hashedPassword,
+          name: 'Student',
+          role: 'student',
+        }).returning()
+        // they finish their profile via onboarding (needs_onboarding is true until then)
+        user = created
+      } catch (e: any) {
+        // if another account has the same iMail
+        if (e?.code === '23505' || e?.cause?.code === '23505') {
+          return res.status(400).json({ error: 'Invalid credentials' })
+        }
+        throw e
+      }
+    }
+
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' })
     }
@@ -59,9 +86,12 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
         interests: (user.interests as string[] | null) ?? null,
         tour_completed_at: user.tour_completed_at ?? null
       },
-      token
+      token,
+      // students whose profile has not been filled yet (auto-provisioned UAT accounts)
+      needs_onboarding: user.role === 'student' && !user.faculty,
     })
-  } catch {
+  } catch (err) {
+    console.error('[auth/login]', err)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -499,6 +529,39 @@ router.post('/change-password', authenticate, async (req: AuthRequest, res) => {
       { expiresIn: jwtExpiresIn }
     )
     res.json({ message: 'Password changed successfully', token })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PUT /api/auth/student-onboarding - UAT students 
+router.put('/student-onboarding', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'student') return res.status(403).json({ error: 'Forbidden' })
+  const name: string = typeof req.body.name === 'string' ? req.body.name.trim() : ''
+  const { program, faculty, year_of_study, gender, mobile_number, personal_email } = req.body
+
+  if (!name || !program || !faculty || !year_of_study || !gender) {
+    return res.status(400).json({ error: 'Please fill in all required fields' })
+  }
+
+  const cleanedEmail = typeof personal_email === 'string' && personal_email.trim() ? personal_email.trim() : null
+  if (cleanedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanedEmail)) {
+    return res.status(400).json({ error: 'Please enter a valid email' })
+  }
+
+  try {
+    await db.update(users).set({
+      name,
+      program: String(program).trim(),
+      faculty,
+      year_of_study,
+      gender,
+      mobile_number: typeof mobile_number === 'string' && mobile_number.trim() ? mobile_number.trim() : null,
+      personal_email: cleanedEmail,
+    }).where(eq(users.id, req.user!.id))
+
+    const [updated] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.user!.id))
+    res.json({ message: 'Profile saved', name: updated.name })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

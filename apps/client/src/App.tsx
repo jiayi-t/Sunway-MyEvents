@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/auth-context'
 import SelectLoginPage from './pages/auth/select-login-page'
 import StudentLoginPage from './pages/auth/student-login-page'
 import SelectInterestsPage from './pages/student/select-interests-page'
+import StudentOnboardingPage from './pages/student/student-onboarding-page'
 import HomePage from './pages/student/home-page'
 import BrowseEventsPage from './pages/student/browse-events-page'
 import StudentEventDetailsPage from './pages/student/student-event-details-page'
@@ -49,7 +50,7 @@ const queryClient = new QueryClient({
 
 const AUTH_PATHS = [
   '/login', '/login/student', '/login/organizer', '/login/organizer/register', '/login/public', '/login/public/register',
-  '/select-interests', '/forgot-password', '/reset-password',
+  '/select-interests', '/student-onboarding', '/forgot-password', '/reset-password',
 ]
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -122,6 +123,13 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SelectInterestsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/student-onboarding"
+        element={
+          <ProtectedRoute>
+            <StudentOnboardingPage />
           </ProtectedRoute>
         }
       />
