@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+import { ChevronRight } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
 import { useProfileQuery } from '../../api/queries'
 import { useSettingsTab, SettingsTabBar, ProfilePhoto, NotificationsTab, InterestsTab } from '../../components/settings-tabs'
@@ -5,6 +7,7 @@ import { ProfileInfoSkeleton } from '../../components/skeletons'
 
 export default function PublicSettingsPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, handleTabChange] = useSettingsTab()
   const { data: profile, isLoading: profileLoading } = useProfileQuery()
 
@@ -34,11 +37,19 @@ export default function PublicSettingsPage() {
                 { label: 'Mobile Number', value: profile?.mobile_number },
                 { label: 'Alumni', value: profile?.alumni == null ? undefined : (profile.alumni ? 'Yes' : 'No') },
               ].map(({ label, value }) => (
-                <div key={label} className="flex border-b border-border last:border-0">
+                <div key={label} className="flex border-b border-border">
                   <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">{label}</span>
                   <span className="pl-2 pr-4 py-3 text-sm text-foreground">{value ?? '—'}</span>
                 </div>
               ))}
+
+              <button
+                onClick={() => navigate('/change-password')}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-foreground"
+              >
+                <span>Change Password</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </button>
             </div>
             </>
           )}

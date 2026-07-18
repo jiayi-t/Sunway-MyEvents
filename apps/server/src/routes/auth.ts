@@ -463,4 +463,45 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   }
 })
 
+// POST /api/auth/change-password - change password while logged in (organizer/public only)
+router.post('/change-password', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer' && req.user?.role !== 'public') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const { currentPassword, newPassword } = req.body
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Current and new password are required' })
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'New password must be at least 8 characters' })
+  }
+  if (newPassword === currentPassword) {
+    return res.status(400).json({ error: 'New password must be different from the current one' })
+  }
+
+  try {
+    const [user] = await db.select({ password: users.password }).from(users).where(eq(users.id, req.user!.id)).limit(1)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    const valid = await bcrypt.compare(currentPassword, user.password)
+    if (!valid) return res.status(400).json({ error: 'Current password is incorrect' })
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    // bump token_version to invalidate sessions on other devices, then reissue a token for the current session so the user who just changed it stays logged in here
+    const [updated] = await db.update(users)
+      .set({ password: hashedPassword, token_version: sql`${users.token_version} + 1` })
+      .where(eq(users.id, req.user!.id))
+      .returning({ id: users.id, sunway_id: users.sunway_id, role: users.role, token_version: users.token_version })
+
+    const token = jwt.sign(
+      { id: updated.id, sunway_id: updated.sunway_id, role: updated.role, tv: updated.token_version },
+      process.env.JWT_SECRET!,
+      { expiresIn: jwtExpiresIn }
+    )
+    res.json({ message: 'Password changed successfully', token })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router

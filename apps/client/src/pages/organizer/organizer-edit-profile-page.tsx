@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
-import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil } from 'lucide-react'
+import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil, ChevronRight } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
@@ -87,6 +88,7 @@ function LinkTypePicker({ value, onChange }: { value: SocialLinks['type']; onCha
 
 export default function OrganizerEditProfilePage() {
   const { user, updateUser } = useAuth()
+  const navigate = useNavigate()
 
   const { data: profile, isLoading } = useOrganizerProfileQuery()
   const updateMutation = useUpdateOrganizerProfileMutation()
@@ -369,7 +371,7 @@ export default function OrganizerEditProfilePage() {
               </div>
 
               {/* Links */}
-              <div className="flex rounded-b-xl overflow-visible">
+              <div className="flex border-b border-border overflow-visible">
                 <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Links</span>
                 <div className="pl-1 pr-4 py-3 flex-1 min-w-0 space-y-2">
                   {/* Email */}
@@ -451,6 +453,15 @@ export default function OrganizerEditProfilePage() {
                   </button>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => navigate('/change-password')}
+                className="w-full rounded-b-xl px-4 py-3 flex items-center justify-between text-sm font-semibold text-foreground"
+              >
+                <span>Change Password</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </button>
             </div>
 
             {saveError && <p className="text-red-500 text-sm">{saveError}</p>}

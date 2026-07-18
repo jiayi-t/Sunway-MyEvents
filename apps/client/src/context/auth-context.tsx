@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (user: User, token: string) => void
   logout: () => void
   updateUser: (updates: Partial<User>) => void
+  updateToken: (token: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -67,6 +68,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })
   }
 
+  // swap in a freshly issued token (e.g. after changing password) without logging out
+  const updateToken = (newToken: string) => {
+    setToken(newToken)
+    localStorage.setItem('token', newToken)
+  }
+
   const logout = () => {
     setUser(null)
     setToken(null)
@@ -76,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, updateToken }}>
       {children}
     </AuthContext.Provider>
   )

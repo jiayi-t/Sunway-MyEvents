@@ -18,6 +18,7 @@ import NotificationsPage from './pages/student/notifications-page'
 import OrganizerLoginPage from './pages/auth/organizer-login-page'
 import ForgotPasswordPage from './pages/auth/forgot-password-page'
 import ResetPasswordPage from './pages/auth/reset-password-page'
+import ChangePasswordPage from './pages/auth/change-password-page'
 import OrganizerCreateAccount from './pages/auth/organizer-create-account'
 import OrganizerProfilePage from './pages/organizer/organizer-profile-page'
 import OrganizerEventsPage from './pages/organizer/organizer-my-events-page'
@@ -170,6 +171,13 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsRoute />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/change-password"
+        element={
+          <ProtectedRoute>
+            <ChangePasswordPage />
           </ProtectedRoute>
         }
       />

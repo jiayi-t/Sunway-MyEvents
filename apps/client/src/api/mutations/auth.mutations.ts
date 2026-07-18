@@ -15,6 +15,14 @@ export function useResetPasswordMutation() {
   })
 }
 
+// change password while logged in (organizer/public), returns a fresh token for this session
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      api.post('/auth/change-password', data).then(res => res.data as { message: string; token: string }),
+  })
+}
+
 // marks the first-login walkthrough as seen on the account (student/public)
 export function useCompleteTourMutation() {
   return useMutation({
