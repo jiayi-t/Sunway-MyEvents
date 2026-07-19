@@ -5,18 +5,23 @@ import { useProfileQuery } from '../../api/queries'
 import { useSettingsTab, SettingsTabBar, ProfilePhoto, NotificationsTab, InterestsTab } from '../../components/settings-tabs'
 import { ProfileInfoSkeleton } from '../../components/skeletons'
 import { useEffect, useRef, useState } from 'react'
-import { useUpdateProfileMobileMutation } from '../../api/mutations/users.mutations'
+import { useUpdatePublicProfileMutation } from '../../api/mutations/users.mutations'
 
 // phone number: digits, spaces, + and - allowed, must contain at least one digit
 const MOBILE_RE = /^(?=.*\d)[\d+\s-]+$/
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function PublicSettingsPage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const navigate = useNavigate()
   const [activeTab, handleTabChange] = useSettingsTab()
   const { data: profile, isLoading: profileLoading } = useProfileQuery()
-  const updateMobileMutation = useUpdateProfileMobileMutation()
+  const updateProfileMutation = useUpdatePublicProfileMutation()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [gender, setGender] = useState('')
   const [mobileNumber, setMobileNumber] = useState('')
+  const [alumni, setAlumni] = useState<'' | 'yes' | 'no'>('')
   const [submitted, setSubmitted] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -25,27 +30,55 @@ export default function PublicSettingsPage() {
   useEffect(() => {
     if (profile && !initialized.current) {
       initialized.current = true
+      setName(profile.name ?? user?.name ?? '')
+      setEmail(profile.email ?? user?.email ?? '')
+      setGender(profile.gender ?? '')
       setMobileNumber(profile.mobile_number ?? '')
+      setAlumni(profile.alumni == null ? '' : (profile.alumni ? 'yes' : 'no'))
     }
-  }, [profile])
+  }, [profile, user?.email, user?.name])
 
-  const hasMobileChanges = mobileNumber !== (profile?.mobile_number ?? '')
+  const hasChanges =
+    name !== (profile?.name ?? user?.name ?? '') ||
+    email !== (profile?.email ?? user?.email ?? '') ||
+    gender !== (profile?.gender ?? '') ||
+    mobileNumber !== (profile?.mobile_number ?? '') ||
+    alumni !== (profile?.alumni == null ? '' : (profile.alumni ? 'yes' : 'no'))
 
   useEffect(() => {
-    if (hasMobileChanges) setSaved(false)
-  }, [hasMobileChanges])
+    if (hasChanges) setSaved(false)
+  }, [hasChanges])
 
-  const handleMobileSave = () => {
+  const handleSave = () => {
     setSaveError('')
     setSubmitted(true)
+
+    if (!name.trim() || !email.trim() || !gender || !mobileNumber.trim() || !alumni) {
+      setSaveError('Please fill in all fields')
+      return
+    }
+
+    if (!EMAIL_RE.test(email.trim())) {
+      setSaveError('Please enter a valid email address')
+      return
+    }
+
     if (mobileNumber && !MOBILE_RE.test(mobileNumber)) {
       setSaveError('Enter a valid mobile number (e.g. +60 12-345 6789)')
       return
     }
-    updateMobileMutation.mutate(mobileNumber.trim() ? mobileNumber.trim() : null, {
+
+    updateProfileMutation.mutate({
+      name: name.trim(),
+      email: email.trim(),
+      gender,
+      mobile_number: mobileNumber.trim() ? mobileNumber.trim() : null,
+      alumni: alumni === 'yes',
+    }, {
       onSuccess: () => {
         setSaved(true)
         setSubmitted(false)
+        updateUser({ name: name.trim(), email: email.trim() })
       },
       onError: (err: any) => setSaveError(err.response?.data?.error || 'Failed to save'),
     })
@@ -71,16 +104,45 @@ export default function PublicSettingsPage() {
             <>
             <ProfilePhoto />
             <div className="bg-card rounded-xl shadow overflow-hidden">
-              {[
-                { label: 'Email', value: profile?.email ?? user?.email },
-                { label: 'Gender', value: profile?.gender },
-                { label: 'Alumni', value: profile?.alumni == null ? undefined : (profile.alumni ? 'Yes' : 'No') },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex border-b border-border">
-                  <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">{label}</span>
-                  <span className="pl-2 pr-4 py-3 text-sm text-foreground">{value ?? '—'}</span>
+              <div className="flex border-b border-border">
+                <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">Name</span>
+                <div className="pl-2 pr-4 py-2 flex-1 min-w-0">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className={`w-full border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary ${submitted && !name.trim() ? 'border-red-400' : 'border-border'}`}
+                  />
                 </div>
-              ))}
+              </div>
+
+              <div className="flex border-b border-border">
+                <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">Email</span>
+                <div className="pl-2 pr-4 py-2 flex-1 min-w-0">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={`w-full border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary ${submitted && (!email.trim() || !EMAIL_RE.test(email.trim())) ? 'border-red-400' : 'border-border'}`}
+                  />
+                </div>
+              </div>
+
+              <div className="flex border-b border-border">
+                <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">Gender</span>
+                <div className="pl-2 pr-4 py-2 flex-1 min-w-0">
+                  <select
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    className={`w-full border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary bg-white ${submitted && !gender ? 'border-red-400' : 'border-border'}`}
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
 
               <div className="flex border-b border-border">
                 <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">Mobile Number</span>
@@ -90,8 +152,32 @@ export default function PublicSettingsPage() {
                     value={mobileNumber}
                     onChange={e => setMobileNumber(e.target.value.replace(/[^\d+\s-]/g, ''))}
                     placeholder="e.g. +60 12-345 6789"
-                    className={`w-full border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary ${submitted && mobileNumber && !MOBILE_RE.test(mobileNumber) ? 'border-red-400' : 'border-border'}`}
+                    className={`w-full border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary ${submitted && (!mobileNumber.trim() || !MOBILE_RE.test(mobileNumber)) ? 'border-red-400' : 'border-border'}`}
                   />
+                </div>
+              </div>
+
+              <div className="flex border-b border-border">
+                <span className="w-36 pl-4 pr-2 py-3 text-sm font-semibold text-foreground flex-shrink-0">Alumni</span>
+                <div className="pl-2 pr-4 py-2 flex-1 min-w-0">
+                  <div className="flex gap-2">
+                    {(['yes', 'no'] as const).map(value => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setAlumni(value)}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
+                          alumni === value
+                            ? 'bg-primary text-white border-primary'
+                            : submitted && !alumni
+                              ? 'bg-white text-gray-700 border-red-400'
+                              : 'bg-white text-gray-700 border-border'
+                        }`}
+                      >
+                        {value === 'yes' ? 'Yes' : 'No'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -108,11 +194,11 @@ export default function PublicSettingsPage() {
 
             <div className="flex justify-end mt-3">
               <button
-                onClick={handleMobileSave}
-                disabled={!hasMobileChanges || updateMobileMutation.isPending}
+                onClick={handleSave}
+                disabled={!hasChanges || updateProfileMutation.isPending}
                 className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {updateMobileMutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Save'}
+                {updateProfileMutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Save'}
               </button>
             </div>
             </>

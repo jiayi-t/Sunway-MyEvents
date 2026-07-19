@@ -305,7 +305,8 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
 
 // PUT /api/auth/profile
 router.put('/profile', authenticate, async (req: AuthRequest, res) => {
-  const { image_url, mobile_number } = req.body
+  const { image_url, mobile_number, name, email, gender, alumni } = req.body
+  const role = req.user?.role
 
   if (image_url !== undefined && image_url !== null && typeof image_url !== 'string') {
     return res.status(400).json({ error: 'Invalid image_url' })
@@ -320,16 +321,67 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
     return res.status(400).json({ error: 'Enter a valid mobile number (e.g. +60 12-345 6789)' })
   }
 
+  const hasPublicFields =
+    name !== undefined ||
+    email !== undefined ||
+    gender !== undefined ||
+    alumni !== undefined
+
+  if (hasPublicFields && role !== 'public') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+
+  const cleanedName = typeof name === 'string' ? name.trim() : undefined
+  const cleanedEmail = typeof email === 'string' ? email.trim() : undefined
+  const cleanedGender = typeof gender === 'string' ? gender.trim() : undefined
+
+  if (name !== undefined && !cleanedName) {
+    return res.status(400).json({ error: 'Name is required' })
+  }
+
+  if (email !== undefined) {
+    if (!cleanedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanedEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' })
+    }
+  }
+
+  if (gender !== undefined) {
+    if (!cleanedGender || !['Male', 'Female', 'Other'].includes(cleanedGender)) {
+      return res.status(400).json({ error: 'Please select a gender' })
+    }
+  }
+
+  if (alumni !== undefined && typeof alumni !== 'boolean') {
+    return res.status(400).json({ error: 'Invalid alumni value' })
+  }
+
   try {
+    if (cleanedEmail !== undefined) {
+      const [taken] = await db.select({ id: users.id }).from(users)
+        .where(and(eq(users.email, cleanedEmail), ne(users.id, req.user!.id))).limit(1)
+      if (taken) return res.status(400).json({ error: 'Email already in use' })
+    }
+
     const updates: Record<string, unknown> = {}
     if (image_url !== undefined) updates.image_url = image_url ?? null
     if (mobile_number !== undefined) updates.mobile_number = cleanedMobile
+    if (cleanedName !== undefined) updates.name = cleanedName
+    if (cleanedEmail !== undefined) updates.email = cleanedEmail
+    if (cleanedGender !== undefined) updates.gender = cleanedGender
+    if (alumni !== undefined) updates.alumni = alumni
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'No fields to update' })
     }
 
     await db.update(users).set(updates).where(eq(users.id, req.user!.id))
-    const [updated] = await db.select({ image_url: users.image_url, mobile_number: users.mobile_number }).from(users).where(eq(users.id, req.user!.id))
+    const [updated] = await db.select({
+      image_url: users.image_url,
+      name: users.name,
+      email: users.email,
+      gender: users.gender,
+      mobile_number: users.mobile_number,
+      alumni: users.alumni,
+    }).from(users).where(eq(users.id, req.user!.id))
     res.json(updated)
   } catch {
     res.status(500).json({ error: 'Server error' })

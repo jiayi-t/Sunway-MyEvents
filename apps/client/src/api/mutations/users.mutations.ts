@@ -30,6 +30,25 @@ export function useUpdateStudentProfileImageMutation() {
   })
 }
 
+export interface PublicProfileUpdate {
+  name?: string
+  email?: string
+  gender?: string
+  mobile_number?: string | null
+  alumni?: boolean
+}
+
+export function useUpdatePublicProfileMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: PublicProfileUpdate) =>
+      api.put('/auth/profile', data).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.profile })
+    },
+  })
+}
+
 export function useUpdateProfileMobileMutation() {
   const queryClient = useQueryClient()
   return useMutation({
