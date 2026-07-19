@@ -198,7 +198,7 @@ export default function OrganizerProfilePage() {
 
               {/* Analytics Section */}
               <div data-tour="analytics" className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
-                <h2 className="text-primary font-bold text-sm mb-4">Analytics</h2>
+                <h2 className="text-primary font-semibold text-sm mb-4">Analytics</h2>
                 <div className="flex justify-around">
                   <button onClick={() => navigate('/organizer/analytics?tab=attendance')} className="flex flex-col items-center gap-1">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Users /></div>
