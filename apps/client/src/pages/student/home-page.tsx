@@ -107,14 +107,14 @@ export default function HomePage() {
 
           <div className="mb-2">
             <div className="w-full max-w-3xl mx-auto flex items-center bg-white rounded-full shadow px-3 py-2">
-              <Search className="w-4 h-4 text-gray-400 mr-3" aria-hidden="true" />
+              <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search events"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && search.trim() && handleBrowse()}
-                className="flex-1 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
+                className="flex-1 min-w-0 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
                 aria-label="Search events"
               />
               <button

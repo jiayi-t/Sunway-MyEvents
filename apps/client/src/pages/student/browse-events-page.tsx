@@ -172,14 +172,14 @@ export default function BrowseEventsPage() {
       {/* Search */}
       <div className="bg-surface px-4 py-3 relative">
         <div data-tour="browse-search" className="flex items-center gap-2">
-          <div className="flex-1 flex items-center bg-white rounded-full shadow border border-border px-3 py-2">
+          <div className="flex-1 min-w-0 flex items-center bg-white rounded-full shadow border border-border px-3 py-2">
             <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
             <input
               type="text"
               placeholder="Search events"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="flex-1 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
             />
             <button
               onClick={handleClearSearch}

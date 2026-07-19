@@ -106,7 +106,7 @@ export default function OrganizerParticipantsPage() {
             placeholder="Search by name, student ID, or email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+            className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
           />
         </div>
       </div>
