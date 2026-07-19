@@ -93,46 +93,35 @@ export default function StudentEventDetailsPage() {
     })
   }
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-surface">
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
+  if (isLoading)
+    return (
+      <div className="bg-surface">
+        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+          <h1 className="text-white font-bold text-base flex-1 text-center">
+            Event Details
+          </h1>
+        </div>
+        <EventDetailsSkeleton />
       </div>
-      <EventDetailsSkeleton />
-    </div>
-  )
+    )
 
-  if (isError || !event) return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <p className="text-muted-foreground text-sm">Event not found</p>
-    </div>
-  )
+  if (isError || !event)
+    return (
+      <div className="bg-surface flex items-center justify-center">
+        <p className="text-muted-foreground text-sm">Event not found</p>
+      </div>
+    )
 
   // useEventQuery returns unknown, cast to access event fields
   const typedEvent = event as Event
 
   return (
-    <div className="min-h-screen bg-surface">
-
+    <div className="bg-surface">
       {/* Sub-header */}
       <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
-      </div>
-
-      {/* Event Poster */}
-      <div className="relative">
-        {typedEvent.image_url
-          ? <img
-              src={toImageUrl(typedEvent.image_url)}
-              alt={typedEvent.name}
-              className="w-full object-cover"
-              style={{ aspectRatio: '4/5' }}
-            />
-          : <div className="w-full bg-surface flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '4/5' }}>
-              <ImageOff className="w-10 h-10 text-border" />
-              <p className="text-muted-foreground text-xs">No poster uploaded</p>
-            </div>
-        }
+        <h1 className="text-white font-bold text-base flex-1 text-center">
+          Event Details
+        </h1>
       </div>
 
       {typedEvent.cancelled_at && (
@@ -141,161 +130,215 @@ export default function StudentEventDetailsPage() {
         </div>
       )}
 
-      {/* Event Info */}
-      <div className="bg-card px-4 py-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <h2 className="font-bold text-foreground text-lg leading-tight flex-1">
-            {typedEvent.name}
-          </h2>
-          <div className="flex gap-2 flex-shrink-0 mt-1">
-            <button
-              onClick={() => saveMutation.mutate()}
-              className="text-primary"
+      <div className="lg:flex lg:items-start lg:gap-6 lg:p-6 lg:pb-0">
+        {/* Event Poster */}
+        <div className="relative lg:w-5/12 lg:flex-shrink-0 lg:rounded-xl lg:overflow-hidden lg:shadow-sm">
+          {typedEvent.image_url ? (
+            <img
+              src={toImageUrl(typedEvent.image_url)}
+              alt={typedEvent.name}
+              className="w-full object-cover"
+              style={{ aspectRatio: "4/5" }}
+            />
+          ) : (
+            <div
+              className="w-full bg-surface flex flex-col items-center justify-center gap-2"
+              style={{ aspectRatio: "4/5" }}
             >
+              <ImageOff className="w-10 h-10 text-border" />
+              <p className="text-muted-foreground text-xs">
+                No poster uploaded
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:flex-1 lg:min-w-0">
+          {/* Event Info */}
+          <div className="bg-card px-4 py-4 lg:rounded-xl">
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <h2 className="font-bold text-foreground text-lg leading-tight flex-1">
+                {typedEvent.name}
+              </h2>
+              <div className="flex gap-2 flex-shrink-0 mt-1">
+                <button
+                  onClick={() => saveMutation.mutate()}
+                  className="text-primary"
+                >
               <Bookmark fill={saved ? 'currentColor' : 'none'} />
-            </button>
-            <button className="text-primary">
-              <Share2 />
-            </button>
-          </div>
-        </div>
+                </button>
+                <button className="text-primary">
+                  <Share2 />
+                </button>
+              </div>
+            </div>
 
-        {/* Category labels */}
-        <div className="flex gap-2 mb-4">
-          {typedEvent.category && (
-            <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-              {typedEvent.category}
-            </span>
-          )}
-          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+            {/* Category labels */}
+            <div className="flex gap-2 mb-4">
+              {typedEvent.category && (
+                <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                  {typedEvent.category}
+                </span>
+              )}
+              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
             {typedEvent.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
-          </span>
-          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+              </span>
+              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
             {Number(typedEvent.pricing) === 0 ? 'Free' : 'Paid'}
-          </span>
-        </div>
+              </span>
+            </div>
 
-        {/* Description */}
-        <h3 className="font-semibold text-foreground text-sm mb-2">About this event:</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-          {typedEvent.description || 'No description provided.'}
-        </p>
+            {/* Description */}
+            <h3 className="font-semibold text-foreground text-sm mb-2">
+              About this event:
+            </h3>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+              {typedEvent.description || 'No description provided.'}
+            </p>
 
-        {/* Event Details */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Calendar className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Date</p>
-              <p className="text-sm text-foreground">{formatDate(typedEvent.date)}</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Clock className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Time</p>
-              <p className="text-sm text-foreground">
-                {formatTime(typedEvent.start_time)} - {formatTime(typedEvent.end_time)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <MapPin className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Venue</p>
-              <p className="text-sm text-foreground">{typedEvent.venue}</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Ticket className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
-              <p className="text-sm text-foreground">
-                {Number(typedEvent.pricing) === 0 ? 'Free' : `RM ${typedEvent.pricing}`}
-              </p>
-            </div>
-          </div>
-
-          {typedEvent.registration_deadline && (
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-                <CalendarClock className="text-primary w-4 h-4" />
+            {/* Event Details */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Calendar className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Date
+                  </p>
+                  <p className="text-sm text-foreground">
+                    {formatDate(typedEvent.date)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase font-medium">Registration Deadline</p>
-                <p className="text-sm text-foreground">{formatDate(typedEvent.registration_deadline)}</p>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Clock className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Time
+                  </p>
+                  <p className="text-sm text-foreground">
+                    {formatTime(typedEvent.start_time)} - {formatTime(typedEvent.end_time)}
+                  </p>
+                </div>
               </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <MapPin className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Venue
+                  </p>
+                  <p className="text-sm text-foreground">{typedEvent.venue}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Ticket className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Ticket Pricing
+                  </p>
+                  <p className="text-sm text-foreground">
+                    {Number(typedEvent.pricing) === 0 ? 'Free' : `RM ${typedEvent.pricing}`}
+                  </p>
+                </div>
+              </div>
+
+              {typedEvent.registration_deadline && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                    <CalendarClock className="text-primary w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-medium">
+                      Registration Deadline
+                    </p>
+                    <p className="text-sm text-foreground">
+                      {formatDate(typedEvent.registration_deadline)}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Success/Error messages */}
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-3 py-2 rounded-lg mb-3">
+                {success}
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg mb-3">
+                {error}
+              </div>
+            )}
+
+            {/* Register Button */}
+            {!typedEvent.cancelled_at &&
+              (() => {
+                const eventEnded = typedEvent.end_time
+                  ? new Date() > new Date(typedEvent.end_time)
+                  : false
+                const deadlinePassed = typedEvent.registration_deadline
+                  ? new Date() > new Date(typedEvent.registration_deadline)
+                  : false
+                if (registered) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default"
+                    >
+                      Registered
+                    </button>
+                  )
+                }
+                if (eventEnded) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed"
+                    >
+                      Event Ended
+                    </button>
+                  )
+                }
+                if (deadlinePassed) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed"
+                    >
+                      Registration Deadline Passed
+                    </button>
+                  );
+                }
+                return (
+                  <button
+                    onClick={handleRegister}
+                    disabled={registerMutation.isPending}
+                    className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                  >
+                    {registerMutation.isPending ? 'Registering...' : 'Register Now!'}
+                  </button>
+                )
+              })()}
+          </div>
         </div>
-
-        {/* Success/Error messages */}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-3 py-2 rounded-lg mb-3">
-            {success}
-          </div>
-        )}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg mb-3">
-            {error}
-          </div>
-        )}
-
-        {/* Register Button */}
-        {!typedEvent.cancelled_at && (() => {
-          const eventEnded = typedEvent.end_time
-            ? new Date() > new Date(typedEvent.end_time)
-            : false
-          const deadlinePassed = typedEvent.registration_deadline
-            ? new Date() > new Date(typedEvent.registration_deadline)
-            : false
-          if (registered) {
-            return (
-              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default">
-                Registered
-              </button>
-            )
-          }
-          if (eventEnded) {
-            return (
-              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed">
-                Event Ended
-              </button>
-            )
-          }
-          if (deadlinePassed) {
-            return (
-              <button disabled className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed">
-                Registration Deadline Passed
-              </button>
-            )
-          }
-          return (
-            <button
-              onClick={handleRegister}
-              disabled={registerMutation.isPending}
-              className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors"
-            >
-              {registerMutation.isPending ? 'Registering...' : 'Register Now!'}
-            </button>
-          )
-        })()}
       </div>
 
       {/* Organized By */}
-      <div className="bg-card mt-2 px-4 py-4">
-        <h3 className="font-semibold text-foreground text-sm mb-3">Organized by:</h3>
+      <div className="bg-card mt-2 px-4 py-4 lg:rounded-xl lg:mt-6 lg:mx-6 lg:mb-6">
+        <h3 className="font-semibold text-foreground text-sm mb-3">
+          Organized by:
+        </h3>
         <button
           className="flex items-center gap-3 w-full text-left"
           onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
@@ -309,7 +352,7 @@ export default function StudentEventDetailsPage() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">
-              {typedEvent.organizer_name ?? 'Organizer'}
+              {typedEvent.organizer_name ?? "Organizer"}
             </p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
