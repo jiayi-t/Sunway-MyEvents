@@ -36,8 +36,8 @@ export function EventListSkeleton({ count = 3 }: { count?: number }) {
 // featured carousel card on the home page (rendered on the dark primary background)
 export function FeaturedEventSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-md bg-white">
-      <div className="w-full animate-pulse bg-gray-200" style={{ aspectRatio: '4/5' }} />
+    <div className="max-w-3xl lg:max-w-3xl mx-auto rounded-xl overflow-hidden shadow-md bg-white">
+      <div className="w-full animate-pulse bg-gray-200 aspect-[4/5] lg:aspect-[4/3]" />
       <div className="p-4">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/3 mt-2" />
