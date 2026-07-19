@@ -1,6 +1,6 @@
 import api from '../../services/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { userKeys, type NotificationPreferences, type SocialLinks } from '../queries/users.queries'
+import { userKeys, type Notification, type NotificationPreferences, type SocialLinks } from '../queries/users.queries'
 
 export function useUpdateNotificationPreferencesMutation() {
   const queryClient = useQueryClient()
@@ -75,8 +75,21 @@ export function useToggleOrganizerNotificationsMutation(id: string | undefined) 
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => api.post(`/organizers/${id}/follow-toggle`).then(res => res.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.organizerNotificationsStatus(id) })
+    // flip the bell straight away, otherwise it waits on the post and the follow status refetch
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: userKeys.organizerNotificationsStatus(id) })
+      const previous = queryClient.getQueryData<{ following: boolean }>(userKeys.organizerNotificationsStatus(id))
+      queryClient.setQueryData(userKeys.organizerNotificationsStatus(id), { following: !previous?.following })
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(userKeys.organizerNotificationsStatus(id), context?.previous)
+    },
+    onSuccess: (data: { following: boolean }) => {
+      queryClient.setQueryData(userKeys.organizerNotificationsStatus(id), data)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.notifications })
     },
   })
 }
@@ -85,7 +98,20 @@ export function useMarkAllNotificationsReadMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => api.patch('/notifications/read-all').then(res => res.data),
-    onSuccess: () => {
+    // clear the unread badge straight away, otherwise it waits on the patch and the refetch
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: userKeys.notifications })
+      const previous = queryClient.getQueryData<Notification[]>(userKeys.notifications)
+      const readAt = new Date().toISOString()
+      queryClient.setQueryData<Notification[]>(userKeys.notifications, old =>
+        old?.map(n => (n.read_at ? n : { ...n, read_at: readAt }))
+      )
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(userKeys.notifications, context?.previous)
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.notifications })
     },
   })

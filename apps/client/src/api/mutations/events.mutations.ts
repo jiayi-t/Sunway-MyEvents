@@ -20,8 +20,20 @@ export function useToggleSaveMutation(id: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => api.post(`/events/${id}/save-toggle`).then(res => res.data),
+    // flip the icon straight away, otherwise it sits unresponsive for the whole round trip
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: eventKeys.saveStatus(id) })
+      const previous = queryClient.getQueryData<boolean>(eventKeys.saveStatus(id))
+      queryClient.setQueryData(eventKeys.saveStatus(id), !previous)
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(eventKeys.saveStatus(id), context?.previous)
+    },
     onSuccess: (data: { saved: boolean }) => {
       queryClient.setQueryData(eventKeys.saveStatus(id), data.saved)
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.saved })
     },
   })
