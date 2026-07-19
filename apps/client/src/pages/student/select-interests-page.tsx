@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Info } from 'lucide-react'
 import api from '../../services/api'
 import LoginFooter from '../../components/login-footer'
 
@@ -54,6 +55,15 @@ export default function SelectInterestsPage() {
         </div>
 
         <h1 className="text-primary text-xl font-bold mb-6">What interests you?</h1>
+
+        <div className="w-full max-w-sm">
+          <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2.5 mb-4">
+            <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This step is required. Selecting your interested event categories helps Sunway MyEvents recommend relevant events for you.
+            </p>
+          </div>
+        </div>
 
         <div className="w-full max-w-sm space-y-4">
           {/* Categories */}
