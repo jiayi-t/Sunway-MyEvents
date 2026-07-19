@@ -224,6 +224,27 @@ export default function OrganizerEventsPage() {
 
   useEffect(() => { setActiveTab(getTabFromQuery()) }, [searchParams])
 
+  // keep the floating create button above the footer whenever the footer is in view
+  const [fabOffset, setFabOffset] = useState(0)
+  useEffect(() => {
+    const footer = document.querySelector('footer')
+    if (!footer) return
+    const update = () => {
+      const visibleFooter = window.innerHeight - footer.getBoundingClientRect().top
+      setFabOffset(Math.max(0, visibleFooter))
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    const resizeObserver = new ResizeObserver(update)
+    resizeObserver.observe(document.body)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+      resizeObserver.disconnect()
+    }
+  }, [])
+
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab)
     setSearchParams({ tab })
@@ -287,7 +308,8 @@ export default function OrganizerEventsPage() {
             data-tour="create-event-fab"
             onClick={() => navigate('/organizer/events/new')}
             aria-label="Create new event"
-            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+            style={{ bottom: `calc(1.5rem + ${fabOffset}px)` }}
+            className="fixed right-6 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
           >
             <Plus className="w-7 h-7" />
           </button>
