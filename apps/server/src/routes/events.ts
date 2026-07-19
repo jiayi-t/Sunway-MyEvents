@@ -126,6 +126,35 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
+// GET /api/events/followed-orgs - events from followed organizers 
+router.get('/followed-orgs', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const result = await db
+      .select({
+        ...getTableColumns(events),
+        organizer_name: users.name,
+        organizer_image_url: users.image_url,
+      })
+      .from(events)
+      .innerJoin(followed_organizers, eq(followed_organizers.organizer_id, events.organizer_id))
+      .leftJoin(users, eq(events.organizer_id, users.id))
+      .where(
+        // hide students-only events from the public, same rule as GET /events
+        req.user!.role === 'public'
+          ? and(
+              eq(followed_organizers.student_id, req.user!.id),
+              isNull(events.archived_at),
+              ne(events.audience, 'students_only'),
+            )
+          : and(eq(followed_organizers.student_id, req.user!.id), isNull(events.archived_at))
+      )
+      .orderBy(desc(events.created_at))
+    res.json(result)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 // POST /api/events/:id/view - record student's event views
 router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'student' && req.user?.role !== 'public') return res.status(403).json({ error: 'Forbidden' })

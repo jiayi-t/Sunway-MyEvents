@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useEventsQuery, useRecommendationsQuery } from '../../api/queries'
+import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { EventListSkeleton } from '../../components/skeletons'
 import { Calendar, ChevronRight, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
@@ -21,7 +21,7 @@ interface Event {
 }
 
 const EVENT_CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
-const CATEGORIES = ['All Events', 'For You', ...EVENT_CATEGORIES]
+const CATEGORIES = ['All Events', 'For You', 'Followed SLB/C&S']
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
@@ -84,11 +84,18 @@ export default function BrowseEventsPage() {
   const { data: eventsData, isLoading: loading } = useEventsQuery()
   const events = (eventsData ?? []) as Event[]
 
-  const isForYouActive = activeCategory === 'For You' && !search.trim()
+  // the filter chips are hidden while searching or filtering, so those views only drive results when neither is on
+  const chipsActive = !search.trim() && !filtersActive(filters)
+  const isForYouActive = activeCategory === 'For You' && chipsActive
+  const isFollowedActive = activeCategory === 'Followed SLB/C&S' && chipsActive
+
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(isForYouActive && !!user)
   const recommendations = (recommendationsData ?? []) as Event[]
 
-  const isLoading = loading || (isForYouActive && recLoading)
+  const { data: followedData, isLoading: followedLoading } = useFollowedOrgsQuery(isFollowedActive && !!user)
+  const followedOrgs = (followedData ?? []) as Event[]
+
+  const isLoading = loading || (isForYouActive && recLoading) || (isFollowedActive && followedLoading)
 
   const filtered = useMemo(() => {
     const today = new Date()
@@ -100,12 +107,12 @@ export default function BrowseEventsPage() {
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.venue?.toLowerCase().includes(search.toLowerCase())
       )
-    } else if (activeCategory === 'All Events') {
-      base = events
-    } else if (activeCategory === 'For You') {
+    } else if (isForYouActive) {
       base = recommendations
+    } else if (isFollowedActive) {
+      base = followedOrgs
     } else {
-      base = events.filter(e => e.category?.toLowerCase() === activeCategory.toLowerCase())
+      base = events
     }
 
     if (!filtersActive(filters)) return base
@@ -136,7 +143,7 @@ export default function BrowseEventsPage() {
 
       return true
     })
-  }, [events, activeCategory, recommendations, search, filters])
+  }, [events, recommendations, followedOrgs, search, filters, isForYouActive, isFollowedActive])
 
   const handleCategoryFilter = (cat: string) => {
     setActiveCategory(cat)
@@ -298,24 +305,26 @@ export default function BrowseEventsPage() {
         )}
       </div>
 
-      {/* Category Filters */}
-      <div className="px-4 py-3 bg-card overflow-x-auto">
-        <div className="flex gap-2 w-max">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryFilter(cat)}
-              className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
-                ${activeCategory === cat && !search.trim()
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-primary'
-                }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Top-level views, hidden while a search or filter narrows the list */}
+      {chipsActive && (
+        <div className="px-4 py-3 bg-card overflow-x-auto">
+          <div className="flex gap-2 w-max">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryFilter(cat)}
+                className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
+                  ${activeCategory === cat
+                    ? 'bg-primary text-white'
+                    : 'bg-white text-primary'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Events List */}
       <div className="px-4 py-3 space-y-3">

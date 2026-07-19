@@ -7,6 +7,7 @@ export const eventKeys = {
   detail: (id: string | undefined) => ['events', id] as const,
   organizer: ['events', 'organizer'] as const,
   saved: ['events', 'saved'] as const,
+  followed: ['events', 'followed'] as const,
   recommendations: ['events', 'recommendations'] as const,
   registrationStatus: (id: string | undefined) => ['events', id, 'registration-status'] as const,
   saveStatus: (id: string | undefined) => ['events', id, 'save-status'] as const,
@@ -49,6 +50,15 @@ export function useSavedEventsQuery(options?: Omit<UseQueryOptions, 'queryKey' |
   return useQuery({
     queryKey: eventKeys.saved,
     queryFn: () => api.get('/events/saved-events').then(res => res.data),
+    ...options,
+  })
+}
+
+export function useFollowedOrgsQuery(enabled: boolean, options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: eventKeys.followed,
+    queryFn: () => api.get('/events/followed-orgs').then(res => res.data),
+    enabled,
     ...options,
   })
 }
