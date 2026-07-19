@@ -65,9 +65,17 @@ export interface PublicOrganizerProfile {
   events: any[]
 }
 
+// seeded demo accounts only
+export interface OrganizerAccount {
+  sunway_id: string
+  name: string
+  category: string | null
+}
+
 export const userKeys = {
   profile: ['profile'] as const,
   organizerProfile: ['organizer-profile'] as const,
+  organizerAccounts: ['organizer-accounts'] as const,
   notifications: ['notifications'] as const,
   publicOrganizer: (id: string | undefined) => ['organizer', id] as const,
   organizerNotificationsStatus: (id: string | undefined) => ['organizer-notifications', id] as const,
@@ -100,6 +108,15 @@ export function usePublicOrganizerProfileQuery(id: string | undefined) {
     queryKey: userKeys.publicOrganizer(id),
     queryFn: () => api.get(`/organizers/${id}`).then(res => res.data as PublicOrganizerProfile),
     enabled: !!id,
+  })
+}
+
+// only fetched once the login page's account list is expanded
+export function useOrganizerAccountsQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: userKeys.organizerAccounts,
+    queryFn: () => api.get('/organizers').then(res => res.data as OrganizerAccount[]),
+    enabled,
   })
 }
 

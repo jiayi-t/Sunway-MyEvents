@@ -1,10 +1,31 @@
 import { Router } from 'express'
-import { eq, and, isNull, asc, gte } from 'drizzle-orm'
+import { eq, and, isNull, asc, gte, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, followed_organizers, notifications } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { SEEDED_ORGANIZER_USERNAMES } from '../database/seeded-accounts'
 
 const router = Router()
+
+// GET /api/organizers - demo organizer accounts (username + name + category) shown on the login page so testers can sign into an existing SLB/club instead of registering a duplicate
+// Deliberately excludes accounts registered through the app, only their owner knows the password
+router.get('/', async (_req, res) => {
+  try {
+    const rows = await db
+      .select({
+        sunway_id: users.sunway_id,
+        name: users.name,
+        category: users.category,
+      })
+      .from(users)
+      .where(and(eq(users.role, 'organizer'), inArray(users.sunway_id, SEEDED_ORGANIZER_USERNAMES)))
+      .orderBy(asc(users.name))
+
+    res.json(rows)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
 
 // GET /api/organizers/:id - organizer profile for student view
 router.get('/:id', async (req, res) => {

@@ -1,15 +1,55 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChevronDown, ChevronUp, Info } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
+import { useOrganizerAccountsQuery, type OrganizerAccount } from '../../api/queries'
 import LoginFooter from '../../components/login-footer'
 import api from '../../services/api'
+
+function AccountGroup({
+  heading,
+  accounts,
+  onPick,
+}: {
+  heading: string
+  accounts: OrganizerAccount[]
+  onPick: (sunwayId: string) => void
+}) {
+  return (
+    <div className="py-1.5">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+        {heading}
+      </p>
+      <ul className="divide-y divide-primary/10 mt-0.5">
+        {accounts.map(acc => (
+          <li key={acc.sunway_id}>
+            <button
+              type="button"
+              onClick={() => onPick(acc.sunway_id)}
+              className="w-full py-2 flex items-baseline justify-between gap-3 text-left"
+            >
+              <span className="text-xs text-foreground truncate">{acc.name}</span>
+              <span className="text-xs font-semibold text-accent flex-shrink-0">{acc.sunway_id}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 export default function OrganizerLoginPage() {
   const [form, setForm] = useState({ sunwayId: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showAccounts, setShowAccounts] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+
+  const { data: accounts = [], isLoading: accountsLoading } = useOrganizerAccountsQuery(showAccounts)
+
+  const slbAccounts = accounts.filter(a => a.category === 'SLB')
+  const csAccounts = accounts.filter(a => a.category !== 'SLB')
 
   const handleSubmit = async () => {
     setError('')
@@ -47,6 +87,59 @@ export default function OrganizerLoginPage() {
         <h1 className="text-primary text-xl font-bold mb-6">
           Sign in with your Username
         </h1>
+
+        {/* Existing accounts */}
+        <div className="w-full max-w-sm">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg mb-4">
+            <div className="flex items-start gap-2 px-3 py-2.5">
+              <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Several demo SLB and C&S accounts have been added. <br></br>Sign in with one, or create a new account if your SLB/C&S is not listed.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAccounts(o => !o)}
+                  className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-primary"
+                >
+                  {showAccounts ? 'Hide' : 'View'} existing accounts
+                  {showAccounts
+                    ? <ChevronUp className="w-3.5 h-3.5" />
+                    : <ChevronDown className="w-3.5 h-3.5" />
+                  }
+                </button>
+              </div>
+            </div>
+
+            {showAccounts && (
+              <div className="border-t border-primary/20 px-3 py-1 max-h-64 overflow-y-auto">
+                {accountsLoading ? (
+                  <p className="text-xs text-muted-foreground py-2">Loading accounts...</p>
+                ) : accounts.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-2">No demo accounts yet.</p>
+                ) : (
+                  <>
+                    <p className="text-[10px] text-muted-foreground py-2 border-b border-primary/10">Password for all: <span className="font-semibold text-foreground">sunway123</span></p>
+                    {slbAccounts.length > 0 && (
+                      <AccountGroup
+                        heading="SLB"
+                        accounts={slbAccounts}
+                        onPick={id => setForm({ ...form, sunwayId: id })}
+                      />
+                    )}
+                    {csAccounts.length > 0 && (
+                      <AccountGroup
+                        heading="C&S Clubs"
+                        accounts={csAccounts}
+                        onPick={id => setForm({ ...form, sunwayId: id })}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Form Card */}
         <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">

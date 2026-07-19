@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { eq, and, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, registrations, saved_events } from './schema'
+import { SEEDED_ORGANIZER_USERNAMES } from './seeded-accounts'
 
 const seed = async () => {
   console.log('Seeding database...')
@@ -364,6 +365,13 @@ const seed = async () => {
       about: null,
     },
   ]
+
+  // the login page uses SEEDED_ORGANIZER_USERNAMES to show which accounts still use the seed password, so warn if an organizer is seeded here without being listed there
+  const seededOrganizers = seedUsers.filter(u => u.role === 'organizer').map(u => u.sunway_id)
+  const missing = seededOrganizers.filter(id => !SEEDED_ORGANIZER_USERNAMES.includes(id))
+  if (missing.length > 0) {
+    console.warn(`⚠ add to SEEDED_ORGANIZER_USERNAMES in seeded-accounts.ts: ${missing.join(', ')}`)
+  }
 
   for (const user of seedUsers) {
     await db.insert(users).values(user).onConflictDoUpdate({
