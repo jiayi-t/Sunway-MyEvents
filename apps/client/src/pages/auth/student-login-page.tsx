@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Info } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
 import LoginFooter from '../../components/login-footer'
 import api from '../../services/api'
@@ -59,6 +60,15 @@ export default function StudentLoginPage() {
           Sign in with your Sunway ID
         </h1>
 
+        <div className="w-full max-w-sm">
+          <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2.5 mb-4">
+            <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This FYP is not linked to your actual Sunway login. <br></br>Enter your student ID and a password to create your account, then sign in with the same details next time.
+            </p>
+          </div>
+        </div>
+
         {/* Form Card */}
         <div className="bg-white rounded-xl shadow p-6 w-full max-w-sm">
           <div className="mb-4">
@@ -99,10 +109,6 @@ export default function StudentLoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <p className="text-xs text-muted-foreground mt-4 text-center leading-relaxed">
-            This FYP is not linked to your actual Sunway login. <br></br>Enter your student ID and a
-            password to create your account, then sign in with the same details next time.
-          </p>
         </div>
       </div>
 
