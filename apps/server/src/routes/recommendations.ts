@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, ne, isNull, gt, inArray, getTableColumns } from 'drizzle-orm'
+import { eq, and, or, ne, isNull, gt, inArray, getTableColumns } from 'drizzle-orm'
 import { db } from '../db'
 import { events, users, registrations, saved_events, event_views, followed_organizers } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -221,6 +221,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
           isNull(events.archived_at),
           isNull(events.cancelled_at),
           gt(events.date, now),
+          or(isNull(events.registration_deadline), gt(events.registration_deadline, now)),
           ...(req.user!.role === 'public' ? [ne(events.audience, 'students_only')] : []),
         )
       )

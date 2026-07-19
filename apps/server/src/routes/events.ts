@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, desc, and, isNull, gt, ne, getTableColumns } from 'drizzle-orm'
+import { eq, asc, desc, and, or, isNull, gt, ne, getTableColumns } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
@@ -49,10 +49,10 @@ router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        // hide students-only events from the public and unauthenticated callers
+        // hide students-only events from the public and unauthenticated callers, exclude events with passed registration deadlines
         !req.user || req.user.role === 'public'
-          ? and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now), ne(events.audience, 'students_only'))
-          : and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now))
+          ? and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now), ne(events.audience, 'students_only'), or(isNull(events.registration_deadline), gt(events.registration_deadline, now)))
+          : and(isNull(events.archived_at), isNull(events.cancelled_at), gt(events.date, now), or(isNull(events.registration_deadline), gt(events.registration_deadline, now)))
       )
 
     const scored = rows
