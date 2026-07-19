@@ -11,7 +11,7 @@ export function useRegisterEventMutation(id: string | undefined) {
       queryClient.setQueryData(eventKeys.registrationStatus(id), true)
       queryClient.invalidateQueries({ queryKey: eventKeys.recommendations })
       queryClient.invalidateQueries({ queryKey: registrationKeys.my })
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
     },
   })
 }
@@ -60,7 +60,7 @@ export function useUpdateEventMutation(id: string | undefined) {
   return useMutation({
     mutationFn: (data: Record<string, unknown>) => api.put(`/events/${id}`, data).then(res => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
     },
   })
@@ -71,7 +71,7 @@ export function useCancelEventMutation(id: string | undefined) {
   return useMutation({
     mutationFn: () => api.patch(`/events/${id}/cancel`).then(res => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
     },
   })
@@ -83,7 +83,7 @@ export function useArchiveEventMutation(id: string | undefined) {
     mutationFn: () => api.patch(`/events/${id}/archive`).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
     },
   })
 }
@@ -94,7 +94,7 @@ export function useUnarchiveEventMutation(id: string | undefined) {
     mutationFn: () => api.patch(`/events/${id}/unarchive`).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
     },
   })
 }
