@@ -134,22 +134,6 @@ export default function OrganizerEventDetailsPage() {
         <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
       </div>
 
-      {/* Event Poster */}
-      <div className="relative">
-        {event.image_url
-          ? <img 
-              src={toImageUrl(event.image_url)} 
-              alt={event.name} 
-              className="w-full object-cover" 
-              style={{ aspectRatio: '4/5' }} 
-            />
-          : <div className="w-full bg-surface flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '4/5' }}>
-              <ImageOff className="w-10 h-10 text-border" />
-              <p className="text-muted-foreground text-xs">No poster uploaded</p>
-            </div>
-        }
-      </div>
-
       {event.archived_at && (
         <div className="bg-gray-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
           This event has been archived
@@ -161,163 +145,183 @@ export default function OrganizerEventDetailsPage() {
         </div>
       )}
 
-      {/* Event Info */}
-      <div className="bg-card px-4 py-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <h2 className="font-bold text-foreground text-lg leading-tight flex-1">{event.name}</h2>
-          <div className="flex gap-2 flex-shrink-0 mt-1 relative" ref={menuRef}>
-            <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground">
-              <MoreVertical className="w-5 h-5" />
-            </button>
-            <button className="text-foreground">
-              <Share2 className="w-5 h-5" />
-            </button>
+      <div className="lg:flex lg:items-start lg:gap-6 lg:p-6 lg:pb-0">
+        {/* Event Poster */}
+        <div className="relative lg:w-5/12 lg:flex-shrink-0 lg:rounded-xl lg:overflow-hidden lg:shadow-sm">
+          {event.image_url
+            ? <img 
+                src={toImageUrl(event.image_url)} 
+                alt={event.name} 
+                className="w-full object-cover" 
+                style={{ aspectRatio: '4/5' }} 
+              />
+            : <div className="w-full bg-surface flex flex-col items-center justify-center gap-2" style={{ aspectRatio: '4/5' }}>
+                <ImageOff className="w-10 h-10 text-border" />
+                <p className="text-muted-foreground text-xs">No poster uploaded</p>
+              </div>
+          }
+        </div>
 
-            {menuOpen && (
-              <div className="absolute right-8 top-0 bg-card shadow-lg rounded-lg py-1 z-10 min-w-[130px] border border-border">
-                {!isPast && (
-                  <button
-                    onClick={() => { setMenuOpen(false); navigate(`/organizer/events/${id}/edit`) }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
-                  >
-                    <Pencil className="w-4 h-4" /> Edit
-                  </button>
-                )}
-                {isPast && (
-                  <button
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
-                  >
-                    <Pin className="w-4 h-4" /> Pin
-                  </button>
-                )}
-                {isArchived ? (
-                  <button
-                    onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
-                  >
-                    <Archive className="w-4 h-4" /> Unarchive
-                  </button>
-                ) : !event.cancelled_at && (
-                  <button
-                    onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-surface w-full text-left"
-                  >
-                    {isPast ? <Archive className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                    {isPast ? 'Archive' : 'Cancel'}
-                  </button>
+        <div className="lg:flex-1 lg:min-w-0">
+          {/* Event Info */}
+          <div className="bg-card px-4 py-4 lg:rounded-xl">
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <h2 className="font-bold text-foreground text-lg leading-tight flex-1">{event.name}</h2>
+              <div className="flex gap-2 flex-shrink-0 mt-1 relative" ref={menuRef}>
+                <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground">
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+                <button className="text-foreground">
+                  <Share2 className="w-5 h-5" />
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute right-8 top-0 bg-card shadow-lg rounded-lg py-1 z-10 min-w-[130px] border border-border">
+                    {!isPast && (
+                      <button
+                        onClick={() => { setMenuOpen(false); navigate(`/organizer/events/${id}/edit`) }}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                      >
+                        <Pencil className="w-4 h-4" /> Edit
+                      </button>
+                    )}
+                    {isPast && (
+                      <button
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                      >
+                        <Pin className="w-4 h-4" /> Pin
+                      </button>
+                    )}
+                    {isArchived ? (
+                      <button
+                        onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                      >
+                        <Archive className="w-4 h-4" /> Unarchive
+                      </button>
+                    ) : !event.cancelled_at && (
+                      <button
+                        onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-surface w-full text-left"
+                      >
+                        {isPast ? <Archive className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                        {isPast ? 'Archive' : 'Cancel'}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
+            </div>
+
+            {/* Ticket/Registration Info */}
+            <p className="text-accent text-sm font-medium mb-3">
+              {cap > 0 ? `${sold} / ${cap} tickets sold` : `${sold} registered`}
+            </p>
+
+            {/* Category labels */}
+            <div className="flex gap-2 mb-4">
+              {event.category && (
+                <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                  {event.category}
+                </span>
+              )}
+              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+              </span>
+              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
+              </span>
+            </div>
+
+            {/* Description */}
+            <h3 className="font-semibold text-foreground text-sm mb-2">About this event:</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4 whitespace-pre-line">
+              {event.description || 'No description provided.'}
+            </p>
+
+            {/* Event Details */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Calendar className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">Date</p>
+                  <p className="text-sm text-foreground">{formatDate(event.date)}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Clock className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">Time</p>
+                  <p className="text-sm text-foreground">{formatTime(event.start_time)} - {formatTime(event.end_time)}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <MapPin className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">Venue</p>
+                  <p className="text-sm text-foreground">{event.venue}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                  <Ticket className="text-primary w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
+                  <p className="text-sm text-foreground">
+                    {Number(event.pricing) === 0 ? 'Free' : `RM ${event.pricing}`}
+                  </p>
+                </div>
+              </div>
+
+              {event.registration_deadline && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
+                    <CalendarClock className="text-primary w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-medium">Registration Deadline</p>
+                    <p className="text-sm text-foreground">{formatDate(event.registration_deadline)}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {!isPast ? (
+              <div className="flex gap-3">
+                  <button
+                    onClick={() => navigate(`/organizer/events/${id}/checkin`)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+                  >
+                    <ScanQrCode className="w-4 h-4" />
+                    Check In
+                  </button>
+                <button
+                  onClick={() => navigate(`/organizer/events/${id}/participants`)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+                >
+                  <Users className="w-4 h-4" />
+                  View Participants
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate(`/organizer/events/${id}/analytics`)}
+                className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+              >
+                <BarChart2 className="w-4 h-4" />
+                View Analytics
+              </button>
             )}
           </div>
         </div>
-
-        {/* Ticket/Registration Info */}
-        <p className="text-accent text-sm font-medium mb-3">
-          {cap > 0 ? `${sold} / ${cap} tickets sold` : `${sold} registered`}
-        </p>
-
-        {/* Category labels */}
-        <div className="flex gap-2 mb-4">
-          {event.category && (
-            <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-              {event.category}
-            </span>
-          )}
-          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
-          </span>
-          <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
-          </span>
-        </div>
-
-        {/* Description */}
-        <h3 className="font-semibold text-foreground text-sm mb-2">About this event:</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-          {event.description || 'No description provided.'}
-        </p>
-
-        {/* Event Details */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Calendar className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Date</p>
-              <p className="text-sm text-foreground">{formatDate(event.date)}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Clock className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Time</p>
-              <p className="text-sm text-foreground">{formatTime(event.start_time)} - {formatTime(event.end_time)}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <MapPin className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Venue</p>
-              <p className="text-sm text-foreground">{event.venue}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-              <Ticket className="text-primary w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase font-medium">Ticket Pricing</p>
-              <p className="text-sm text-foreground">
-                {Number(event.pricing) === 0 ? 'Free' : `RM ${event.pricing}`}
-              </p>
-            </div>
-          </div>
-
-          {event.registration_deadline && (
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
-                <CalendarClock className="text-primary w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase font-medium">Registration Deadline</p>
-                <p className="text-sm text-foreground">{formatDate(event.registration_deadline)}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {!isPast ? (
-          <div className="flex gap-3">
-              <button
-                onClick={() => navigate(`/organizer/events/${id}/checkin`)}
-                className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
-              >
-                <ScanQrCode className="w-4 h-4" />
-                Check In
-              </button>
-            <button
-              onClick={() => navigate(`/organizer/events/${id}/participants`)}
-              className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
-            >
-              <Users className="w-4 h-4" />
-              View Participants
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => navigate(`/organizer/events/${id}/analytics`)}
-            className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
-          >
-            <BarChart2 className="w-4 h-4" />
-            View Analytics
-          </button>
-        )}
       </div>
 
       {/* Cancel / archive confirmation modal */}
