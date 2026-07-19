@@ -9,6 +9,7 @@ import { authenticate, type AuthRequest } from '../middleware/auth'
 import {
   loginLimiter, loginAccountLimiter, forgotPasswordLimiter, registerLimiter, resetPasswordLimiter,
 } from '../middleware/rate-limit'
+import { isSeededOrganizer } from '../database/seeded-accounts'
 import { sendEmail, forgotPasswordEmail } from '../email'
 
 const router = Router()
@@ -85,7 +86,8 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
         role: user.role,
         image_url: user.image_url ?? null,
         interests: (user.interests as string[] | null) ?? null,
-        tour_completed_at: user.tour_completed_at ?? null
+        tour_completed_at: user.tour_completed_at ?? null,
+        is_seeded: isSeededOrganizer(user.sunway_id),
       },
       token,
       // students whose profile has not been filled yet (auto-provisioned UAT accounts)
@@ -437,6 +439,11 @@ router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
   if (!Array.isArray(social_links)) return res.status(400).json({ error: 'social_links must be an array' })
 
   if (sunway_id !== undefined) {
+    const [current] = await db.select({ sunway_id: users.sunway_id }).from(users).where(eq(users.id, req.user!.id)).limit(1)
+    // demo accounts stay under their seeded username so they keep showing up on the login page and the change-password/reset-password guards keep matching them
+    if (current && sunway_id !== current.sunway_id && isSeededOrganizer(current.sunway_id)) {
+      return res.status(403).json({ error: 'Demo accounts cannot change their username.' })
+    }
     if (sunway_id.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' })
     if (sunway_id.length > 8) return res.status(400).json({ error: 'Username must be 8 characters or less. Try using your SLB or C&S shortform.' })
     const [taken] = await db.select({ id: users.id }).from(users)
@@ -516,8 +523,9 @@ router.get('/validate-reset-token', async (req, res) => {
 
   try {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
-    const [row] = await db.select({ id: password_reset_tokens.id })
+    const [row] = await db.select({ id: password_reset_tokens.id, sunway_id: users.sunway_id })
       .from(password_reset_tokens)
+      .innerJoin(users, eq(users.id, password_reset_tokens.user_id))
       .where(and(
         eq(password_reset_tokens.token_hash, tokenHash),
         isNull(password_reset_tokens.used_at),
@@ -525,7 +533,8 @@ router.get('/validate-reset-token', async (req, res) => {
       ))
       .limit(1)
 
-    res.json({ valid: !!row })
+    // demo accounts still get a working reset link (so a tester who changed the email can walk the flow)
+    res.json({ valid: !!row, is_seeded: row ? isSeededOrganizer(row.sunway_id) : false })
   } catch {
     res.status(500).json({ valid: false })
   }
@@ -540,8 +549,9 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   try {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
 
-    const [row] = await db.select({ id: password_reset_tokens.id, user_id: password_reset_tokens.user_id })
+    const [row] = await db.select({ id: password_reset_tokens.id, user_id: password_reset_tokens.user_id, sunway_id: users.sunway_id })
       .from(password_reset_tokens)
+      .innerJoin(users, eq(users.id, password_reset_tokens.user_id))
       .where(and(
         eq(password_reset_tokens.token_hash, tokenHash),
         isNull(password_reset_tokens.used_at),
@@ -551,16 +561,21 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
 
     if (!row) return res.status(400).json({ error: 'Invalid or expired reset link.' })
 
+    // void every outstanding reset token for this user, not just the one used, so any other reset links already sent cannot be replayed, one for demo accounts too so their mock flow behaves like a real one
+    await db.update(password_reset_tokens)
+      .set({ used_at: new Date() })
+      .where(and(eq(password_reset_tokens.user_id, row.user_id), isNull(password_reset_tokens.used_at)))
+
+    // seeded demo account: the token is real and the flow completes, but the write never happens
+    if (isSeededOrganizer(row.sunway_id)) {
+      return res.json({ message: 'Demo account: password was not changed.', is_seeded: true })
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10)
     // bump token_version so any JWTs issued before this reset are rejected by authenticate
     await db.update(users)
       .set({ password: hashedPassword, token_version: sql`${users.token_version} + 1` })
       .where(eq(users.id, row.user_id))
-    // void every outstanding reset token for this user, not just the one used,
-    // so any other reset links already sent can't be replayed
-    await db.update(password_reset_tokens)
-      .set({ used_at: new Date() })
-      .where(and(eq(password_reset_tokens.user_id, row.user_id), isNull(password_reset_tokens.used_at)))
 
     res.json({ message: 'Password reset successfully.' })
   } catch {
@@ -585,11 +600,18 @@ router.post('/change-password', authenticate, async (req: AuthRequest, res) => {
   }
 
   try {
-    const [user] = await db.select({ password: users.password }).from(users).where(eq(users.id, req.user!.id)).limit(1)
+    const [user] = await db.select({ password: users.password, sunway_id: users.sunway_id })
+      .from(users).where(eq(users.id, req.user!.id)).limit(1)
     if (!user) return res.status(404).json({ error: 'User not found' })
 
     const valid = await bcrypt.compare(currentPassword, user.password)
     if (!valid) return res.status(400).json({ error: 'Current password is incorrect' })
+
+    // seeded demo accounts run the whole flow for testing but the new password is never written
+    if (isSeededOrganizer(user.sunway_id)) {
+      // no token_version bump and no new token: nothing changed, so existing sessions stay valid
+      return res.json({ message: 'Demo account: password was not changed.', is_seeded: true })
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10)
     // bump token_version to invalidate sessions on other devices, then reissue a token for the current session so the user who just changed it stays logged in here

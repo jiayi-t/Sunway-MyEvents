@@ -11,6 +11,7 @@ interface User {
   image_url?: string | null
   interests?: string[] | null
   tour_completed_at?: string | null
+  is_seeded?: boolean
 }
 
 interface AuthContextType {

@@ -14,3 +14,7 @@ export const SEEDED_ORGANIZER_USERNAMES = [
   'sacc',
   'stc',
 ]
+
+// Remove an account from the seeded list above to allow password and username changes
+export const isSeededOrganizer = (sunwayId: string | null | undefined) =>
+  !!sunwayId && SEEDED_ORGANIZER_USERNAMES.includes(sunwayId)

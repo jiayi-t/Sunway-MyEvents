@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Info } from 'lucide-react'
 import { useResetPasswordMutation } from '../../api/mutations'
 import { useValidateResetTokenQuery } from '../../api/queries'
 import LoginFooter from '../../components/login-footer'
@@ -18,6 +18,9 @@ export default function ResetPasswordPage() {
 
   const tokenCheck = useValidateResetTokenQuery(token)
   const mutation = useResetPasswordMutation()
+
+  // set once the token is validated, for the seeded demo organizer accounts listed on the organizer login page
+  const isSeeded = !!tokenCheck.data?.is_seeded
 
   const shell = (content: React.ReactNode) => (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -58,10 +61,15 @@ export default function ResetPasswordPage() {
   }
 
   if (mutation.isSuccess) {
+    const seeded = !!mutation.data?.is_seeded
     return shell(
       <div className="bg-white rounded-xl shadow p-6">
-        <p className="text-green-600 font-semibold mb-2">Password reset!</p>
-        <p className="text-sm text-muted-foreground mb-4">You can now sign in with your new password.</p>
+        <p className="text-green-600 font-semibold mb-2">{seeded ? 'Flow complete' : 'Password reset!'}</p>
+        <p className="text-sm text-muted-foreground mb-4">
+          {seeded
+            ? "That is the end of the password reset flow. Since this is a demo account, the password is still sunway123 so other testers can login with the same credentials."
+            : 'You can now sign in with your new password.'}
+        </p>
         <button
           onClick={() => navigate('/login')}
           className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -91,6 +99,17 @@ export default function ResetPasswordPage() {
 
   return shell(
     <div className="bg-white rounded-xl shadow p-6">
+      {isSeeded && (
+        <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2.5 mb-4">
+          <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This is a demo account, so its password cannot actually be reset and will stay as {' '}
+            <span className="font-semibold text-foreground">sunway123</span>. 
+            You may still go through the password reset flow to test it out, but the password will not actually change so other testers can login with the same credentials.
+          </p>
+        </div>
+      )}
+
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
         <div className="relative">

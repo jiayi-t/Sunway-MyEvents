@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
-import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, Globe, Link, BookOpen, Mail, GripVertical, Pencil, ChevronRight, Info } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 import { useOrganizerProfileQuery, type SocialLinks } from '../../api/queries'
 import { useUpdateOrganizerProfileMutation } from '../../api/mutations'
@@ -92,6 +92,9 @@ export default function OrganizerEditProfilePage() {
 
   const { data: profile, isLoading } = useOrganizerProfileQuery()
   const updateMutation = useUpdateOrganizerProfileMutation()
+
+  // set at login for the seeded demo organizer accounts listed on the organizer login page
+  const isSeeded = !!user?.is_seeded
 
   const [name, setName] = useState('')
   const [sunwayId, setSunwayId] = useState('')
@@ -293,8 +296,16 @@ export default function OrganizerEditProfilePage() {
             </div>
 
             <div className="bg-card rounded-xl shadow">
+              {isSeeded && (
+                <div className="flex items-start gap-2 px-4 py-2.5 bg-primary/5 border-b border-primary/20 rounded-t-xl">
+                  <Info className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Demo accounts cannot change their username so other testers can login with the same credentials.
+                  </p>
+                </div>
+              )}
               {/* Username */}
-              <div className="flex items-center border-b border-border rounded-t-xl">
+              <div className={`flex items-center border-b border-border ${isSeeded ? '' : 'rounded-t-xl'}`}>
                 <span className="w-36 pl-4 pr-1 py-3 text-sm font-semibold text-foreground flex-shrink-0">Username</span>
                 <div className="pl-1 pr-4 py-2 flex-1 min-w-0">
                   <input
@@ -303,7 +314,8 @@ export default function OrganizerEditProfilePage() {
                     onChange={e => setSunwayId(e.target.value)}
                     placeholder="3 - 8 characters"
                     maxLength={8}
-                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                    disabled={isSeeded}
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary disabled:bg-surface disabled:text-muted-foreground disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
