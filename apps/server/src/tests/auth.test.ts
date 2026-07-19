@@ -42,7 +42,8 @@ describe('POST /api/auth/login', () => {
 
   it('returns 400 for non-existent user', async () => {
     const res = await request(app).post('/api/auth/login').send({
-      sunwayId: '12345678',
+      // not 8 digits, will not be auto-provisioned as a student account
+      sunwayId: 'nonexistent',
       password: 'testing123',
     })
     expect(res.status).toBe(400)
