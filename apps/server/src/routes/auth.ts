@@ -10,6 +10,7 @@ import {
   loginLimiter, loginAccountLimiter, forgotPasswordLimiter, registerLimiter, resetPasswordLimiter,
 } from '../middleware/rate-limit'
 import { isSeededOrganizer } from '../database/seeded-accounts'
+import { attachUatPastEvent, uatPastEventEnabled } from '../database/uat'
 import { sendEmail, forgotPasswordEmail } from '../email'
 
 const router = Router()
@@ -69,6 +70,11 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password)
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid credentials' })
+    }
+
+    // adds a checked-in past event to student and public accounts so they can test the feedback flow
+    if (uatPastEventEnabled() && (user.role === 'student' || user.role === 'public')) {
+      await attachUatPastEvent(user.id)
     }
 
     const token = jwt.sign(

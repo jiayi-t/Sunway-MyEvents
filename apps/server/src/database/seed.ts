@@ -711,6 +711,127 @@ const seed = async () => {
       image_url: '/Autopilot Asia Hackathon Poster.jpg',
       cancelled: false,
     },
+    // UAT filler - one upcoming event per remaining seeded organizer, spread across every category and a mix of free/paid 
+    {
+      organizer: 'scc',
+      name: 'SCC Test Event',
+      description: 'A test event for UAT. Covers the Cultural category with free admission.',
+      date: '2026-09-02T18:00:00',
+      start_time: '2026-09-02T18:00:00',
+      end_time: '2026-09-02T20:00:00',
+      venue: 'Sir Jeffrey Cheah Hall, Sunway College',
+      pricing: '0',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Cultural',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'susc',
+      name: 'SUSC Test Event',
+      description: 'A test event for UAT. Covers the Entertainment category with paid admission.',
+      date: '2026-09-05T19:00:00',
+      start_time: '2026-09-05T19:00:00',
+      end_time: '2026-09-05T21:30:00',
+      venue: 'Rooftop Terrace, Sunway College',
+      pricing: '15',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Entertainment',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'ssc',
+      name: 'SSC Test Event',
+      description: 'A test event for UAT. Covers the Sports category with paid admission.',
+      date: '2026-09-09T17:00:00',
+      start_time: '2026-09-09T17:00:00',
+      end_time: '2026-09-09T19:00:00',
+      venue: 'Sports Complex, Sunway University',
+      pricing: '5',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Sports',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'sgdc',
+      name: 'SGDC Test Event',
+      description: 'A test event for UAT. Covers the Arts category with free admission.',
+      date: '2026-09-12T18:30:00',
+      start_time: '2026-09-12T18:30:00',
+      end_time: '2026-09-12T20:30:00',
+      venue: 'iLabs, Sunway University',
+      pricing: '0',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Arts',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'saibc',
+      name: 'SAIBC Test Event',
+      description: 'A test event for UAT. Covers the Academics category with paid admission.',
+      date: '2026-09-16T19:00:00',
+      start_time: '2026-09-16T19:00:00',
+      end_time: '2026-09-16T21:00:00',
+      venue: 'Lecture Theatre 3, Sunway University',
+      pricing: '20',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Academics',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'sbcc',
+      name: 'SBCC Test Event',
+      description: 'A test event for UAT. Covers the Social category with free admission.',
+      date: '2026-09-19T18:00:00',
+      start_time: '2026-09-19T18:00:00',
+      end_time: '2026-09-19T20:30:00',
+      venue: 'Lecture Theatre 1, Sunway University',
+      pricing: '0',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Social',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'sms',
+      name: 'SMS Test Event',
+      description: 'A test event for UAT. Covers the Entertainment category with paid admission.',
+      date: '2026-09-23T19:30:00',
+      start_time: '2026-09-23T19:30:00',
+      end_time: '2026-09-23T21:30:00',
+      venue: 'JC1, Sunway University',
+      pricing: '10',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Entertainment',
+      image_url: null,
+      cancelled: false,
+    },
+    {
+      organizer: 'stc',
+      name: 'STC Test Event',
+      description: 'A test event for UAT. Covers the Academics category with free admission.',
+      date: '2026-09-26T18:00:00',
+      start_time: '2026-09-26T18:00:00',
+      end_time: '2026-09-26T20:00:00',
+      venue: 'Lecture Theatre 6, Sunway University',
+      pricing: '0',
+      capacity: null,
+      registration_deadline: null,
+      category: 'Academics',
+      image_url: null,
+      cancelled: false,
+    },
   ]
 
   for (const ev of allEvents) {
@@ -799,13 +920,11 @@ const seed = async () => {
     if (i === 0) {
       // FASS Student 1 (Year 2)
       seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: new Date('2025-07-01T18:25:00') })
-      seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 8: RE:VELATION Grand Finale"], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Open Mic'], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Moru Doll Companion Workshop'], checked_in_at: null })
     } else {
       // FASS Student 2 (Year 3)
       seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: null })
-      seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 8: RE:VELATION Grand Finale"], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Jam Session'], checked_in_at: new Date('2026-03-25T19:25:00') })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Tile & Style'], checked_in_at: null })
     }
@@ -825,6 +944,18 @@ const seed = async () => {
     seedRegistrations.push({ user_id: groupD, event_id: eventMap['From Data to Decisions: How AI Agents Are Reshaping Industries'], checked_in_at: new Date('2026-05-15T17:55:00') })
     seedRegistrations.push({ user_id: groupD, event_id: eventMap['Gaming Law: Know Your Rights?'], checked_in_at: null })
     seedRegistrations.push({ user_id: groupD, event_id: eventMap['Freshman Fiesta: 2.0: Golden Groves'], checked_in_at: null })
+  }
+
+  // UAT: all seeded students are registered for SGT S8
+  const sgtS8Id = eventMap["Sunway's Got Talent Season 8: RE:VELATION Grand Finale"]
+  if (sgtS8Id) {
+    const studentIds = seedUsers
+      .filter(u => u.role === 'student')
+      .map(u => idMap[u.sunway_id])
+      .filter(Boolean) as number[]
+    for (const uid of studentIds) {
+      seedRegistrations.push({ user_id: uid, event_id: sgtS8Id, checked_in_at: new Date('2026-07-07T18:15:00') })
+    }
   }
 
   for (const reg of seedRegistrations) {
