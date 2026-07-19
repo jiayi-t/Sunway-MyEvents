@@ -192,7 +192,7 @@ export default function StudentEventDetailsPage() {
             <h3 className="font-semibold text-foreground text-sm mb-2">
               About this event:
             </h3>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4 whitespace-pre-line">
               {typedEvent.description || 'No description provided.'}
             </p>
 
