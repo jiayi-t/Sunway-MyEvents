@@ -46,7 +46,7 @@ export default function StudentOnboardingPage() {
       return
     }
     if (form.mobile_number && !MOBILE_RE.test(form.mobile_number)) {
-      setError('Enter a valid mobile number (e.g. +6012-345 6789)')
+      setError('Enter a valid mobile number (e.g. +60 12-345 6789)')
       return
     }
     if (form.personal_email && !EMAIL_RE.test(form.personal_email.trim())) {

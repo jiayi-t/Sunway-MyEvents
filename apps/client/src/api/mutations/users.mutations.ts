@@ -30,6 +30,17 @@ export function useUpdateStudentProfileImageMutation() {
   })
 }
 
+export function useUpdateProfileMobileMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (mobile_number: string | null) =>
+      api.put('/auth/profile', { mobile_number }).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.profile })
+    },
+  })
+}
+
 export function useUpdateOrganizerProfileMutation() {
   const queryClient = useQueryClient()
   return useMutation({

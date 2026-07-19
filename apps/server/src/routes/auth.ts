@@ -14,6 +14,7 @@ import { sendEmail, forgotPasswordEmail } from '../email'
 const router = Router()
 
 const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '1d') as jwt.SignOptions['expiresIn']
+const MOBILE_RE = /^(?=.*\d)[\d+\s-]+$/
 
 // POST /api/auth/login
 router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
@@ -170,6 +171,10 @@ router.post('/register/public', registerLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 8 characters' })
   }
 
+  if (!MOBILE_RE.test(String(mobile_number))) {
+    return res.status(400).json({ error: 'Enter a valid mobile number (e.g. +60 12-345 6789)' })
+  }
+
   try {
     const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email))
     if (existing.length > 0) {
@@ -300,13 +305,31 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
 
 // PUT /api/auth/profile
 router.put('/profile', authenticate, async (req: AuthRequest, res) => {
-  const { image_url } = req.body
+  const { image_url, mobile_number } = req.body
+
   if (image_url !== undefined && image_url !== null && typeof image_url !== 'string') {
     return res.status(400).json({ error: 'Invalid image_url' })
   }
+
+  if (mobile_number !== undefined && mobile_number !== null && typeof mobile_number !== 'string') {
+    return res.status(400).json({ error: 'Invalid mobile_number' })
+  }
+
+  const cleanedMobile = typeof mobile_number === 'string' && mobile_number.trim() ? mobile_number.trim() : null
+  if (mobile_number !== undefined && cleanedMobile && !MOBILE_RE.test(cleanedMobile)) {
+    return res.status(400).json({ error: 'Enter a valid mobile number (e.g. +60 12-345 6789)' })
+  }
+
   try {
-    await db.update(users).set({ image_url: image_url ?? null }).where(eq(users.id, req.user!.id))
-    const [updated] = await db.select({ image_url: users.image_url }).from(users).where(eq(users.id, req.user!.id))
+    const updates: Record<string, unknown> = {}
+    if (image_url !== undefined) updates.image_url = image_url ?? null
+    if (mobile_number !== undefined) updates.mobile_number = cleanedMobile
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No fields to update' })
+    }
+
+    await db.update(users).set(updates).where(eq(users.id, req.user!.id))
+    const [updated] = await db.select({ image_url: users.image_url, mobile_number: users.mobile_number }).from(users).where(eq(users.id, req.user!.id))
     res.json(updated)
   } catch {
     res.status(500).json({ error: 'Server error' })

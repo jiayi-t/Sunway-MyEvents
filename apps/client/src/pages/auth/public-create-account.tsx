@@ -6,6 +6,9 @@ import LoginFooter from '../../components/login-footer'
 
 type Alumni = 'yes' | 'no' | ''
 
+// phone number: digits, spaces, + and - allowed, must contain at least one digit
+const MOBILE_RE = /^(?=.*\d)[\d+\s-]+$/
+
 export default function PublicCreateAccount() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
@@ -28,6 +31,10 @@ export default function PublicCreateAccount() {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setError('Please enter a valid email address')
+      return
+    }
+    if (!MOBILE_RE.test(form.mobileNumber)) {
+      setError('Enter a valid mobile number (e.g. +60 12-345 6789)')
       return
     }
     if (form.password.length < 8) {
@@ -113,8 +120,8 @@ export default function PublicCreateAccount() {
             <input
               type="tel"
               value={form.mobileNumber}
-              onChange={e => setForm({ ...form, mobileNumber: e.target.value })}
-              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary ${submitted && !form.mobileNumber.trim() ? 'border-red-400' : 'border-gray-300'}`}
+              onChange={e => setForm({ ...form, mobileNumber: e.target.value.replace(/[^\d+\s-]/g, '') })}
+              className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary ${submitted && (!form.mobileNumber.trim() || !MOBILE_RE.test(form.mobileNumber)) ? 'border-red-400' : 'border-gray-300'}`}
             />
           </div>
 
