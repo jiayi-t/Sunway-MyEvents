@@ -61,6 +61,11 @@ export default function HomePage() {
   const { data: featuredData, isLoading } = useFeaturedEventsQuery()
   const featuredEvents = (featuredData ?? []) as Event[]
   const featured = featuredEvents[featuredIndex]
+  const getFeaturedAt = (offset: number) => {
+    if (featuredEvents.length === 0) return undefined
+    const idx = (featuredIndex + offset + featuredEvents.length) % featuredEvents.length
+    return featuredEvents[idx]
+  }
 
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(!!user)
   const recommendations = (recommendationsData ?? []) as Event[]
@@ -98,14 +103,15 @@ export default function HomePage() {
   return (
     <div className="bg-surface">
 
-      {/* Hero Section */}
-      <div className="bg-primary px-4 pt-4 pb-3">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-white font-bold text-xl mb-3">
+      <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-primary text-white lg:min-h-[calc(100vh-3.5rem)]">
+        {/* Hero Section */}
+        <div className="px-4 pt-4 pb-3 lg:pt-3 lg:pb-2">
+          <div className="max-w-3xl lg:max-w-4xl mx-auto text-center">
+          <h1 className="text-white font-bold text-xl mb-3 lg:mb-2">
             Explore <span className="text-accent">#TheMostHappeningCampus</span>
           </h1>
 
-          <div className="mb-2">
+          <div className="mb-2 lg:mb-1">
             <div className="w-full max-w-3xl mx-auto flex items-center bg-white rounded-full shadow px-3 py-2">
               <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" aria-hidden="true" />
               <input
@@ -138,89 +144,123 @@ export default function HomePage() {
             </span>
           </div>
         </div>
-      </div>
+        </div>
 
-      {/* Featured Events */}
-      <div className="px-10 pt-3 pb-10 bg-primary text-white">
-        <h2 className="font-bold text-white mb-2 text-center">Featured Events</h2>
+        {/* Featured Events */}
+        <div className="px-10 lg:px-8 pt-3 pb-10 lg:pt-6 lg:pb-8">
+        <h2 className="font-bold text-white mb-2 lg:mb-3 text-center">Featured Events</h2>
 
         {isLoading ? (
           <FeaturedEventSkeleton />
         ) : featuredEvents.length > 0 && featured ? (
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl lg:max-w-5xl mx-auto">
             <div
-              className="relative select-none"
+              className="relative select-none lg:flex lg:items-center lg:justify-center lg:gap-[clamp(2rem,4vh,3.5rem)]"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div
-                onClick={() => navigate(`/events/${featured.id}`)}
-                className="cursor-pointer rounded-xl overflow-hidden shadow-md bg-white"
-              >
-                <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
-                  {featured.image_url
-                    ? <img 
-                        src={toImageUrl(featured.image_url)} 
-                        alt={featured.name} 
-                        className="absolute inset-0 w-full h-full object-cover object-center" 
+              {/* Desktop side preview: previous */}
+              {featuredEvents.length > 1 && (
+                <div className="hidden lg:flex lg:flex-col lg:w-[clamp(7rem,17vh,14rem)] lg:flex-shrink-0 pointer-events-none opacity-35 grayscale saturate-0 brightness-75">
+                  {getFeaturedAt(-1)?.image_url
+                    ? <img
+                        src={toImageUrl(getFeaturedAt(-1)?.image_url)}
+                        alt={getFeaturedAt(-1)?.name ?? 'Previous featured event'}
+                        className="w-full aspect-[4/5] rounded-xl object-cover object-center"
                       />
-                    : <div className="absolute inset-0 bg-surface flex items-center justify-center"><ImageOff className="w-8 h-8 text-border" /></div>
+                    : <div className="w-full aspect-[4/5] rounded-xl bg-surface flex items-center justify-center"><ImageOff className="w-7 h-7 text-border" /></div>
                   }
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
-                      {featured.category || 'General'}
-                    </span>
-                    <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
-                      {featured.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
-                    </span>
-                    <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
-                      {Number(featured.pricing) === 0 ? 'Free' : 'Paid'}
-                    </span>
+                  <p className="text-xs text-white/80 mt-2 line-clamp-2">{getFeaturedAt(-1)?.name ?? ''}</p>
+                </div>
+              )}
+
+              {/* Center focused card */}
+              <div className="relative z-10 mx-auto w-full lg:w-fit lg:flex-shrink-0">
+                <div
+                  onClick={() => navigate(`/events/${featured.id}`)}
+                  className="cursor-pointer rounded-xl overflow-hidden shadow-md bg-white"
+                >
+                  <div className="relative w-full aspect-[4/5] lg:w-auto lg:aspect-[4/5] lg:h-[clamp(12rem,calc(100vh-29rem),38rem)]">
+                    {featured.image_url
+                      ? <img
+                          src={toImageUrl(featured.image_url)}
+                          alt={featured.name}
+                          className="absolute inset-0 w-full h-full object-cover object-center"
+                        />
+                      : <div className="absolute inset-0 bg-surface flex items-center justify-center"><ImageOff className="w-8 h-8 text-border" /></div>
+                    }
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                        {featured.category || 'General'}
+                      </span>
+                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                        {featured.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+                      </span>
+                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                        {Number(featured.pricing) === 0 ? 'Free' : 'Paid'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4">
+                    <h3 className="font-bold text-foreground text-lg leading-tight mb-1 line-clamp-2 min-h-[2.8rem]">
+                      {featured.name}
+                    </h3>
+                    <p className="text-accent text-xs mb-2">
+                      {featured.organizer_name ?? 'Organizer'}
+                    </p>
+                    <div className="flex flex-col gap-2 text-muted-foreground text-sm">
+                      <div className="inline-flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-black flex-shrink-0" />
+                        <span>{formatDate(featured.date)}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-black flex-shrink-0" />
+                        <span>{formatTimeRange(featured.start_time, featured.end_time)}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-black flex-shrink-0" />
+                        <span>{featured.venue}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-4">
-                  <h3 className="font-bold text-foreground text-lg leading-tight mb-1 line-clamp-2 min-h-[2.8rem]">
-                    {featured.name}
-                  </h3>
-                  <p className="text-accent text-xs mb-2">
-                    {featured.organizer_name ?? 'Organizer'}
-                  </p>
-                  <div className="flex flex-col gap-2 text-muted-foreground text-sm">
-                    <div className="inline-flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-black flex-shrink-0" />
-                      <span>{formatDate(featured.date)}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-black flex-shrink-0" />
-                      <span>{formatTimeRange(featured.start_time, featured.end_time)}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-black flex-shrink-0" />
-                      <span>{featured.venue}</span>
-                    </div>
-                  </div>
-                </div>
+                {featuredEvents.length > 1 && (
+                  <>
+                    <button
+                      onClick={e => { e.stopPropagation(); prevFeatured() }}
+                      className="absolute -left-9 lg:-left-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
+                      aria-label="Previous event"
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); nextFeatured() }}
+                      className="absolute -right-9 lg:-right-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
+                      aria-label="Next event"
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Desktop side preview: next */}
               {featuredEvents.length > 1 && (
-                <>
-                  <button
-                    onClick={e => { e.stopPropagation(); prevFeatured() }}
-                    className="absolute -left-9 top-[38%] -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
-                    aria-label="Previous event"
-                  >
-                    <ChevronLeft className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); nextFeatured() }}
-                    className="absolute -right-9 top-[38%] -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
-                    aria-label="Next event"
-                  >
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
-                </>
+                <div className="hidden lg:flex lg:flex-col lg:w-[clamp(7rem,17vh,14rem)] lg:flex-shrink-0 pointer-events-none opacity-35 grayscale saturate-0 brightness-75">
+                  {getFeaturedAt(1)?.image_url
+                    ? <img
+                        src={toImageUrl(getFeaturedAt(1)?.image_url)}
+                        alt={getFeaturedAt(1)?.name ?? 'Next featured event'}
+                        className="w-full aspect-[4/5] rounded-xl object-cover object-center"
+                      />
+                    : <div className="w-full aspect-[4/5] rounded-xl bg-surface flex items-center justify-center"><ImageOff className="w-7 h-7 text-border" /></div>
+                  }
+                  <p className="text-xs text-white/80 mt-2 line-clamp-2">{getFeaturedAt(1)?.name ?? ''}</p>
+                </div>
               )}
+
             </div>
 
             {featuredEvents.length > 1 && (
@@ -243,6 +283,7 @@ export default function HomePage() {
         ) : (
           <p className="text-blue-100 text-sm text-center">No upcoming events</p>
         )}
+        </div>
       </div>
 
       {/* For You */}
