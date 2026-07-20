@@ -1012,6 +1012,7 @@ const seed = async () => {
       rating: 4,
       created_at: new Date('2026-07-08T18:05:00'),
       answers: {
+        q_source: ['eLearn announcements', 'iMail blasting'],
         q_suggestions: 'Great event with diverse talent. The sound quality was better than last year. Only issue was the queue at entry was long.',
       },
     },
@@ -1021,6 +1022,7 @@ const seed = async () => {
       rating: 5,
       created_at: new Date('2026-07-08T18:10:00'),
       answers: {
+        q_source: ['Campus booths', 'WhatsApp'],
         q_suggestions: 'Fantastic show! The variety of performances was impressive - singing, dancing, comedy, all top-notch. Definitely coming again next year.',
       },
     },
@@ -1030,6 +1032,7 @@ const seed = async () => {
       rating: 5,
       created_at: new Date('2026-07-08T18:15:00'),
       answers: {
+        q_source: ['Word of mouth', 'Social media'],
         q_suggestions: 'Amazing performances from all finalists! The energy was electric. Venue was well-organized and committee were helpful.',
       },
     },
@@ -1039,6 +1042,7 @@ const seed = async () => {
       rating: 4,
       created_at: new Date('2026-07-08T18:20:00'),
       answers: {
+        q_source: ['Physical posters'],
         q_suggestions: 'Really enjoyed the show. The production value was high. Some acts could have been shorter to keep the pace up.',
       },
     },
@@ -1048,6 +1052,7 @@ const seed = async () => {
       rating: 5,
       created_at: new Date('2026-07-08T18:25:00'),
       answers: {
+        q_source: ['Social media'],
         q_suggestions: 'One of the best events I attended this year! The talent showcase was incredible. Great atmosphere and community spirit.',
       },
     },
@@ -1057,6 +1062,7 @@ const seed = async () => {
       rating: 4,
       created_at: new Date('2026-07-08T18:30:00'),
       answers: {
+        q_source: ['Campus booths', 'iMail blasting'],
         q_suggestions: 'Enjoyed the performances. Would suggest having more interactive segments between acts to keep audience engaged.',
       },
     },
