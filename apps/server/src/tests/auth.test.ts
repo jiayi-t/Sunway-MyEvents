@@ -1,16 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import app from '../app'
 import { db } from '../db'
-import { users } from '../database/schema'
+import { users, sessions, registrations } from '../database/schema'
 
 const TEST_STUDENT_ID = '26062106'
 const TEST_ORG_ID = 'testorg'
 
+async function cleanupTestData() {
+  const testUsers = await db.select({ id: users.id }).from(users)
+    .where(inArray(users.sunway_id, [TEST_STUDENT_ID, TEST_ORG_ID]))
+  if (testUsers.length > 0) {
+    const userIds = testUsers.map(u => u.id)
+    await db.delete(sessions).where(inArray(sessions.user_id, userIds))
+    // login (tested below) may attach a UAT past-event registration when UAT_SEED_PAST_EVENT=true locally
+    await db.delete(registrations).where(inArray(registrations.user_id, userIds))
+  }
+  await db.delete(users).where(inArray(users.sunway_id, [TEST_STUDENT_ID, TEST_ORG_ID]))
+}
+
 beforeAll(async () => {
-  await db.delete(users).where(eq(users.sunway_id, TEST_STUDENT_ID))
+  await cleanupTestData()
   await db.insert(users).values({
     sunway_id: TEST_STUDENT_ID,
     email: 'test.student@test.local',
@@ -21,8 +33,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await db.delete(users).where(eq(users.sunway_id, TEST_STUDENT_ID))
-  await db.delete(users).where(eq(users.sunway_id, TEST_ORG_ID))
+  await cleanupTestData()
 })
 
 describe('POST /api/auth/login', () => {
@@ -50,13 +61,13 @@ describe('POST /api/auth/login', () => {
     expect(res.body.error).toBe('Invalid credentials')
   })
 
-  it('returns 200 with token for valid credentials', async () => {
+  it('returns 200 with a session cookie for valid credentials', async () => {
     const res = await request(app).post('/api/auth/login').send({
       sunwayId: TEST_STUDENT_ID,
       password: 'testing123',
     })
     expect(res.status).toBe(200)
-    expect(res.body).toHaveProperty('token')
+    expect(res.headers['set-cookie']?.[0]).toMatch(/^session_id=/)
     expect(res.body.user.sunway_id).toBe(TEST_STUDENT_ID)
   })
 })

@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { eq, inArray } from 'drizzle-orm'
 import app from '../app'
 import { db } from '../db'
-import { users, events, registrations } from '../database/schema'
+import { users, events, registrations, sessions } from '../database/schema'
+import { createSession } from '../utils/sessions'
+import { SESSION_COOKIE } from '../utils/cookies'
 
 const TEST_ORG_SUNWAY_ID = 'orgtest'
 const TEST_STU_SUNWAY_ID = '26060621'
 
-let organizerToken: string
-let studentToken: string
+let organizerCookie: string
+let studentCookie: string
 let organizerId: number
 
 const VALID_EVENT = {
@@ -34,6 +35,11 @@ async function cleanupTestData() {
     }
     await db.delete(events).where(eq(events.organizer_id, existingOrg.id))
   }
+  const testUsers = await db.select({ id: users.id }).from(users)
+    .where(inArray(users.sunway_id, [TEST_ORG_SUNWAY_ID, TEST_STU_SUNWAY_ID]))
+  if (testUsers.length > 0) {
+    await db.delete(sessions).where(inArray(sessions.user_id, testUsers.map(u => u.id)))
+  }
   await db.delete(users).where(eq(users.sunway_id, TEST_ORG_SUNWAY_ID))
   await db.delete(users).where(eq(users.sunway_id, TEST_STU_SUNWAY_ID))
 }
@@ -51,11 +57,8 @@ beforeAll(async () => {
   }).returning({ id: users.id, sunway_id: users.sunway_id, role: users.role })
 
   organizerId = org.id
-  organizerToken = jwt.sign(
-    { id: org.id, sunway_id: org.sunway_id, role: org.role },
-    process.env.JWT_SECRET!,
-    { expiresIn: '1h' }
-  )
+  const { sessionId: orgSessionId } = await createSession(org.id)
+  organizerCookie = `${SESSION_COOKIE}=${orgSessionId}`
 
   const [stu] = await db.insert(users).values({
     sunway_id: TEST_STU_SUNWAY_ID,
@@ -65,11 +68,8 @@ beforeAll(async () => {
     role: 'student',
   }).returning({ id: users.id, sunway_id: users.sunway_id, role: users.role })
 
-  studentToken = jwt.sign(
-    { id: stu.id, sunway_id: stu.sunway_id, role: stu.role },
-    process.env.JWT_SECRET!,
-    { expiresIn: '1h' }
-  )
+  const { sessionId: stuSessionId } = await createSession(stu.id)
+  studentCookie = `${SESSION_COOKIE}=${stuSessionId}`
 })
 
 afterAll(async () => {
@@ -93,7 +93,7 @@ describe('POST /api/events', () => {
   it('returns 403 for student token', async () => {
     const res = await request(app)
       .post('/api/events')
-      .set('Authorization', `Bearer ${studentToken}`)
+      .set('Cookie', studentCookie)
       .send(VALID_EVENT)
     expect(res.status).toBe(403)
   })
@@ -101,7 +101,7 @@ describe('POST /api/events', () => {
   it('returns 400 when required fields are missing', async () => {
     const res = await request(app)
       .post('/api/events')
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
       .send({ name: 'No dates' })
     expect(res.status).toBe(400)
   })
@@ -109,7 +109,7 @@ describe('POST /api/events', () => {
   it('returns 201 on successful creation', async () => {
     const res = await request(app)
       .post('/api/events')
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
       .send(VALID_EVENT)
     expect(res.status).toBe(201)
     expect(res.body.name).toBe(VALID_EVENT.name)
@@ -138,7 +138,7 @@ describe('POST /api/events/:id/register', () => {
 
     const res = await request(app)
       .post(`/api/events/${cancelled.id}/register`)
-      .set('Authorization', `Bearer ${studentToken}`)
+      .set('Cookie', studentCookie)
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('This event has been cancelled')
@@ -165,7 +165,7 @@ describe('POST /api/events/:id/register', () => {
 
     const res = await request(app)
       .post(`/api/events/${soldOut.id}/register`)
-      .set('Authorization', `Bearer ${studentToken}`)
+      .set('Cookie', studentCookie)
 
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('This event is sold out')

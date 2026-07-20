@@ -1,19 +1,20 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest'
 import request from 'supertest'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { eq, inArray } from 'drizzle-orm'
 import app from '../app'
 import { db } from '../db'
-import { users, events, feedback, feedback_forms, feedback_ai_summaries } from '../database/schema'
+import { users, events, feedback, feedback_forms, feedback_ai_summaries, sessions } from '../database/schema'
+import { createSession } from '../utils/sessions'
+import { SESSION_COOKIE } from '../utils/cookies'
 
 const TEST_ORG_ID = 'TAISORG1'
 const TEST_ORG2_ID = 'TAISORG2'
 const TEST_STU_IDS = ['TAISSTU1', 'TAISSTU2', 'TAISSTU3', 'TAISSTU4']
 
-let organizerToken: string
-let organizer2Token: string
-let studentToken: string
+let organizerCookie: string
+let organizer2Cookie: string
+let studentCookie: string
 // 3 responses on one open-ended question
 let eventId: number      
 // 3 open-ended questions answered by 1 user
@@ -41,6 +42,7 @@ async function cleanupTestData() {
     .where(inArray(users.sunway_id, [TEST_ORG_ID, TEST_ORG2_ID, ...TEST_STU_IDS]))
   if (testUsers.length > 0) {
     const userIds = testUsers.map(u => u.id)
+    await db.delete(sessions).where(inArray(sessions.user_id, userIds))
     const orgEvents = await db.select({ id: events.id }).from(events)
       .where(inArray(events.organizer_id, userIds))
     if (orgEvents.length > 0) {
@@ -58,27 +60,29 @@ beforeAll(async () => {
   await cleanupTestData()
 
   const password = await bcrypt.hash('testing123', 10)
-  const sign = (u: { id: number; sunway_id: string; role: string | null }) =>
-    jwt.sign({ id: u.id, sunway_id: u.sunway_id, role: u.role }, process.env.JWT_SECRET!, { expiresIn: '1h' })
+  const cookieFor = async (userId: number) => {
+    const { sessionId } = await createSession(userId)
+    return `${SESSION_COOKIE}=${sessionId}`
+  }
 
   const [org] = await db.insert(users).values({
     sunway_id: TEST_ORG_ID, email: 'org@aisummary.test.local', password,
     name: 'AI Summary Test Organizer', role: 'organizer', category: 'Sports',
   }).returning({ id: users.id, sunway_id: users.sunway_id, role: users.role })
-  organizerToken = sign(org)
+  organizerCookie = await cookieFor(org.id)
 
   const [org2] = await db.insert(users).values({
     sunway_id: TEST_ORG2_ID, email: 'org2@aisummary.test.local', password,
     name: 'AI Summary Test Organizer 2', role: 'organizer', category: 'Sports',
   }).returning({ id: users.id, sunway_id: users.sunway_id, role: users.role })
-  organizer2Token = sign(org2)
+  organizer2Cookie = await cookieFor(org2.id)
 
   const students = await db.insert(users).values(TEST_STU_IDS.map((sid, i) => ({
     sunway_id: sid, email: `stu${i}@aisummary.test.local`, password,
     name: `AI Summary Test Student ${i}`, role: 'student',
   }))).returning({ id: users.id, sunway_id: users.sunway_id, role: users.role })
   studentIds = students.map(s => s.id)
-  studentToken = sign(students[0])
+  studentCookie = await cookieFor(students[0].id)
 
   const eventValues = {
     date: new Date('2026-07-11'),
@@ -133,21 +137,21 @@ describe('GET /api/analytics/events/:id/ai-summary auth', () => {
   it('returns 403 for student token', async () => {
     const res = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${studentToken}`)
+      .set('Cookie', studentCookie)
     expect(res.status).toBe(403)
   })
 
   it('returns 404 for a nonexistent event', async () => {
     const res = await request(app)
       .get('/api/analytics/events/99999999/ai-summary')
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(res.status).toBe(404)
   })
 
   it("returns 403 for another organizer's event", async () => {
     const res = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizer2Token}`)
+      .set('Cookie', organizer2Cookie)
     expect(res.status).toBe(403)
   })
 })
@@ -157,7 +161,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
     delete process.env.GEMINI_API_KEY
     const res = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'not_configured' })
   })
@@ -169,7 +173,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
 
     const res = await request(app)
       .get(`/api/analytics/events/${sparseEventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'not_enough_responses' })
     expect(fetchMock).not.toHaveBeenCalled()
@@ -181,7 +185,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
 
     const res = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'generation_failed' })
   })
@@ -196,7 +200,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
     // first call generates and persists
     const first = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(first.status).toBe(200)
     expect(first.body.available).toBe(true)
     expect(first.body.summary).toEqual(FAKE_SUMMARY)
@@ -211,7 +215,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
     // second call is a cache hit, no new Gemini call, same generated_at
     const second = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(second.status).toBe(200)
     expect(second.body.generated_at).toBe(first.body.generated_at)
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -223,7 +227,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
     })
     const third = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(third.status).toBe(200)
     expect(third.body.available).toBe(true)
     expect(third.body.feedback_count).toBe(4)
@@ -242,7 +246,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
 
     const res = await request(app)
       .get(`/api/analytics/events/${eventId}/ai-summary`)
-      .set('Authorization', `Bearer ${organizerToken}`)
+      .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(res.body.available).toBe(true)
