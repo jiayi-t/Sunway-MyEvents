@@ -65,6 +65,8 @@ router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
         // final score: 70% popularity, 30% recency
         return { ...e, _score: popularity * 0.7 + recency * 0.3 }
       })
+      // filter out sold out events (capacity set and registration count >= capacity)
+      .filter(e => !e.capacity || Number(e.registration_count) < e.capacity)
       // sort events by score in descending order, take top 5
       .sort((a, b) => b._score - a._score)
       .slice(0, 5)

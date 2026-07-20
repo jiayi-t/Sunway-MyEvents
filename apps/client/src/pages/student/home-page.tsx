@@ -17,6 +17,7 @@ interface Event {
   category: string
   audience: string
   pricing: number
+  capacity: number | null
   image_url: string
   organizer_name?: string
   cancelled_at?: string | null

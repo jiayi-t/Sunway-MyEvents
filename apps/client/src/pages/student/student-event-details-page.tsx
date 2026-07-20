@@ -24,6 +24,7 @@ interface Event {
   organizer_id: number
   organizer_name: string
   organizer_image_url?: string
+  registered_count: number
   cancelled_at?: string | null
 }
 
@@ -290,6 +291,7 @@ export default function StudentEventDetailsPage() {
                 const deadlinePassed = typedEvent.registration_deadline
                   ? new Date() > new Date(typedEvent.registration_deadline)
                   : false
+                const isSoldOut = typedEvent.capacity && typedEvent.registered_count >= typedEvent.capacity
                 if (registered) {
                   return (
                     <button
@@ -297,6 +299,16 @@ export default function StudentEventDetailsPage() {
                       className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default"
                     >
                       Registered
+                    </button>
+                  )
+                }
+                if (isSoldOut) {
+                  return (
+                    <button
+                      disabled
+                      className="w-full py-3 rounded-full text-white font-semibold text-sm bg-gray-400 cursor-not-allowed"
+                    >
+                      Sold Out
                     </button>
                   )
                 }
