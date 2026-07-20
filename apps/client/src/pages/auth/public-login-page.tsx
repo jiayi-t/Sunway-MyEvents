@@ -15,7 +15,7 @@ export default function PublicLoginPage() {
     setError('')
     setLoading(true)
     try {
-      const payload = { sunwayId: form.email, password: form.password }
+      const payload = { sunwayId: form.email, password: form.password, role: 'public' }
       const res = await api.post('/auth/login', payload)
       login(res.data.user)
       const interests = res.data.user.interests

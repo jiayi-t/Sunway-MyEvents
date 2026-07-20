@@ -62,7 +62,7 @@ export default function OrganizerLoginPage() {
     setError('')
     setLoading(true)
     try {
-      const payload = { sunwayId: form.sunwayId, password: form.password }
+      const payload = { sunwayId: form.sunwayId, password: form.password, role: 'organizer' }
       const res = await api.post('/auth/login', payload)
       login(res.data.user)
       navigate('/organizer/dashboard')

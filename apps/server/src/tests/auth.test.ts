@@ -46,6 +46,7 @@ describe('POST /api/auth/login', () => {
     const res = await request(app).post('/api/auth/login').send({
       sunwayId: TEST_STUDENT_ID,
       password: 'wrongpassword',
+      role: 'student',
     })
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('Invalid credentials')
@@ -56,6 +57,7 @@ describe('POST /api/auth/login', () => {
       // not 8 digits, will not be auto-provisioned as a student account
       sunwayId: 'nonexistent',
       password: 'testing123',
+      role: 'student',
     })
     expect(res.status).toBe(400)
     expect(res.body.error).toBe('Invalid credentials')
@@ -65,6 +67,7 @@ describe('POST /api/auth/login', () => {
     const res = await request(app).post('/api/auth/login').send({
       sunwayId: TEST_STUDENT_ID,
       password: 'testing123',
+      role: 'student',
     })
     expect(res.status).toBe(200)
     expect(res.headers['set-cookie']?.[0]).toMatch(/^session_id=/)

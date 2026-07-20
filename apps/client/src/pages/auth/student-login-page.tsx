@@ -22,7 +22,7 @@ export default function StudentLoginPage() {
     }
     setLoading(true)
     try {
-      const payload = { sunwayId: form.sunwayId, password: form.password }
+      const payload = { sunwayId: form.sunwayId, password: form.password, role: 'student' }
       const res = await api.post('/auth/login', payload)
       login(res.data.user)
       if (res.data.needs_onboarding) {

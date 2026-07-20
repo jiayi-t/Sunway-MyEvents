@@ -20,7 +20,7 @@ const MOBILE_RE = /^(?=.*\d)[\d+\s-]+$/
 
 // POST /api/auth/login
 router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
-  const { sunwayId, password } = req.body
+  const { sunwayId, password, role } = req.body
 
   if (!sunwayId || !password) {
     return res.status(400).json({ error: 'ID and password are required' })
@@ -70,6 +70,16 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password)
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid credentials' })
+    }
+
+    if (user.role !== role) {
+      const roleLabels: Record<string, string> = {
+        student: 'student',
+        organizer: 'organizer',
+        public: 'general public',
+      }
+      const label = roleLabels[role] || role
+      return res.status(403).json({ error: `Invalid ${label} login credentials` })
     }
 
     // adds a checked-in past event to student and public accounts so they can test the feedback flow
