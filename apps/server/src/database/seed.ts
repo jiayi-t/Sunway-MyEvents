@@ -739,7 +739,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Entertainment',
-      image_url: '/test-event-ssc.svg',
+      image_url: '/test-event-susc.svg',
       cancelled: false,
     },
     {
@@ -754,7 +754,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Sports',
-      image_url: '/test-event-sgdc.svg',
+      image_url: '/test-event-ssc.svg',
       cancelled: false,
     },
     {
@@ -769,7 +769,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Arts',
-      image_url: '/test-event-saibc.svg',
+      image_url: '/test-event-sgdc.svg',
       cancelled: false,
     },
     {
@@ -784,7 +784,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Academics',
-      image_url: '/test-event-sbcc.svg',
+      image_url: '/test-event-saibc.svg',
       cancelled: false,
     },
     {
@@ -799,7 +799,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Social',
-      image_url: '/test-event-sms.svg',
+      image_url: '/test-event-sbcc.svg',
       cancelled: false,
     },
     {
@@ -814,7 +814,7 @@ const seed = async () => {
       capacity: null,
       registration_deadline: null,
       category: 'Entertainment',
-      image_url: '/test-event-stc.svg',
+      image_url: '/test-event-sms.svg',
       cancelled: false,
     },
     {
