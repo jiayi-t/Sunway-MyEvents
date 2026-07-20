@@ -163,11 +163,11 @@ export default function StudentEventDetailsPage() {
               <div className="flex gap-2 flex-shrink-0 mt-1">
                 <button
                   onClick={() => saveMutation.mutate()}
-                  className="text-primary"
+                  className="text-primary cursor-pointer"
                 >
               <Bookmark fill={saved ? 'currentColor' : 'none'} />
                 </button>
-                <button className="text-primary">
+                <button className="text-primary cursor-pointer">
                   <Share2 />
                 </button>
               </div>
@@ -324,7 +324,7 @@ export default function StudentEventDetailsPage() {
                   <button
                     onClick={handleRegister}
                     disabled={registerMutation.isPending}
-                    className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                    className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     {registerMutation.isPending ? 'Registering...' : 'Register Now!'}
                   </button>
@@ -340,7 +340,7 @@ export default function StudentEventDetailsPage() {
           Organized by:
         </h3>
         <button
-          className="flex items-center gap-3 w-full text-left"
+          className="flex items-center gap-3 w-full text-left cursor-pointer"
           onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
         >
           <div className="flex-shrink-0">

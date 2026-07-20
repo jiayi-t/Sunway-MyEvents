@@ -72,7 +72,7 @@ export default function ResetPasswordPage() {
         </p>
         <button
           onClick={() => navigate('/login')}
-          className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Back to Login
         </button>
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
           <button
             type="button"
             onClick={() => setShowPassword(s => !s)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
           >
             {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </button>
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
           <button
             type="button"
             onClick={() => setShowConfirm(s => !s)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
           >
             {showConfirm ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </button>
@@ -157,14 +157,14 @@ export default function ResetPasswordPage() {
       <div className="flex gap-3">
         <button
           onClick={() => navigate('/login')}
-          className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground"
+          className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground cursor-pointer"
         >
           Cancel
         </button>
         <button
           onClick={handleSubmit}
           disabled={mutation.isPending}
-          className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {mutation.isPending ? 'Resetting...' : 'Reset Password'}
         </button>

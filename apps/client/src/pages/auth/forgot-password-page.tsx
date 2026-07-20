@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
               </p>
               <button
                 onClick={() => navigate('/login')}
-                className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm"
+                className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
               >
                 Back to Login
               </button>
@@ -68,14 +68,14 @@ export default function ForgotPasswordPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => navigate(-1)}
-                  className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground"
+                  className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!email.trim() || mutation.isPending}
-                  className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {mutation.isPending ? 'Sending...' : 'Send Reset Link'}
                 </button>

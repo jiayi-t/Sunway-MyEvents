@@ -77,7 +77,7 @@ export default function ChangePasswordPage() {
         <button
           type="button"
           onClick={() => setShow(s => ({ ...s, [key]: !s[key] }))}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
         >
           {show[key] ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
@@ -116,7 +116,7 @@ export default function ChangePasswordPage() {
               </p>
               <button
                 onClick={() => isSeeded ? back() : navigate('/login')}
-                className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold"
+                className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold cursor-pointer"
               >
                 {isSeeded ? 'Back to Profile' : 'Go to Login'}
               </button>
@@ -130,7 +130,7 @@ export default function ChangePasswordPage() {
               <button
                 type="button"
                 onClick={() => navigate(`/forgot-password?role=${user?.role ?? ''}`)}
-                className="text-accent text-xs font-medium underline"
+                className="text-accent text-xs font-medium underline cursor-pointer"
               >
                 Forgot your password?
               </button>
@@ -142,14 +142,14 @@ export default function ChangePasswordPage() {
               <div className="flex gap-3 mt-5">
                 <button
                   onClick={back}
-                  className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground"
+                  className="flex-1 border border-border rounded-lg py-3 text-sm font-medium text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={mutation.isPending}
-                  className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {mutation.isPending ? 'Saving...' : 'Change Password'}
                 </button>

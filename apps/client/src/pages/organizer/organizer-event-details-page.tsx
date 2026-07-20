@@ -168,10 +168,10 @@ export default function OrganizerEventDetailsPage() {
             <div className="flex items-start justify-between gap-2 mb-3">
               <h2 className="font-bold text-foreground text-lg leading-tight flex-1">{event.name}</h2>
               <div className="flex gap-2 flex-shrink-0 mt-1 relative" ref={menuRef}>
-                <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground">
+                <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground cursor-pointer">
                   <MoreVertical className="w-5 h-5" />
                 </button>
-                <button className="text-foreground">
+                <button className="text-foreground cursor-pointer">
                   <Share2 className="w-5 h-5" />
                 </button>
 
@@ -180,7 +180,7 @@ export default function OrganizerEventDetailsPage() {
                     {!isPast && (
                       <button
                         onClick={() => { setMenuOpen(false); navigate(`/organizer/events/${id}/edit`) }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left cursor-pointer"
                       >
                         <Pencil className="w-4 h-4" /> Edit
                       </button>
@@ -188,7 +188,7 @@ export default function OrganizerEventDetailsPage() {
                     {isPast && (
                       <button
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left cursor-pointer"
                       >
                         <Pin className="w-4 h-4" /> Pin
                       </button>
@@ -196,14 +196,14 @@ export default function OrganizerEventDetailsPage() {
                     {isArchived ? (
                       <button
                         onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left cursor-pointer"
                       >
                         <Archive className="w-4 h-4" /> Unarchive
                       </button>
                     ) : !event.cancelled_at && (
                       <button
                         onClick={() => { setMenuOpen(false); setConfirmAction(true) }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-surface w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-surface w-full text-left cursor-pointer"
                       >
                         {isPast ? <Archive className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                         {isPast ? 'Archive' : 'Cancel'}
@@ -298,14 +298,14 @@ export default function OrganizerEventDetailsPage() {
               <div className="flex gap-3">
                   <button
                     onClick={() => navigate(`/organizer/events/${id}/checkin`)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+                    className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold cursor-pointer"
                   >
                     <ScanQrCode className="w-4 h-4" />
                     Check In
                   </button>
                 <button
                   onClick={() => navigate(`/organizer/events/${id}/participants`)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+                  className="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold cursor-pointer"
                 >
                   <Users className="w-4 h-4" />
                   View Participants
@@ -314,7 +314,7 @@ export default function OrganizerEventDetailsPage() {
             ) : (
               <button
                 onClick={() => navigate(`/organizer/events/${id}/analytics`)}
-                className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+                className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold cursor-pointer"
               >
                 <BarChart2 className="w-4 h-4" />
                 View Analytics
@@ -341,14 +341,14 @@ export default function OrganizerEventDetailsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmAction(false)}
-                className="flex-1 border border-border rounded-lg py-2.5 text-sm font-medium text-foreground"
+                className="flex-1 border border-border rounded-lg py-2.5 text-sm font-medium text-foreground cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={handleAction}
                 disabled={processing}
-                className={`flex-1 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50 ${isArchived ? 'bg-primary' : 'bg-red-500'}`}
+                className={`flex-1 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50 cursor-pointer ${isArchived ? 'bg-primary' : 'bg-red-500'}`}
               >
                 {processing ? 'Processing...' : isArchived ? 'Unarchive' : isPast ? 'Archive' : 'Cancel Event'}
               </button>

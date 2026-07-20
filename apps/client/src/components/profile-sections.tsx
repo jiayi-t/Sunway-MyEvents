@@ -59,7 +59,7 @@ export function ProfileBanner({ identifier }: { identifier?: string }) {
         {/* Settings Button */}
         <button
           onClick={() => navigate('/settings')}
-          className="w-8 h-8 rounded-full border border-accent flex items-center justify-center"
+          className="w-8 h-8 rounded-full border border-accent flex items-center justify-center cursor-pointer"
         >
           <Settings className="text-accent w-4 h-4" />
         </button>
@@ -78,7 +78,7 @@ export function MyEventsShortcuts() {
       <div className="flex justify-around">
         <button
           onClick={() => navigate('/my-events?tab=upcoming')}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-1 cursor-pointer"
           aria-label="Upcoming events"
         >
           <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
@@ -88,7 +88,7 @@ export function MyEventsShortcuts() {
         </button>
         <button
           onClick={() => navigate('/my-events?tab=past')}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-1 cursor-pointer"
           aria-label="Past events"
         >
           <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">
@@ -98,7 +98,7 @@ export function MyEventsShortcuts() {
         </button>
         <button
           onClick={() => navigate('/my-events?tab=saved')}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-1 cursor-pointer"
           aria-label="Saved events"
         >
           <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl">

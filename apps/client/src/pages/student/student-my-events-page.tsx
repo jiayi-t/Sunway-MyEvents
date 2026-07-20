@@ -87,7 +87,7 @@ function RegistrationCard({ reg, showCheckin, showAttendance, feedbackAction }: 
   return (
     <div
       onClick={() => navigate(`/events/${reg.event_id}`)}
-      className="bg-card rounded-xl shadow flex gap-3 p-3 cursor-pointer hover:shadow-md transition items-center"
+      className="bg-card rounded-xl shadow flex gap-3 p-3 hover:shadow-md transition items-center cursor-pointer"
     >
       <div
         className="relative flex-shrink-0 self-center overflow-hidden rounded-lg"
@@ -146,7 +146,7 @@ function RegistrationCard({ reg, showCheckin, showAttendance, feedbackAction }: 
         {showCheckin && !reg.event_cancelled_at && (
           <button
             onClick={e => { e.stopPropagation(); navigate(`/events/${reg.event_id}/checkin`) }}
-            className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+            className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 cursor-pointer"
           >
             <ScanQrCode className="w-4 h-4 flex-shrink-0" />
             Check In
@@ -221,7 +221,7 @@ export default function MyEventsPage() {
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
               ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
           >
             {tab.label}
@@ -244,7 +244,7 @@ export default function MyEventsPage() {
               <p className="text-muted-foreground text-sm">No upcoming events. Browse and register for events!</p>
               <button
                 onClick={() => navigate('/')}
-                className="mt-3 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold"
+                className="mt-3 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold cursor-pointer"
               >
                 Browse Events
               </button>
@@ -273,7 +273,7 @@ export default function MyEventsPage() {
               ) : (
                 <button
                   onClick={() => navigate(`/events/${reg.event_id}/feedback`)}
-                  className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+                  className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 cursor-pointer"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   Give Feedback

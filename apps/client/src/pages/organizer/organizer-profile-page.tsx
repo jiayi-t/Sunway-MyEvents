@@ -122,7 +122,7 @@ export default function OrganizerProfilePage() {
                 <button
                   data-tour="edit-profile"
                   onClick={() => navigate('/organizer/profile')}
-                  className="w-8 h-8 rounded-full border border-accent flex items-center justify-center"
+                  className="w-8 h-8 rounded-full border border-accent flex items-center justify-center cursor-pointer"
                 >
                   <Pen className="text-accent w-4 h-4" />
                 </button>
@@ -130,7 +130,7 @@ export default function OrganizerProfilePage() {
                 <button
                   onClick={() => toggleNotifyMutation.mutate()}
                   disabled={toggleNotifyMutation.isPending}
-                  className={`w-8 h-8 rounded-full border border-accent flex items-center justify-center disabled:opacity-50 ${following ? 'bg-accent' : ''}`}
+                  className={`w-8 h-8 rounded-full border border-accent flex items-center justify-center disabled:opacity-50 cursor-pointer ${following ? 'bg-accent' : ''}`}
                 >
                   {following
                     ? <BellRing className="text-white w-4 h-4" />
@@ -178,17 +178,17 @@ export default function OrganizerProfilePage() {
                 <h2 className="text-primary font-semibold text-sm mb-4">My Events</h2>
                 <div className="flex">
                   <div className="flex-1 flex justify-around">
-                    <button data-tour="new-event" onClick={() => navigate('/organizer/events/new')} className="flex flex-col items-center gap-1">
+                    <button data-tour="new-event" onClick={() => navigate('/organizer/events/new')} className="flex flex-col items-center gap-1 cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><PlusSquare /></div>
                       <span className="text-xs text-foreground">New</span>
                     </button>
                   </div>
                   <div data-tour="manage-events" className="flex-[2] flex justify-around">
-                    <button onClick={() => navigate('/organizer/events?tab=upcoming')} className="flex flex-col items-center gap-1">
+                    <button onClick={() => navigate('/organizer/events?tab=upcoming')} className="flex flex-col items-center gap-1 cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Calendar /></div>
                       <span className="text-xs text-foreground">Upcoming</span>
                     </button>
-                    <button onClick={() => navigate('/organizer/events?tab=past')} className="flex flex-col items-center gap-1">
+                    <button onClick={() => navigate('/organizer/events?tab=past')} className="flex flex-col items-center gap-1 cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Clock /></div>
                       <span className="text-xs text-foreground">Past</span>
                     </button>
@@ -200,11 +200,11 @@ export default function OrganizerProfilePage() {
               <div data-tour="analytics" className="mx-4 mt-4 bg-card rounded-xl shadow p-4">
                 <h2 className="text-primary font-semibold text-sm mb-4">Analytics</h2>
                 <div className="flex justify-around">
-                  <button onClick={() => navigate('/organizer/analytics?tab=attendance')} className="flex flex-col items-center gap-1">
+                  <button onClick={() => navigate('/organizer/analytics?tab=attendance')} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Users /></div>
                     <span className="text-xs text-foreground">Attendance</span>
                   </button>
-                  <button onClick={() => navigate('/organizer/analytics?tab=views')} className="flex flex-col items-center gap-1">
+                  <button onClick={() => navigate('/organizer/analytics?tab=views')} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Eye /></div>
                     <span className="text-xs text-foreground">Views</span>
                   </button>
@@ -212,7 +212,7 @@ export default function OrganizerProfilePage() {
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><TrendingUp /></div>
                     <span className="text-xs text-foreground">Reach</span>
                   </button>
-                  <button onClick={() => navigate('/organizer/analytics?tab=feedback')} className="flex flex-col items-center gap-1">
+                  <button onClick={() => navigate('/organizer/analytics?tab=feedback')} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><MessageSquare /></div>
                     <span className="text-xs text-foreground">Feedback</span>
                   </button>
@@ -229,7 +229,7 @@ export default function OrganizerProfilePage() {
                     <div
                       key={event.id}
                       onClick={() => navigate(`/events/${event.id}`)}
-                      className="bg-card rounded-xl shadow flex gap-3 p-3 cursor-pointer hover:shadow-md transition items-center"
+                      className="bg-card rounded-xl shadow flex gap-3 p-3 hover:shadow-md transition items-center cursor-pointer"
                     >
                       <div
                         className="flex-shrink-0 overflow-hidden rounded-lg self-center"

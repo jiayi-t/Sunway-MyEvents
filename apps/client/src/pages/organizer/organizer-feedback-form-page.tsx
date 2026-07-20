@@ -153,7 +153,7 @@ function QuestionEditor({
           <button
             type="button"
             onClick={onDelete}
-            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0 transition-colors"
+            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0 transition-colors cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -233,7 +233,7 @@ function QuestionEditor({
                 <button
                   type="button"
                   onClick={() => removeOption(idx)}
-                  className="text-muted-foreground hover:text-red-500 flex-shrink-0"
+                  className="text-muted-foreground hover:text-red-500 flex-shrink-0 cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -242,7 +242,7 @@ function QuestionEditor({
             <button
               type="button"
               onClick={addOption}
-              className="text-primary text-xs font-medium flex items-center gap-1 pl-6 mt-1"
+              className="text-primary text-xs font-medium flex items-center gap-1 pl-6 mt-1 cursor-pointer"
             >
               <Plus className="w-3 h-3" /> Add option
             </button>
@@ -452,7 +452,7 @@ export default function OrganizerFeedbackFormPage() {
         <button
           type="button"
           onClick={addQuestion}
-          className="w-full border border-dashed border-primary rounded-xl py-3 text-primary text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full border border-dashed border-primary rounded-xl py-3 text-primary text-sm font-medium flex items-center justify-center gap-2 hover:bg-primary/5 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Add Question
         </button>
@@ -463,14 +463,14 @@ export default function OrganizerFeedbackFormPage() {
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleCancel}
-            className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50"
+            className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!hasChanges || hasEmptyQuestion || saveMutation.isPending}
-            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90"
+            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90 cursor-pointer"
           >
             {saveMutation.isPending ? 'Saving…' : 'Save'}
           </button>

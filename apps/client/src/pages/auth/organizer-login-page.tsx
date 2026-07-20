@@ -33,7 +33,7 @@ function AccountGroup({
             <button
               type="button"
               onClick={() => onPick(acc.sunway_id)}
-              className="w-full py-2 flex items-baseline justify-between gap-3 text-left"
+              className="w-full py-2 flex items-baseline justify-between gap-3 text-left cursor-pointer"
             >
               <span className="text-xs text-foreground truncate">{acc.name}</span>
               <span className="text-xs font-semibold text-accent flex-shrink-0">{acc.sunway_id}</span>
@@ -107,7 +107,7 @@ export default function OrganizerLoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowAccounts(o => !o)}
-                  className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-primary"
+                  className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-primary cursor-pointer"
                 >
                   {showAccounts ? 'Hide' : 'View'} existing accounts
                   {showAccounts
@@ -175,7 +175,7 @@ export default function OrganizerLoginPage() {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline cursor-pointer"
                 onClick={() => navigate('/forgot-password?role=organizer')}
               >
                 Forgot?
@@ -188,7 +188,7 @@ export default function OrganizerLoginPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -198,7 +198,7 @@ export default function OrganizerLoginPage() {
           Don't have an account?{' '}
           <button
             onClick={() => navigate('/login/organizer/register')}
-            className="text-accent font-semibold underline"
+            className="text-accent font-semibold underline cursor-pointer"
           >
             Create one now!
           </button>

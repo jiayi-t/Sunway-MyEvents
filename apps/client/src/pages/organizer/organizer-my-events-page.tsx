@@ -87,7 +87,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
   const isSoldOut = cap > 0 && sold >= cap
 
   return (
-    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
+    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center cursor-pointer" onClick={() => onViewDetails(event.id)}>
       <div className="relative flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
         {event.image_url
           ? <img 
@@ -137,7 +137,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
             <button
               // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
               onClick={e => { e.stopPropagation(); onCheckin(event.id) }}
-              className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+              className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 cursor-pointer"
             >
               <ScanQrCode className="w-3 h-3" />
               Check In
@@ -152,7 +152,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
 
 function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent; onAnalytics: (id: number) => void; onViewDetails: (id: number) => void }) {
   return (
-    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center" onClick={() => onViewDetails(event.id)} style={{ cursor: 'pointer' }}>
+    <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center cursor-pointer" onClick={() => onViewDetails(event.id)}>
       <div className="flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
         {event.image_url
           ? <img 
@@ -196,7 +196,7 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
         <button
           // e.stopPropagation() prevents the click from bubbling up to the card's onClick which opens the event details page
           onClick={e => { e.stopPropagation(); onAnalytics(event.id) }}
-          className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2"
+          className="inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 cursor-pointer"
         >
           <BarChart2 className="w-3 h-3" />
           View Analytics
@@ -275,7 +275,7 @@ export default function OrganizerEventsPage() {
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
               ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
           >
             {tab.label}
@@ -309,7 +309,7 @@ export default function OrganizerEventsPage() {
             onClick={() => navigate('/organizer/events/new')}
             aria-label="Create new event"
             style={{ bottom: `calc(1.5rem + ${fabOffset}px)` }}
-            className="fixed right-6 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+            className="fixed right-6 z-40 w-14 h-14 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer"
           >
             <Plus className="w-7 h-7" />
           </button>

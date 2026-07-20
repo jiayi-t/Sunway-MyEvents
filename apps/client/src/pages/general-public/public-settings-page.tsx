@@ -166,7 +166,7 @@ export default function PublicSettingsPage() {
                         key={value}
                         type="button"
                         onClick={() => setAlumni(value)}
-                        className={`flex-1 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-semibold border transition-colors cursor-pointer ${
                           alumni === value
                             ? 'bg-primary text-white border-primary'
                             : submitted && !alumni
@@ -183,7 +183,7 @@ export default function PublicSettingsPage() {
 
               <button
                 onClick={() => navigate('/change-password')}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-foreground"
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-foreground cursor-pointer"
               >
                 <span>Change Password</span>
                 <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -196,7 +196,7 @@ export default function PublicSettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || updateProfileMutation.isPending}
-                className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {updateProfileMutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Save'}
               </button>

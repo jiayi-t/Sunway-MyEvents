@@ -117,7 +117,7 @@ export default function OrganizerParticipantsPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
               ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
           >
             {tab.label}
@@ -167,7 +167,7 @@ export default function OrganizerParticipantsPage() {
               ) : (
                 <button
                   onClick={() => { setCheckinError(''); setConfirmTarget(p) }}
-                  className="flex-shrink-0 text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1.5 hover:bg-primary hover:text-white transition-colors"
+                  className="flex-shrink-0 text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1.5 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                 >
                   Check In
                 </button>
@@ -208,14 +208,14 @@ export default function OrganizerParticipantsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmTarget(null)}
-                className="flex-1 border border-border rounded-lg py-2.5 text-sm font-medium text-foreground"
+                className="flex-1 border border-border rounded-lg py-2.5 text-sm font-medium text-foreground cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleManualCheckin}
                 disabled={manualCheckinMutation.isPending}
-                className="flex-1 bg-accent text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50"
+                className="flex-1 bg-accent text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-50 cursor-pointer"
               >
                 {manualCheckinMutation.isPending ? 'Processing...' : 'Check In'}
               </button>

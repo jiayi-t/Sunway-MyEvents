@@ -85,7 +85,7 @@ export default function Header() {
   const mobileTourItem = (
     <button
       onClick={handleReplayTour}
-      className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+      className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
       <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
     </button>
   )
@@ -105,17 +105,17 @@ export default function Header() {
         <>
           <button
             onClick={() => { navigate('/organizer/dashboard'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <LayoutDashboard className="w-4 h-4 text-gray-500" aria-hidden="true" />Dashboard
           </button>
           <button
             onClick={() => { navigate('/organizer/events'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <Calendar className="w-4 h-4 text-gray-500" aria-hidden="true" />My Events
           </button>
           <button
             onClick={() => { navigate('/organizer/analytics'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <BarChart2 className="w-4 h-4 text-gray-500" aria-hidden="true" />Analytics
           </button>
           {mobileTourItem}
@@ -124,28 +124,28 @@ export default function Header() {
         <>
           <button
             onClick={() => { navigate('/profile'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <User className="w-4 h-4 text-gray-500" aria-hidden="true" />My Profile
           </button>
           <button
             onClick={() => { navigate('/'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <Home className="w-4 h-4 text-gray-500" aria-hidden="true" />Home
           </button>
           <button
             onClick={() => { navigate('/browse'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <Search className="w-4 h-4 text-gray-500" aria-hidden="true" />Browse
           </button>
           <button
             onClick={() => { navigate('/my-events'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <Calendar className="w-4 h-4 text-gray-500" aria-hidden="true" />My Events
           </button>
           {mobileTourItem}
           <button
             onClick={() => { navigate('/settings'); setMenuOpen(false) }}
-            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
             <Settings className="w-4 h-4 text-gray-500" aria-hidden="true" />Settings
           </button>
         </>
@@ -153,7 +153,7 @@ export default function Header() {
       <div className="border-t my-2" />
       <button
         onClick={handleLogout}
-        className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+        className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">
         <LogOut className="w-4 h-4" aria-hidden="true" />Sign Out
       </button>
     </>
@@ -166,27 +166,27 @@ export default function Header() {
         <>
           <button
             onClick={() => { navigate('/profile'); setMenuOpen(false) }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">My Profile
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">My Profile
           </button>
           <button
             onClick={handleReplayTour}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Website Tour
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Website Tour
           </button>
           <button
             onClick={() => { navigate('/settings'); setMenuOpen(false) }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Settings
           </button>
         </>
       )}
       {user?.role === 'organizer' && (
         <button
           onClick={handleReplayTour}
-          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Website Tour
+          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Website Tour
         </button>
       )}
       <button
         onClick={handleLogout}
-        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign Out
+        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign Out
       </button>
     </>
   )
@@ -199,7 +199,7 @@ export default function Header() {
           <button
             data-tour="nav-menu"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-black focus:outline-none"
+            className="text-black focus:outline-none cursor-pointer"
             aria-label="Open menu"
           >
             <Menu className="w-6 h-6" aria-hidden="true" />
@@ -223,7 +223,7 @@ export default function Header() {
               </span>
               <button
                 onClick={() => setMenuOpen(false)}
-                className="text-gray-500 hover:text-black"
+                className="text-gray-500 hover:text-black cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
@@ -235,14 +235,14 @@ export default function Header() {
           </div>
         </div>
         <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
-          <button onClick={goHome} className="pointer-events-auto">
+          <button onClick={goHome} className="pointer-events-auto cursor-pointer">
             <span className="text-primary">Sunway </span>
             <span className="text-accent">MyEvents</span>
           </button>
         </div>
 
         {(user?.role === 'student' || user?.role === 'public') ? (
-          <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-10 flex items-center justify-center">
+          <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-10 flex items-center justify-center cursor-pointer">
             <Bell className="w-5 h-5 text-foreground" />
             {unreadCount > 0 && (
               <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -260,7 +260,7 @@ export default function Header() {
         {/* Logo */}
         <button
           onClick={goHome}
-          className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold whitespace-nowrap"
+          className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold whitespace-nowrap cursor-pointer"
         >
           <span className="text-primary">Sunway </span>
           <span className="text-accent">MyEvents</span>
@@ -272,7 +272,7 @@ export default function Header() {
             <button
               key={link.path}
               onClick={() => navigate(link.path)}
-              className={`text-sm transition-colors ${
+              className={`text-sm transition-colors cursor-pointer ${
                 isActive(link.path) ? 'text-primary font-semibold' : 'text-gray-600 hover:text-primary'
               }`}
             >
@@ -284,7 +284,7 @@ export default function Header() {
         {/* User */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
           {(user?.role === 'student' || user?.role === 'public') && (
-            <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center">
+            <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center cursor-pointer">
               <Bell className="w-5 h-5 text-foreground" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -297,7 +297,7 @@ export default function Header() {
             <button
               data-tour="nav-menu"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors cursor-pointer"
             >
               <span className="font-medium">{user?.name}</span>
               <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" />

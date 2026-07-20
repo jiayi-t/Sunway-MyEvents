@@ -49,21 +49,21 @@ export default function SelectLoginPage() {
           <div className="flex flex-col gap-4">
             <button
               onClick={() => navigate('/login/student')}
-              className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm"
+              className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               General Sunway Student
             </button>
 
             <button
               onClick={() => navigate('/login/organizer')}
-              className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm"
+              className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               Organizer (SLB / C&S)
             </button>
 
             <button
               onClick={() => navigate('/login/public')}
-              className="w-full bg-accent text-white font-semibold py-3 rounded-lg text-sm"
+              className="w-full bg-accent text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               General Public
             </button>

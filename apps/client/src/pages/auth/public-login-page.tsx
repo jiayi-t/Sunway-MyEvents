@@ -76,7 +76,7 @@ export default function PublicLoginPage() {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline cursor-pointer"
                 onClick={() => navigate('/forgot-password?role=public')}
               >
                 Forgot?
@@ -89,7 +89,7 @@ export default function PublicLoginPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -99,7 +99,7 @@ export default function PublicLoginPage() {
           Don't have an account?{' '}
           <button
             onClick={() => navigate('/login/public/register')}
-            className="text-accent font-semibold underline"
+            className="text-accent font-semibold underline cursor-pointer"
           >
             Create one now!
           </button>

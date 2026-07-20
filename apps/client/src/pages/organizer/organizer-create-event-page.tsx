@@ -180,13 +180,13 @@ export default function OrganizerCreateEventPage() {
               <>
                 <img src={preview} alt="poster preview" className="max-h-56 object-contain rounded" />
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-accent text-accent hover:bg-orange-50">
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-accent text-accent hover:bg-orange-50 cursor-pointer">
                   {uploading ? 'Uploading...' : 'Reupload'}
                 </button>
               </>
             ) : (
               <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center gap-2 text-muted-foreground">
+                className="flex flex-col items-center gap-2 text-muted-foreground cursor-pointer">
                 <Upload className="text-3xl" />
                 <span className="text-xs">{uploading ? 'Uploading...' : 'Upload poster'}</span>
               </button>
@@ -199,7 +199,7 @@ export default function OrganizerCreateEventPage() {
           onClick={() => navigate('/organizer/feedback-form/new', {
             state: { form, preview, questions: customQuestions ?? undefined }
           })}
-          className="w-full border border-primary rounded-lg py-2.5 text-sm font-medium text-primary flex items-center justify-between px-4 hover:bg-primary/5"
+          className="w-full border border-primary rounded-lg py-2.5 text-sm font-medium text-primary flex items-center justify-between px-4 hover:bg-primary/5 cursor-pointer"
         >
           <span className="flex items-center gap-2">
             <ClipboardPen className="w-4 h-4" />
@@ -211,11 +211,11 @@ export default function OrganizerCreateEventPage() {
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-3 pb-6">
           <button onClick={() => navigate('/organizer/dashboard')}
-            className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50">
+            className="flex-1 border border-accent rounded-lg py-3 text-sm font-medium text-accent hover:bg-orange-50 cursor-pointer">
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={createMutation.isPending || uploading}
-            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90">
+            className="flex-1 bg-accent text-white rounded-lg py-3 text-sm font-semibold disabled:opacity-50 hover:opacity-90 cursor-pointer">
             {createMutation.isPending ? 'Creating...' : 'Create Event'}
           </button>
         </div>

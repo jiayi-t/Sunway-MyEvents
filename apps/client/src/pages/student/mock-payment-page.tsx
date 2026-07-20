@@ -41,7 +41,7 @@ export default function MockPaymentPage() {
         <p className="text-muted-foreground text-sm mb-6">You're registered for {typedEvent?.name}.</p>
         <button
           onClick={() => navigate(`/events/${id}`, { replace: true })}
-          className="bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full"
+          className="bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full cursor-pointer"
         >
           Back to Event
         </button>
@@ -90,13 +90,13 @@ export default function MockPaymentPage() {
         <button
           onClick={handlePay}
           disabled={registerMutation.isPending}
-          className="w-full bg-accent text-white font-semibold py-3 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-accent text-white font-semibold py-3 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {registerMutation.isPending ? 'Processing...' : `Pay RM ${Number(typedEvent?.pricing).toFixed(2)}`}
         </button>
         <button
           onClick={() => navigate(-1)}
-          className="w-full mt-3 text-sm text-muted-foreground py-2"
+          className="w-full mt-3 text-sm text-muted-foreground py-2 cursor-pointer"
         >
           Cancel
         </button>

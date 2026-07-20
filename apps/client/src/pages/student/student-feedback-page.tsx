@@ -14,6 +14,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
           key={star}
           type="button"
           onClick={() => onChange(star)}
+          className="cursor-pointer"
           onMouseEnter={() => setHover(star)}
           onMouseLeave={() => setHover(0)}
         >
@@ -51,7 +52,7 @@ function QuestionCard({ q, answer, onChange }: {
               key={opt}
               type="button"
               onClick={() => onChange(opt)}
-              className={`w-full text-left text-sm px-3 py-2 rounded-lg border transition-colors ${
+              className={`w-full text-left text-sm px-3 py-2 rounded-lg border transition-colors cursor-pointer ${
                 answer === opt
                   ? 'border-primary bg-primary/10 text-primary font-medium'
                   : 'border-border bg-white text-foreground'
@@ -75,7 +76,7 @@ function QuestionCard({ q, answer, onChange }: {
                   const current = Array.isArray(answer) ? answer : []
                   onChange(selected ? current.filter(v => v !== opt) : [...current, opt])
                 }}
-                className={`w-full text-left text-sm px-3 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                className={`w-full text-left text-sm px-3 py-2 rounded-lg border flex items-center gap-2 transition-colors cursor-pointer ${
                   selected
                     ? 'border-primary bg-primary/10 text-primary font-medium'
                     : 'border-border bg-white text-foreground'
@@ -184,7 +185,7 @@ export default function StudentFeedbackPage() {
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
           <Star className="w-10 h-10 fill-accent text-accent" />
           <p className="text-foreground font-semibold text-center">You've already submitted feedback for this event.</p>
-          <button onClick={() => navigate(-1)} className="text-primary text-sm font-medium">Go back</button>
+          <button onClick={() => navigate(-1)} className="text-primary text-sm font-medium cursor-pointer">Go back</button>
         </div>
       </div>
     )
@@ -198,7 +199,7 @@ export default function StudentFeedbackPage() {
         </div>
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
           <p className="text-foreground font-semibold text-center">You must check in to the event before submitting feedback.</p>
-          <button onClick={() => navigate(-1)} className="text-primary text-sm font-medium">Go back</button>
+          <button onClick={() => navigate(-1)} className="text-primary text-sm font-medium cursor-pointer">Go back</button>
         </div>
       </div>
     )
@@ -238,7 +239,7 @@ export default function StudentFeedbackPage() {
         <button
           onClick={handleSubmit}
           disabled={submitMutation.isPending}
-          className="w-full bg-accent text-white rounded-full py-3 text-sm font-semibold disabled:opacity-50"
+          className="w-full bg-accent text-white rounded-full py-3 text-sm font-semibold disabled:opacity-50 cursor-pointer"
         >
           {submitMutation.isPending ? 'Submitting…' : 'Submit Feedback'}
         </button>

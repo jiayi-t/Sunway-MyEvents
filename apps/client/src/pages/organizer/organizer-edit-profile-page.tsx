@@ -253,24 +253,24 @@ export default function OrganizerEditProfilePage() {
 
                     onClick={() => setShowPhotoMenu(m => !m)}
                     disabled={imageUploading}
-                    className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
+                    className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow cursor-pointer"
                   >
                     <Pencil className="w-3 h-3 text-white" />
                   </button>
                   {showPhotoMenu && (
                     <div className="absolute left-full ml-1 bottom-0 bg-white rounded-lg shadow-lg border border-border text-sm overflow-hidden z-10 w-36">
                       <button
-    
+
                         onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click() }}
-                        className="w-full text-left px-3 py-2 hover:bg-surface text-foreground"
+                        className="w-full text-left px-3 py-2 hover:bg-surface text-foreground cursor-pointer"
                       >
                         Upload photo
                       </button>
                       {imageUrl && (
                         <button
-      
+
                           onClick={() => { setShowPhotoMenu(false); setImageUrl(null) }}
-                          className="w-full text-left px-3 py-2 hover:bg-surface text-red-500"
+                          className="w-full text-left px-3 py-2 hover:bg-surface text-red-500 cursor-pointer"
                         >
                           Remove photo
                         </button>
