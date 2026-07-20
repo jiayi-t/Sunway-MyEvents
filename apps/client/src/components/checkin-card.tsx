@@ -122,6 +122,10 @@ export default function CheckinCard({ identifier }: { identifier?: string }) {
           </div>
         </div>
       </div>
+
+      <p className="mt-4 text-xs text-muted-foreground text-center px-2">
+        Show this QR code to your event organizer to get checked in.
+      </p>
       </div>
     </div>
   )

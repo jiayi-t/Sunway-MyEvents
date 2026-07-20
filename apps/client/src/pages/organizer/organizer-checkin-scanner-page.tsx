@@ -145,6 +145,10 @@ export default function OrganizerCheckinScannerPage() {
           <Users className="w-4 h-4" />
           View Participants
         </button>
+
+        <p className="mt-4 text-xs text-muted-foreground text-center px-2">
+          Scan the participant's QR code to check them in, or tap View Participants to search for their name and check them in manually.
+        </p>
       </div>
     </div>
   )
