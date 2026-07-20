@@ -41,10 +41,28 @@ const toImageUrl = (url?: string) => url ?? ''
 export default function HomePage() {
   const [search, setSearch] = useState('')
   const [featuredIndex, setFeaturedIndex] = useState(0)
+  const [autoScroll, setAutoScroll] = useState(true)
+  
   const touchStartX = useRef<number | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const navigate = useNavigate()
   const { user, updateUser } = useAuth()
   const completeTourMutation = useCompleteTourMutation()
+
+  // pause auto-scroll and resume after 15 seconds
+  const pauseAutoScroll = () => {
+    setAutoScroll(false)
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
+
+    timerRef.current = setTimeout(() => {
+      setAutoScroll(true)
+    // resume after 15 seconds
+    }, 15000) 
+  }
 
   // first-login walkthrough, account-wide flag so it does not replay on new devices
   useEffect(() => {
@@ -70,11 +88,15 @@ export default function HomePage() {
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(!!user)
   const recommendations = (recommendationsData ?? []) as Event[]
 
-  const prevFeatured = () =>
+  const prevFeatured = () => {
+    pauseAutoScroll()
     setFeaturedIndex(i => (i === 0 ? featuredEvents.length - 1 : i - 1))
+  }
 
-  const nextFeatured = () =>
+  const nextFeatured = () => {
+    pauseAutoScroll()
     setFeaturedIndex(i => (i === featuredEvents.length - 1 ? 0 : i + 1))
+  }
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
@@ -83,17 +105,29 @@ export default function HomePage() {
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return
     const diff = touchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) > 40) diff > 0 ? nextFeatured() : prevFeatured()
+    if (Math.abs(diff) > 40) {
+      diff > 0 ? nextFeatured() : prevFeatured()
+    }
     touchStartX.current = null
   }
 
+  // auto-scroll effect, pauses when user interacts
   useEffect(() => {
-    if (featuredEvents.length <= 1) return
+    if (!autoScroll || featuredEvents.length <= 1) return
     const id = setInterval(() => {
       setFeaturedIndex(i => (i === featuredEvents.length - 1 ? 0 : i + 1))
     }, 5000)
     return () => clearInterval(id)
-  }, [featuredEvents.length])
+  }, [featuredEvents.length, autoScroll])
+
+  // cleanup pause timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    }
+  }, [])
 
   const handleBrowse = () => {
     const params = search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''
@@ -268,7 +302,10 @@ export default function HomePage() {
                 {featuredEvents.map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => setFeaturedIndex(i)}
+                    onClick={() => {
+                      pauseAutoScroll()
+                      setFeaturedIndex(i)
+                    }}
                     className={`rounded-full transition-all ${
                       i === featuredIndex 
                         ? 'bg-white w-4 h-2' 
