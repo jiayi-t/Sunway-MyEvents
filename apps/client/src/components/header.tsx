@@ -6,7 +6,7 @@ import Avatar from './avatar'
 import { startOrganizerTour } from '../tours/organizer-tour'
 import { startStudentPublicTour } from '../tours/student-public-tour'
 import { useCompleteTourMutation } from '../api/mutations'
-import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2, HelpCircle } from 'lucide-react'
+import { Menu, Bell, ChevronDown, X, Home, Calendar, User, Settings, LogOut, LayoutDashboard, BarChart2, HelpCircle, Search } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -131,6 +131,11 @@ export default function Header() {
             onClick={() => { navigate('/'); setMenuOpen(false) }}
             className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
             <Home className="w-4 h-4 text-gray-500" aria-hidden="true" />Home
+          </button>
+          <button
+            onClick={() => { navigate('/browse'); setMenuOpen(false) }}
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100">
+            <Search className="w-4 h-4 text-gray-500" aria-hidden="true" />Browse
           </button>
           <button
             onClick={() => { navigate('/my-events'); setMenuOpen(false) }}
