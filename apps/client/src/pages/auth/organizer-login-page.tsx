@@ -17,9 +17,16 @@ function AccountGroup({
 }) {
   return (
     <div className="py-1.5">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
-        {heading}
-      </p>
+      {/* Section heading */}
+      <div className="flex justify-between items-center">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+          {heading}
+        </p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+          Username
+        </p>
+      </div>
+
       <ul className="divide-y divide-primary/10 mt-0.5">
         {accounts.map(acc => (
           <li key={acc.sunway_id}>
@@ -129,7 +136,7 @@ export default function OrganizerLoginPage() {
                     )}
                     {csAccounts.length > 0 && (
                       <AccountGroup
-                        heading="C&S Clubs"
+                        heading="C&S"
                         accounts={csAccounts}
                         onPick={id => setForm({ ...form, sunwayId: id })}
                       />
