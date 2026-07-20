@@ -155,7 +155,7 @@ export default function HomePage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && search.trim() && handleBrowse()}
-                className="flex-1 min-w-0 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
+                className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder-gray-400 focus:outline-none"
                 aria-label="Search events"
               />
               <button
