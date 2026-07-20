@@ -6,7 +6,7 @@ import { useChangePasswordMutation } from '../../api/mutations'
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate()
-  const { user, updateToken } = useAuth()
+  const { user, logout } = useAuth()
 
   const [form, setForm] = useState({ current: '', next: '', confirm: '' })
   const [show, setShow] = useState({ current: false, next: false, confirm: false })
@@ -40,7 +40,17 @@ export default function ChangePasswordPage() {
     mutation.mutate(
       { currentPassword: form.current, newPassword: form.next },
       // seeded demo accounts get no token back (nothing was persisted), keep the current session's token
-      { onSuccess: (data) => { if (data.token) updateToken(data.token) } },
+      {
+        onSuccess: () => {
+          if (isSeeded) {
+            // demo accounts: flow complete, can continue
+            return
+          }
+          // real accounts: log out and redirect to login
+          logout()
+          navigate('/login?reason=password_changed')
+        },
+      },
     )
   }
 
@@ -105,10 +115,10 @@ export default function ChangePasswordPage() {
                   : 'Your password has been updated. You have been signed out on any other devices.'}
               </p>
               <button
-                onClick={back}
+                onClick={() => isSeeded ? back() : navigate('/login')}
                 className="w-full bg-primary text-white rounded-lg py-3 text-sm font-semibold"
               >
-                Back to Profile
+                {isSeeded ? 'Back to Profile' : 'Go to Login'}
               </button>
             </div>
           ) : (

@@ -57,7 +57,7 @@ export default function OrganizerLoginPage() {
     try {
       const payload = { sunwayId: form.sunwayId, password: form.password }
       const res = await api.post('/auth/login', payload)
-      login(res.data.user, res.data.token)
+      login(res.data.user)
       navigate('/organizer/dashboard')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid username or password')

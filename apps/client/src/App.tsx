@@ -54,8 +54,8 @@ const AUTH_PATHS = [
 ]
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { token } = useAuth()
-  return token ? children : <Navigate to="/login" replace />
+  const { user } = useAuth()
+  return user ? children : <Navigate to="/login" replace />
 }
 
 // /settings renders a different page for students and the general public

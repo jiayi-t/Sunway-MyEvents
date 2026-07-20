@@ -8,6 +8,13 @@
       "when": 1784344217474,
       "tag": "0000_outgoing_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784545590155,
+      "tag": "0001_sessions_setup",
+      "breakpoints": true
     }
   ]
 }

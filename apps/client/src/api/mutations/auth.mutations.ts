@@ -22,7 +22,7 @@ export function useChangePasswordMutation() {
   return useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
       api.post('/auth/change-password', data)
-        .then(res => res.data as { message: string; token?: string; is_seeded?: boolean }),
+        .then(res => res.data as { message: string; is_seeded?: boolean }),
   })
 }
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import api from '../services/api'
 
 interface User {
   id: number
@@ -16,48 +17,41 @@ interface User {
 
 interface AuthContextType {
   user: User | null
-  token: string | null
-  login: (user: User, token: string) => void
+  login: (user: User) => void
   logout: () => void
   updateUser: (updates: Partial<User>) => void
-  updateToken: (token: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
+  // the session itself lives in httpOnly cookies the client never touches
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('user')
     return saved ? JSON.parse(saved) : null
-  })
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('token')
   })
 
   // localStorage is shared across tabs, when another tab logs in/out, redirect this tab onto the new session instead of keeping stale UI
   useEffect(() => {
     const handler = (e: StorageEvent) => {
-      if (e.key !== 'token' || e.oldValue === e.newValue) return
+      if (e.key !== 'user' || e.oldValue === e.newValue) return
       if (!e.newValue) {
         // logged out in another tab
         window.location.href = '/login'
         return
       }
       // logged in / switched account in another tab, reload onto the new account's home
-      const saved = localStorage.getItem('user')
-      const role = saved ? JSON.parse(saved).role : null
+      const role = JSON.parse(e.newValue).role
       window.location.href = role === 'organizer' ? '/organizer/dashboard' : '/'
     }
     window.addEventListener('storage', handler)
     return () => window.removeEventListener('storage', handler)
   }, [])
 
-  const login = (user: User, token: string) => {
+  const login = (user: User) => {
     setUser(user)
-    setToken(token)
     localStorage.setItem('user', JSON.stringify(user))
-    localStorage.setItem('token', token)
   }
 
   const updateUser = (updates: Partial<User>) => {
@@ -69,22 +63,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })
   }
 
-  // swap in a freshly issued token (e.g. after changing password) without logging out
-  const updateToken = (newToken: string) => {
-    setToken(newToken)
-    localStorage.setItem('token', newToken)
-  }
-
   const logout = () => {
+    // invalidate the session server-side and clear the httpOnly cookies
+    api.post('/auth/logout').catch(() => {})
     setUser(null)
-    setToken(null)
     localStorage.removeItem('user')
-    localStorage.removeItem('token')
     setTimeout(() => queryClient.clear(), 0)
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateUser, updateToken }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

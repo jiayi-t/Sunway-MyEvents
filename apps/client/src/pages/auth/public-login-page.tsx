@@ -17,7 +17,7 @@ export default function PublicLoginPage() {
     try {
       const payload = { sunwayId: form.email, password: form.password }
       const res = await api.post('/auth/login', payload)
-      login(res.data.user, res.data.token)
+      login(res.data.user)
       const interests = res.data.user.interests
       navigate((!interests || interests.length === 0) ? '/select-interests' : '/')
     } catch (err: any) {

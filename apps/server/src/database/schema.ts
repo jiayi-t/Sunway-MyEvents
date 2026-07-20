@@ -138,3 +138,13 @@ export const password_reset_tokens = pgTable('password_reset_tokens', {
   used_at: timestamp('used_at'),
   created_at: timestamp('created_at').defaultNow(),
 })
+
+export const sessions = pgTable('sessions', {
+  id: varchar('id', { length: 64 }).primaryKey(),
+  user_id: integer('user_id').references(() => users.id).notNull(),
+  expires_at: timestamp('expires_at').notNull(),
+  last_activity_at: timestamp('last_activity_at').defaultNow(),
+  created_at: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('sessions_user_id_idx').on(table.user_id),
+])

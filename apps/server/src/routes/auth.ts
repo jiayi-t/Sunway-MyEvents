@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { and, eq, gt, isNull, ne, sql } from 'drizzle-orm'
 import { db } from '../db'
@@ -12,10 +11,11 @@ import {
 import { isSeededOrganizer } from '../database/seeded-accounts'
 import { attachUatPastEvent, uatPastEventEnabled } from '../database/uat'
 import { sendEmail, forgotPasswordEmail } from '../email'
+import { createSession, invalidateSession, invalidateAllUserSessions } from '../utils/sessions'
+import { setAuthCookie, clearAuthCookie } from '../utils/cookies'
 
 const router = Router()
 
-const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? '1d') as jwt.SignOptions['expiresIn']
 const MOBILE_RE = /^(?=.*\d)[\d+\s-]+$/
 
 // POST /api/auth/login
@@ -77,11 +77,8 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
       await attachUatPastEvent(user.id)
     }
 
-    const token = jwt.sign(
-      { id: user.id, sunway_id: user.sunway_id, role: user.role, tv: user.token_version },
-      process.env.JWT_SECRET!,
-      { expiresIn: jwtExpiresIn }
-    )
+    const { sessionId } = await createSession(user.id)
+    setAuthCookie(res, sessionId)
 
     res.json({
       user: {
@@ -95,7 +92,6 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
         tour_completed_at: user.tour_completed_at ?? null,
         is_seeded: isSeededOrganizer(user.sunway_id),
       },
-      token,
       // students whose profile has not been filled yet (auto-provisioned UAT accounts)
       needs_onboarding: user.role === 'student' && !user.faculty,
     })
@@ -620,24 +616,20 @@ router.post('/change-password', authenticate, async (req: AuthRequest, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10)
-    // bump token_version to invalidate sessions on other devices, then reissue a token for the current session so the user who just changed it stays logged in here
-    const [updated] = await db.update(users)
+    // invalidate all sessions, user must log in again to create a new one
+    await db.update(users)
       .set({ password: hashedPassword, token_version: sql`${users.token_version} + 1` })
       .where(eq(users.id, req.user!.id))
-      .returning({ id: users.id, sunway_id: users.sunway_id, role: users.role, token_version: users.token_version })
 
-    const token = jwt.sign(
-      { id: updated.id, sunway_id: updated.sunway_id, role: updated.role, tv: updated.token_version },
-      process.env.JWT_SECRET!,
-      { expiresIn: jwtExpiresIn }
-    )
-    res.json({ message: 'Password changed successfully', token })
+    await invalidateAllUserSessions(req.user!.id)
+    clearAuthCookie(res)
+    res.json({ message: 'Password changed successfully. Please log in again.' })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })
 
-// PUT /api/auth/student-onboarding - UAT students 
+// PUT /api/auth/student-onboarding - UAT students
 router.put('/student-onboarding', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'student') return res.status(403).json({ error: 'Forbidden' })
   const name: string = typeof req.body.name === 'string' ? req.body.name.trim() : ''
@@ -665,6 +657,19 @@ router.put('/student-onboarding', authenticate, async (req: AuthRequest, res) =>
 
     const [updated] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.user!.id))
     res.json({ message: 'Profile saved', name: updated.name })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// POST /api/auth/logout
+router.post('/logout', authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (req.sessionId) {
+      await invalidateSession(req.sessionId)
+    }
+    clearAuthCookie(res)
+    res.json({ message: 'Logged out successfully' })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

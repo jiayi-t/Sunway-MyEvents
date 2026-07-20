@@ -24,7 +24,7 @@ export default function StudentLoginPage() {
     try {
       const payload = { sunwayId: form.sunwayId, password: form.password }
       const res = await api.post('/auth/login', payload)
-      login(res.data.user, res.data.token)
+      login(res.data.user)
       if (res.data.needs_onboarding) {
         navigate('/student-onboarding')
         return

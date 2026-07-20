@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import path from 'path'
 import { globalLimiter } from './middleware/rate-limit'
 import authRoutes from './routes/auth'
@@ -27,8 +28,9 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }))
 
-app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : true }))
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : true, credentials: true }))
 app.use(express.json())
+app.use(cookieParser())
 
 // blanket per-IP rate limit on all API traffic (specific routes add stricter limits)
 app.use('/api', globalLimiter)
