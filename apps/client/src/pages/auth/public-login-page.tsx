@@ -55,7 +55,6 @@ export default function PublicLoginPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              placeholder="Use: public@gmail.com"
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -68,7 +67,6 @@ export default function PublicLoginPage() {
             <div className="relative">
               <input
                 type="password"
-                placeholder="Use: sunway123"
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}

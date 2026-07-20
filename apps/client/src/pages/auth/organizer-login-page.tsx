@@ -154,7 +154,6 @@ export default function OrganizerLoginPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">SLB / C&S Username</label>
             <input
               type="text"
-              placeholder="Use: ssa"
               value={form.sunwayId}
               onChange={e => setForm({ ...form, sunwayId: e.target.value })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -167,7 +166,6 @@ export default function OrganizerLoginPage() {
             <div className="relative">
               <input
                 type="password"
-                placeholder="Use: sunway123"
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
