@@ -6,6 +6,7 @@ export const SEEDED_ORGANIZER_USERNAMES = [
   'scc',
   'susc',
   'ssc',
+  'ssv',
   'sgdc',
   'saibc',
   'sbcc',
