@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { eq, and, inArray } from 'drizzle-orm'
 import { db } from '../db'
-import { users, events, registrations, saved_events } from './schema'
+import { users, events, registrations, saved_events, feedback } from './schema'
 import { SEEDED_ORGANIZER_USERNAMES } from './seeded-accounts'
 
 const seed = async () => {
@@ -868,7 +868,7 @@ const seed = async () => {
   }
   console.log('Events seeded')
 
-  // look up event ids by name for registrations/saves
+  // look up event ids by name for registrations/saves/feedback
   const eventNames = [
     "Sunway's Got Talent Season 7: Eternal Radiance Grand Finale",
     "Sunway's Got Talent Season 8: RE:VELATION Grand Finale",
@@ -993,6 +993,93 @@ const seed = async () => {
     }
   }
   console.log('Saves seeded')
+
+  // feedback seeding for SGT S8 using seeded student accounts (all groups A-D for testing AI summary)
+  const fetStudent1Id = idMap['23061001'] 
+  const fetStudent2Id = idMap['24061002']
+  const fassStudent1Id = idMap['23061003']
+  const fassStudent2Id = idMap['22061004']
+  const shtmStudent1Id = idMap['23061005']
+  const sbsStudent1Id = idMap['24061006'] 
+
+  const sgtS8EventId = eventMap["Sunway's Got Talent Season 8: RE:VELATION Grand Finale"]
+
+  const seedFeedback = [
+    // SGT S8 Feedback (all student groups) - 6+ responses for strong AI summary
+    {
+      user_id: fetStudent1Id,
+      event_id: sgtS8EventId,
+      rating: 4,
+      created_at: new Date('2026-07-08T18:05:00'),
+      answers: {
+        q_suggestions: 'Great event with diverse talent. The sound quality was better than last year. Only issue was the queue at entry was long.',
+      },
+    },
+    {
+      user_id: fetStudent2Id,
+      event_id: sgtS8EventId,
+      rating: 5,
+      created_at: new Date('2026-07-08T18:10:00'),
+      answers: {
+        q_suggestions: 'Fantastic show! The variety of performances was impressive - singing, dancing, comedy, all top-notch. Definitely coming again next year.',
+      },
+    },
+    {
+      user_id: fassStudent1Id,
+      event_id: sgtS8EventId,
+      rating: 5,
+      created_at: new Date('2026-07-08T18:15:00'),
+      answers: {
+        q_suggestions: 'Amazing performances from all finalists! The energy was electric. Venue was well-organized and committee were helpful.',
+      },
+    },
+    {
+      user_id: fassStudent2Id,
+      event_id: sgtS8EventId,
+      rating: 4,
+      created_at: new Date('2026-07-08T18:20:00'),
+      answers: {
+        q_suggestions: 'Really enjoyed the show. The production value was high. Some acts could have been shorter to keep the pace up.',
+      },
+    },
+    {
+      user_id: shtmStudent1Id,
+      event_id: sgtS8EventId,
+      rating: 5,
+      created_at: new Date('2026-07-08T18:25:00'),
+      answers: {
+        q_suggestions: 'One of the best events I attended this year! The talent showcase was incredible. Great atmosphere and community spirit.',
+      },
+    },
+    {
+      user_id: sbsStudent1Id,
+      event_id: sgtS8EventId,
+      rating: 4,
+      created_at: new Date('2026-07-08T18:30:00'),
+      answers: {
+        q_suggestions: 'Enjoyed the performances. Would suggest having more interactive segments between acts to keep audience engaged.',
+      },
+    },
+  ]
+
+  for (const fb of seedFeedback) {
+    if (!fb.user_id || !fb.event_id) continue
+    const [existing] = await db
+      .select({ id: feedback.id })
+      .from(feedback)
+      .where(and(eq(feedback.user_id, fb.user_id), eq(feedback.event_id, fb.event_id)))
+      .limit(1)
+
+    if (!existing) {
+      await db.insert(feedback).values(fb)
+    } else {
+      await db
+        .update(feedback)
+        .set({ rating: fb.rating, answers: fb.answers, created_at: fb.created_at })
+        .where(eq(feedback.id, existing.id))
+    }
+  }
+  console.log('Feedback seeded')
 
   console.log('Seeding complete!')
   process.exit(0)
