@@ -51,6 +51,14 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
           password: hashedPassword,
           name: 'Student',
           role: 'student',
+          // notifications on by default
+          notification_preferences: {
+            email_enabled: true,
+            email_channel: ['imail'],
+            course_related: true,
+            interest_related: true,
+            suggested: true,
+          },
         }).returning()
         // they finish their profile via onboarding (needs_onboarding is true until then)
         user = created

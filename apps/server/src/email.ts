@@ -51,10 +51,12 @@ export function getEmailAddresses(user: {
   notification_preferences: { email_enabled?: boolean; email_channel?: string[] } | null
 }): string[] {
   const prefs = user.notification_preferences
-  if (!prefs?.email_enabled) return []
+  // opt-out model: users who have never set preferences (null, e.g. auto-provisioned students) default to email notifications enabled
+  if (prefs?.email_enabled === false) return []
+  const channel = prefs?.email_channel
   const addresses: string[] = []
-  if (!prefs.email_channel || prefs.email_channel.includes('imail')) addresses.push(user.email)
-  if (prefs.email_channel?.includes('personal') && user.personal_email) addresses.push(user.personal_email)
+  if (!channel || channel.includes('imail')) addresses.push(user.email)
+  if (channel?.includes('personal') && user.personal_email) addresses.push(user.personal_email)
   return addresses
 }
 
