@@ -17,6 +17,7 @@ interface Event {
   category: string
   audience: string
   capacity: number | null
+  registered_count: number
   registration_deadline: string | null
   image_url: string | null
 }
@@ -122,6 +123,15 @@ export default function OrganizerEditEventPage() {
     }
     if (form.start_time && form.end_time && form.start_time >= form.end_time) {
       setUploadError('End time must be later than start time')
+      return
+    }
+    if (form.capacity && Number(form.capacity) === 0) {
+      setUploadError('Event capacity cannot be 0. Leave blank for unlimited capacity.')
+      return
+    }
+    const capacity = form.capacity ? Number(form.capacity) : null
+    if (capacity !== null && capacity < (data as Event)?.registered_count) {
+      setUploadError(`Capacity cannot be less than current number of registrations (${(data as Event)?.registered_count})`)
       return
     }
     setShowNotifyModal(true)

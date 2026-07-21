@@ -216,7 +216,7 @@ export default function OrganizerEventDetailsPage() {
 
             {/* Ticket/Registration Info */}
             <p className="text-accent text-sm font-medium mb-3">
-              {cap > 0 ? `${sold} / ${cap} tickets sold` : `${sold} registered`}
+              {sold} {sold === 1 ? 'ticket sold' : 'tickets sold'}
             </p>
 
             {/* Category labels */}

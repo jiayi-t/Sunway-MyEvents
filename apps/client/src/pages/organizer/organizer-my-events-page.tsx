@@ -110,7 +110,9 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
             <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
           ) : (
             <>
-              <span className="text-accent text-xs font-medium">{sold} / {cap || '∞'} tickets sold</span>
+              <span className="text-accent text-xs font-medium">
+                {cap > 0 ? `${sold} / ${cap} tickets sold` : `${sold} ${sold === 1 ? 'ticket' : 'tickets'} sold`}
+              </span>
               {isSoldOut && (
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">SOLD OUT</span>
               )}
