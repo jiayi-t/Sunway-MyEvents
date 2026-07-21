@@ -5,7 +5,7 @@ import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '.
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark, Share2 } from 'lucide-react'
+import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark } from 'lucide-react'
 
 interface Event {
   id: number
@@ -167,9 +167,6 @@ export default function StudentEventDetailsPage() {
                   className="text-primary cursor-pointer"
                 >
               <Bookmark fill={saved ? 'currentColor' : 'none'} />
-                </button>
-                <button className="text-primary cursor-pointer">
-                  <Share2 />
                 </button>
               </div>
             </div>

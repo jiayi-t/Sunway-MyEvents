@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
-import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Share2, Ticket, Users } from 'lucide-react'
+import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
   id: number
@@ -124,7 +124,6 @@ export default function OrganizerEventDetailsPage() {
   )
 
   const sold = Number(event.registered_count ?? 0)
-  const cap = event.capacity ?? 0
 
   return (
     <div className="min-h-screen bg-surface">
@@ -170,9 +169,6 @@ export default function OrganizerEventDetailsPage() {
               <div className="flex gap-2 flex-shrink-0 mt-1 relative" ref={menuRef}>
                 <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground cursor-pointer">
                   <MoreVertical className="w-5 h-5" />
-                </button>
-                <button className="text-foreground cursor-pointer">
-                  <Share2 className="w-5 h-5" />
                 </button>
 
                 {menuOpen && (
