@@ -161,7 +161,7 @@ export default function HomePage() {
               <button
                 onClick={handleBrowse}
                 disabled={!search.trim()}
-                className="ml-3 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                className="ml-3 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Search
               </button>
@@ -265,14 +265,14 @@ export default function HomePage() {
                   <>
                     <button
                       onClick={e => { e.stopPropagation(); prevFeatured() }}
-                      className="absolute -left-9 lg:-left-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
+                      className="absolute -left-9 lg:-left-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20 cursor-pointer"
                       aria-label="Previous event"
                     >
                       <ChevronLeft className="w-3 h-3" />
                     </button>
                     <button
                       onClick={e => { e.stopPropagation(); nextFeatured() }}
-                      className="absolute -right-9 lg:-right-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20"
+                      className="absolute -right-9 lg:-right-10 top-[38%] lg:top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20 cursor-pointer"
                       aria-label="Next event"
                     >
                       <ChevronRight className="w-3 h-3" />
@@ -298,6 +298,7 @@ export default function HomePage() {
 
             </div>
 
+            {/* Carousel indicators */}
             {featuredEvents.length > 1 && (
               <div className="flex justify-center gap-1.5 mt-3">
                 {featuredEvents.map((_, i) => (
@@ -307,7 +308,7 @@ export default function HomePage() {
                       pauseAutoScroll()
                       setFeaturedIndex(i)
                     }}
-                    className={`rounded-full transition-all ${
+                    className={`rounded-full transition-all cursor-pointer ${
                       i === featuredIndex 
                         ? 'bg-white w-4 h-2' 
                         : 'bg-white/40 w-2 h-2'
@@ -331,7 +332,7 @@ export default function HomePage() {
           <button
             data-tour="browse-all"
             onClick={() => navigate('/browse')}
-            className="bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full"
+            className="bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer"
           >
             Browse All Events
           </button>

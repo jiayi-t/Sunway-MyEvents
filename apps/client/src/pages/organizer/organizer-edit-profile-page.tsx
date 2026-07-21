@@ -62,7 +62,7 @@ function LinkTypePicker({ value, onChange }: { value: SocialLinks['type']; onCha
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-foreground hover:border-primary"
+        className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-foreground hover:border-primary cursor-pointer"
         title={LINK_LABELS[value]}
       >
         <LinkTypeIcon type={value} className="w-4 h-4" />
@@ -74,7 +74,7 @@ function LinkTypePicker({ value, onChange }: { value: SocialLinks['type']; onCha
               key={type}
               type="button"
               onClick={() => { onChange(type); setOpen(false) }}
-              className={`flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-surface ${value === type ? 'text-primary font-medium' : 'text-foreground'}`}
+              className={`flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-surface cursor-pointer ${value === type ? 'text-primary font-medium' : 'text-foreground'}`}
             >
               <LinkTypeIcon type={type} className="w-4 h-4 flex-shrink-0" />
               {LINK_LABELS[type]}
@@ -341,7 +341,7 @@ export default function OrganizerEditProfilePage() {
                   <select
                     value={orgType}
                     onChange={e => { setOrgType(e.target.value as 'SLB' | 'CS'); if (e.target.value === 'SLB') setSubCategory('') }}
-                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary bg-white"
+                    className="w-full border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary bg-white cursor-pointer"
                   >
                     <option value="SLB">SLB</option>
                     <option value="CS">C&S</option>
@@ -454,12 +454,12 @@ export default function OrganizerEditProfilePage() {
                         placeholder="https://"
                         className="flex-1 min-w-0 border border-border rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
                       />
-                      <button onClick={() => removeLink(index)} className="text-muted-foreground hover:text-red-500 flex-shrink-0">
+                      <button onClick={() => removeLink(index)} className="text-muted-foreground hover:text-red-500 flex-shrink-0 cursor-pointer">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
-                  <button onClick={addLink} className="flex items-center gap-1 text-sm text-primary font-medium">
+                  <button onClick={addLink} className="flex items-center gap-1 text-sm text-primary font-medium cursor-pointer">
                     <Plus className="w-4 h-4" />
                     Add link
                   </button>
@@ -469,7 +469,7 @@ export default function OrganizerEditProfilePage() {
               <button
                 type="button"
                 onClick={() => navigate('/change-password')}
-                className="w-full rounded-b-xl px-4 py-3 flex items-center justify-between text-sm font-semibold text-foreground"
+                className="w-full rounded-b-xl px-4 py-3 flex items-center justify-between text-sm font-semibold text-foreground cursor-pointer"
               >
                 <span>Change Password</span>
                 <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -482,7 +482,7 @@ export default function OrganizerEditProfilePage() {
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || updateMutation.isPending || imageUploading}
-                className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {updateMutation.isPending ? 'Saving...' : saved ? 'Saved' : 'Save'}
               </button>

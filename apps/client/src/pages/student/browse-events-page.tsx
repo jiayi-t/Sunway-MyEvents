@@ -198,7 +198,7 @@ export default function BrowseEventsPage() {
           <button
             onClick={() => { setDraftFilters(filters); setFilterOpen(o => !o) }}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow border transition-colors ${
-              filtersActive(filters) ? 'bg-primary border-primary text-white' : 'bg-white border-border text-gray-500'
+              filtersActive(filters) ? 'bg-primary border-primary text-white cursor-pointer' : 'bg-white border-border text-gray-500 cursor-pointer'
             }`}
             aria-label="Open filters"
           >
@@ -228,7 +228,7 @@ export default function BrowseEventsPage() {
                     type="checkbox"
                     checked={draftFilters[key]}
                     onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
-                    className="w-4 h-4 accent-primary rounded"
+                    className="w-4 h-4 accent-primary rounded cursor-pointer"
                   />
                   <span className="text-sm capitalize text-foreground">{key}</span>
                 </label>
@@ -242,7 +242,7 @@ export default function BrowseEventsPage() {
                 type="date"
                 value={draftFilters.dateFrom}
                 onChange={e => setDraftFilters(f => ({ ...f, dateFrom: e.target.value }))}
-                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               />
               <span className="text-muted-foreground text-xs">to</span>
               <input
@@ -250,7 +250,7 @@ export default function BrowseEventsPage() {
                 value={draftFilters.dateTo}
                 min={draftFilters.dateFrom || undefined}
                 onChange={e => setDraftFilters(f => ({ ...f, dateTo: e.target.value }))}
-                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               />
             </div>
 
@@ -263,7 +263,7 @@ export default function BrowseEventsPage() {
                     type="checkbox"
                     checked={draftFilters[key]}
                     onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
-                    className="w-4 h-4 accent-primary rounded"
+                    className="w-4 h-4 accent-primary rounded cursor-pointer"
                   />
                   <span className="text-sm capitalize text-foreground">{key}</span>
                 </label>
@@ -279,7 +279,7 @@ export default function BrowseEventsPage() {
                     type="checkbox"
                     checked={draftFilters.categories.includes(cat)}
                     onChange={() => toggleDraftCategory(cat)}
-                    className="w-4 h-4 accent-primary rounded"
+                    className="w-4 h-4 accent-primary rounded cursor-pointer"
                   />
                   <span className="text-sm text-foreground">{cat}</span>
                 </label>
@@ -290,13 +290,13 @@ export default function BrowseEventsPage() {
             <div className="flex gap-2">
               <button
                 onClick={clearFilters}
-                className="flex-1 py-2 rounded-full border border-border text-sm font-semibold text-muted-foreground"
+                className="flex-1 py-2 rounded-full border border-border text-sm font-semibold text-muted-foreground cursor-pointer"
               >
                 Clear all
               </button>
               <button
                 onClick={applyFilters}
-                className="flex-1 py-2 rounded-full bg-accent text-white text-sm font-semibold"
+                className="flex-1 py-2 rounded-full bg-accent text-white text-sm font-semibold cursor-pointer"
               >
                 Apply
               </button>
@@ -316,7 +316,7 @@ export default function BrowseEventsPage() {
                 className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
                   ${activeCategory === cat
                     ? 'bg-primary text-white'
-                    : 'bg-white text-primary'
+                    : 'bg-white text-primary cursor-pointer'
                   }`}
               >
                 {cat}

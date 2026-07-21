@@ -167,7 +167,7 @@ export default function OrganizerParticipantsPage() {
               ) : (
                 <button
                   onClick={() => { setCheckinError(''); setConfirmTarget(p) }}
-                  className="flex-shrink-0 text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1.5 hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                  className="flex-shrink-0 text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1.5 hover:bg-accent hover:text-white transition-colors cursor-pointer"
                 >
                   Check In
                 </button>

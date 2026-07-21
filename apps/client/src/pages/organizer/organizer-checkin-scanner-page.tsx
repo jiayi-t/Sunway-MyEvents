@@ -140,7 +140,7 @@ export default function OrganizerCheckinScannerPage() {
         </p>
         <button
           onClick={() => navigate(`/organizer/events/${id}/participants`)}
-          className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold"
+          className="w-full flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-full text-sm font-semibold cursor-pointer"
         >
           <Users className="w-4 h-4" />
           View Participants

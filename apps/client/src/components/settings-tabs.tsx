@@ -27,7 +27,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (value: boo
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary' : 'bg-gray-300'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 cursor-pointer ${checked ? 'bg-primary' : 'bg-gray-300'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
     </button>
@@ -64,7 +64,7 @@ export function SettingsTabBar({ activeTab, onTabChange }: { activeTab: Settings
           className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors
             ${activeTab === tab.key
               ? 'bg-primary text-white'
-              : 'border border-border text-muted-foreground hover:text-foreground'
+              : 'border border-border text-muted-foreground hover:text-foreground cursor-pointer'
             }`}
         >
           {tab.label}
@@ -129,7 +129,7 @@ export function ProfilePhoto() {
             type="button"
             onClick={() => setShowPhotoMenu(m => !m)}
             disabled={imageUploading}
-            className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow"
+            className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow cursor-pointer"
           >
             <Pencil className="w-3 h-3 text-white" />
           </button>
@@ -137,7 +137,7 @@ export function ProfilePhoto() {
             <div className="absolute left-full ml-1 bottom-0 bg-white rounded-lg shadow-lg border border-border text-sm overflow-hidden z-10 w-36">
               <button
                 onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click() }}
-                className="w-full text-left px-3 py-2 hover:bg-surface text-foreground"
+                className="w-full text-left px-3 py-2 hover:bg-surface text-foreground cursor-pointer"
               >
                 Upload photo
               </button>
@@ -147,7 +147,7 @@ export function ProfilePhoto() {
                     setShowPhotoMenu(false)
                     updateImageMutation.mutate(null, { onSuccess: () => updateUser({ image_url: null }) })
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-surface text-red-500"
+                  className="w-full text-left px-3 py-2 hover:bg-surface text-red-500 cursor-pointer"
                 >
                   Remove photo
                 </button>
@@ -210,7 +210,7 @@ export function NotificationsTab({ variant = 'student' }: { variant?: 'student' 
                         : notifPrefs.email_channel.filter(existing => existing !== channel)
                       setNotifPrefs(p => ({ ...p, email_channel: channels }))
                     }}
-                    className="accent-primary"
+                    className="accent-primary cursor-pointer"
                   />
                   {channel === 'imail' ? 'iMail' : 'Personal Email'}
                 </label>
@@ -267,7 +267,7 @@ export function NotificationsTab({ variant = 'student' }: { variant?: 'student' 
         <button
           onClick={() => updateNotifPrefsMutation.mutate(notifPrefs, { onSuccess: () => setNotifSaved(true) })}
           disabled={!notifHasChanges || updateNotifPrefsMutation.isPending}
-          className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {updateNotifPrefsMutation.isPending ? 'Saving...' : notifSaved ? 'Saved' : 'Save'}
         </button>
@@ -354,7 +354,7 @@ export function InterestsTab() {
                       setInterestsSaved(false)
                       setSelectedInterests(prev => e.target.checked ? [...prev, label] : prev.filter(p => p !== label))
                     }}
-                    className="accent-primary"
+                    className="accent-primary cursor-pointer"
                   />
                   {label}
                 </label>
@@ -372,7 +372,7 @@ export function InterestsTab() {
                   type="time"
                   value={selectedFrom}
                   onChange={e => { setInterestsSaved(false); setSelectedFrom(e.target.value) }}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
               <span className="text-muted-foreground pb-2.5">–</span>
@@ -382,7 +382,7 @@ export function InterestsTab() {
                   type="time"
                   value={selectedTo}
                   onChange={e => { setInterestsSaved(false); setSelectedTo(e.target.value) }}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
             </div>
@@ -392,14 +392,14 @@ export function InterestsTab() {
           <div className="flex justify-end gap-3">
             <button
               onClick={handleInterestsCancel}
-              className="px-5 py-2 rounded-lg border border-accent text-accent text-sm font-semibold"
+              className="px-5 py-2 rounded-lg border border-accent text-accent text-sm font-semibold cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleInterestsSave}
               disabled={!interestsTabHasChanges || isSaving || interestsSaved}
-              className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSaving ? 'Saving...' : interestsSaved ? 'Saved' : 'Save'}
             </button>

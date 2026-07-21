@@ -192,7 +192,7 @@ function AttendanceTab({
             <button
               key={e.id}
               onClick={() => onRowClick(e.id)}
-              className="w-full bg-card rounded-2xl shadow-sm flex items-center gap-3 p-3 text-left"
+              className="w-full bg-card rounded-2xl shadow-sm flex items-center gap-3 p-3 text-left cursor-pointer"
             >
               <EventThumbnail url={e.image_url} name={e.name} />
               <div className="flex-1 min-w-0">
@@ -287,7 +287,7 @@ function FeedbackTab({
             <button
               key={e.id}
               onClick={() => onRowClick(e.id)}
-              className="w-full bg-card rounded-2xl shadow-sm flex items-center gap-3 p-3 text-left"
+              className="w-full bg-card rounded-2xl shadow-sm flex items-center gap-3 p-3 text-left cursor-pointer"
             >
               <EventThumbnail url={e.image_url} name={e.name} />
               <div className="flex-1 min-w-0">
@@ -355,7 +355,7 @@ export default function OrganizerAnalyticsPage() {
                 ? 'bg-primary text-white'
                 : t.disabled
                   ? 'text-border cursor-not-allowed'
-                  : 'text-muted-foreground'
+                  : 'text-muted-foreground cursor-pointer'
               }`}
           >
             {t.label}

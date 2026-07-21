@@ -336,7 +336,7 @@ export default function StudentEventDetailsPage() {
                   <button
                     onClick={handleRegister}
                     disabled={registerMutation.isPending}
-                    className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent hover:bg-orange-600 disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     {registerMutation.isPending ? 'Registering...' : 'Register Now!'}
                   </button>
