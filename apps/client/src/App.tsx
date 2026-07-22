@@ -79,8 +79,9 @@ const OrganizerRoute = ({ children, eventFallback = false }: { children: ReactNo
   const { user } = useAuth()
   const { id } = useParams()
   if (user?.role === 'organizer') return children
+  if (!user) return <Navigate to="/login" replace />
   if (eventFallback && id) return <Navigate to={`/events/${id}`} replace />
-  return <Navigate to={user ? '/' : '/login'} replace />
+  return <Navigate to="/" replace />
 }
 
 // /settings renders a different page for students and the general public
