@@ -187,9 +187,16 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
     if (result.length === 0) {
       return res.status(404).json({ error: 'Event not found' })
     }
-    // public and unauthenticated callers cannot view a students-only event by id 
+    // public and unauthenticated callers cannot view a students-only event's details
     if ((!req.user || req.user.role === 'public') && result[0].audience === 'students_only') {
-      return res.status(404).json({ error: 'Event not found' })
+      return res.json({
+        id: result[0].id,
+        audience: result[0].audience,
+        organizer_id: result[0].organizer_id,
+        organizer_name: result[0].organizer_name,
+        organizer_image_url: result[0].organizer_image_url,
+        restricted: 'students_only',
+      })
     }
     res.json(result[0])
   } catch {
@@ -217,6 +224,9 @@ router.get('/:id/registration-status', authenticate, async (req: AuthRequest, re
 
 // POST /api/events/:id/register - register for event 
 router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role === 'organizer') {
+    return res.status(403).json({ error: 'Organizer accounts cannot register for events' })
+  }
   const eventId = parseInt(req.params.id as string)
   try {
     const [event] = await db

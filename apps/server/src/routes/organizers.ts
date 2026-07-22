@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { eq, and, isNull, asc, gte, inArray } from 'drizzle-orm'
+import { eq, and, isNull, asc, gte, ne, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, followed_organizers, notifications } from '../database/schema'
-import { authenticate, AuthRequest } from '../middleware/auth'
+import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
 import { SEEDED_ORGANIZER_USERNAMES } from '../database/seeded-accounts'
 
 const router = Router()
@@ -28,9 +28,18 @@ router.get('/', async (_req, res) => {
 })
 
 // GET /api/organizers/:id - organizer profile for student view
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
   const id = parseInt(req.params.id as string)
   const now = new Date()
+
+  // only students/public can browse organizer profiles, organizers may only load their own dashboard
+  if (!req.user) {
+    return res.status(403).json({ error: 'Log in as a student or general public to view organizer profiles', code: 'auth_required' })
+  }
+  if (req.user.role === 'organizer' && req.user.id !== id) {
+    return res.status(403).json({ error: 'Organizer accounts cannot view other organizer profiles', code: 'organizer_forbidden' })
+  }
+
   try {
     const [organizer] = await db
       .select({
@@ -48,6 +57,8 @@ router.get('/:id', async (req, res) => {
 
     if (!organizer) return res.status(404).json({ error: 'Organizer not found' })
 
+    // general public cannot see students-only events
+    const hideStudentsOnly = req.user!.role === 'public'
     const upcomingEvents = await db
       .select()
       .from(events)
@@ -56,6 +67,7 @@ router.get('/:id', async (req, res) => {
         isNull(events.cancelled_at),
         isNull(events.archived_at),
         gte(events.date, now),
+        ...(hideStudentsOnly ? [ne(events.audience, 'students_only')] : []),
       ))
       .orderBy(asc(events.date))
       .limit(10)
@@ -93,6 +105,9 @@ router.get('/:id/follow-status', authenticate, async (req: AuthRequest, res) => 
 
 // POST /api/organizers/:id/follow-toggle
 router.post('/:id/follow-toggle', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role === 'organizer') {
+    return res.status(403).json({ error: 'Organizer accounts cannot follow other organizers' })
+  }
   const organizerId = parseInt(req.params.id as string)
   try {
     const [existing] = await db
