@@ -15,6 +15,7 @@ const FACULTIES = [
   { value: 'SMS', label: 'School of Mathematical Sciences (SMS)' },
   { value: 'CAE', label: 'Centre for American Education (CAE)' },
   { value: 'VU', label: 'Victoria University Programs (VU)' },
+  { value: 'STES', label: 'Sunway TES (STES)' },
   // Pre-U students get no faculty-based category boost (only from their interests/activity)
   { value: 'PREU', label: 'Pre-University (Pre-U)' },
 ]
