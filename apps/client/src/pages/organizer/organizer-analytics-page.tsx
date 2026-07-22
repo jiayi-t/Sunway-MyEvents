@@ -11,7 +11,7 @@ import {
   type ViewsAnalytics,
 } from '../../api/queries'
 
-type Tab = 'attendance' | 'views' | 'reach' | 'feedback'
+type Tab = 'attendance' | 'views' | 'feedback'
 
 const toImageUrl = (url?: string | null) => {
   if (!url) return ''
@@ -332,7 +332,6 @@ export default function OrganizerAnalyticsPage() {
   const tabs: { key: Tab; label: string; disabled?: boolean }[] = [
     { key: 'attendance', label: 'Attendance' },
     { key: 'views', label: 'Views' },
-    { key: 'reach', label: 'Reach', disabled: true },
     { key: 'feedback', label: 'Feedback' },
   ]
 

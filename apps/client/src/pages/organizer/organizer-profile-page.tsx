@@ -6,7 +6,7 @@ import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, t
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
+import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
 function SocialIcon({ type }: { type: SocialLinks['type'] }) {
@@ -268,10 +268,6 @@ export default function OrganizerProfilePage() {
                   <button onClick={() => navigate('/organizer/analytics?tab=views')} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><Eye /></div>
                     <span className="text-xs text-foreground">Views</span>
-                  </button>
-                  <button className="flex flex-col items-center gap-1 opacity-40" disabled>
-                    <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><TrendingUp /></div>
-                    <span className="text-xs text-foreground">Reach</span>
                   </button>
                   <button onClick={() => navigate('/organizer/analytics?tab=feedback')} className="flex flex-col items-center gap-1 cursor-pointer">
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-xl"><MessageSquare /></div>
