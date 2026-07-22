@@ -195,44 +195,51 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-secondary shadow border-b border-gray-200">
       {/* Mobile */}
       <div className="lg:hidden px-4 py-3 flex items-center justify-between relative">
+        {/* Menu (hidden for logged-out guests) */}
         <div className="flex items-center" ref={mobileMenuRef}>
-          <button
-            data-tour="nav-menu"
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-black focus:outline-none cursor-pointer"
-            aria-label="Open menu"
-          >
-            <Menu className="w-6 h-6" aria-hidden="true" />
-          </button>
-          <div
-            className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
-              menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-            onClick={() => setMenuOpen(false)}
-          />
-          <div
-            inert={!menuOpen}
-            className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50 flex flex-col transition-transform duration-300 ${
-              menuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-          >
-            <div className="px-4 py-3 border-b flex items-center justify-between">
-              <span className="text-lg font-bold">
-                <span className="text-primary">Sunway </span>
-                <span className="text-accent">MyEvents</span>
-              </span>
+          {user ? (
+            <>
               <button
-                onClick={() => setMenuOpen(false)}
-                className="text-gray-500 hover:text-black cursor-pointer"
-                aria-label="Close menu"
+                data-tour="nav-menu"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="text-black focus:outline-none cursor-pointer"
+                aria-label="Open menu"
               >
-                <X className="w-5 h-5" aria-hidden="true" />
+                <Menu className="w-6 h-6" aria-hidden="true" />
               </button>
-            </div>
-            <div className="py-3 overflow-y-auto">
-              {mobileMenuItems}
-            </div>
-          </div>
+              <div
+                className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
+                  menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={() => setMenuOpen(false)}
+              />
+              <div
+                inert={!menuOpen}
+                className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-50 flex flex-col transition-transform duration-300 ${
+                  menuOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+              >
+                <div className="px-4 py-3 border-b flex items-center justify-between">
+                  <span className="text-lg font-bold">
+                    <span className="text-primary">Sunway </span>
+                    <span className="text-accent">MyEvents</span>
+                  </span>
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-500 hover:text-black cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="py-3 overflow-y-auto">
+                  {mobileMenuItems}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="w-6" />
+          )}
         </div>
         <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
           <button onClick={goHome} className="pointer-events-auto cursor-pointer">
@@ -250,6 +257,13 @@ export default function Header() {
               </span>
             )}
           </button>
+        ) : !user ? (
+          <button
+            onClick={() => navigate('/login')}
+            className="text-sm font-semibold text-primary cursor-pointer whitespace-nowrap"
+          >
+            Log in
+          </button>
         ) : (
           <div className="w-10" />
         )}
@@ -266,9 +280,9 @@ export default function Header() {
           <span className="text-accent">MyEvents</span>
         </button>
 
-        {/* Nav */}
-        <div className="max-w-2xl lg:max-w-3xl mx-auto flex items-center gap-6">
-          {navLinks.map(link => (
+        {/* Nav (hidden for logged-out guests) */}
+        <div className="max-w-2xl lg:max-w-3xl mx-auto flex items-center gap-6 min-h-5">
+          {user && navLinks.map(link => (
             <button
               key={link.path}
               onClick={() => navigate(link.path)}
@@ -281,33 +295,44 @@ export default function Header() {
           ))}
         </div>
 
-        {/* User */}
+        {/* User (guests get a Log in button instead of the account menu) */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
-          {(user?.role === 'student' || user?.role === 'public') && (
-            <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center cursor-pointer">
-              <Bell className="w-5 h-5 text-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
+          {user ? (
+            <>
+              {(user.role === 'student' || user.role === 'public') && (
+                <button data-tour="notifications" onClick={() => navigate('/notifications')} className="relative w-8 flex items-center justify-center cursor-pointer">
+                  <Bell className="w-5 h-5 text-foreground" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
               )}
+              <div className="relative" ref={desktopMenuRef}>
+                <button
+                  data-tour="nav-menu"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors cursor-pointer"
+                >
+                  <span className="font-medium">{user.name}</span>
+                  <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded shadow-lg z-50 border border-gray-100">
+                    {desktopMenuItems}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+            >
+              Log in
             </button>
           )}
-          <div className="relative" ref={desktopMenuRef}>
-            <button
-              data-tour="nav-menu"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-primary transition-colors cursor-pointer"
-            >
-              <span className="font-medium">{user?.name}</span>
-              <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded shadow-lg z-50 border border-gray-100">
-                {desktopMenuItems}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </header>

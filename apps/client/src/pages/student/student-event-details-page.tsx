@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '../../api/queries'
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark } from 'lucide-react'
+import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark, Lock } from 'lucide-react'
 
 interface Event {
   id: number
@@ -82,6 +82,13 @@ export default function StudentEventDetailsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- silences the missing-dependency warning
   }, [id])
 
+  // /events/:id has no route guard, so redirect to login on the logged-in to logged-out transition
+  const prevUserRef = useRef(user)
+  useEffect(() => {
+    if (prevUserRef.current && !user) navigate('/login', { replace: true })
+    prevUserRef.current = user
+  }, [user, navigate])
+
   const handleRegister = () => {
     if (Number((event as any)?.pricing) > 0) {
       navigate(`/events/${id}/pay`)
@@ -115,6 +122,93 @@ export default function StudentEventDetailsPage() {
 
   // useEventQuery returns unknown, cast to access event fields
   const typedEvent = event as Event
+
+  // if students-only event seen by a guest or public user, server prompts them to log in as a student to view the details and register
+  if ((typedEvent as any).restricted === 'students_only')
+    return (
+      <div className="bg-surface">
+        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+          <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
+        </div>
+
+        <div className="lg:flex lg:items-start lg:gap-6 lg:p-6 lg:pb-0">
+          {/* Grey poster placeholder holding the lock prompt */}
+          <div className="lg:w-5/12 lg:flex-shrink-0 lg:rounded-xl lg:overflow-hidden lg:shadow-sm">
+            <div
+              className="w-full bg-gray-100 flex flex-col items-center justify-center text-center px-6 gap-3"
+              style={{ aspectRatio: '4/5' }}
+            >
+              <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h2 className="text-foreground font-bold text-lg">This event is open to Sunway students only</h2>
+              <p className="text-muted-foreground text-sm max-w-xs">Log in with a Sunway student account to view the details and register.</p>
+              <button
+                onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/events/${id}`)}`)}
+                className="mt-1 bg-accent text-white px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer"
+              >
+                Log in
+              </button>
+            </div>
+          </div>
+
+          {/* Right info column, static placeholders for the hidden details */}
+          <div className="lg:flex-1 lg:min-w-0">
+            <div className="bg-card px-4 py-4 lg:rounded-xl">
+              <div className="h-6 w-2/3 bg-gray-200 rounded" />
+              <div className="flex gap-2 mt-4 mb-4">
+                <div className="h-6 w-16 bg-gray-200 rounded-full" />
+                <div className="h-6 w-24 bg-gray-200 rounded-full" />
+                <div className="h-6 w-14 bg-gray-200 rounded-full" />
+              </div>
+              <div className="h-4 w-1/3 bg-gray-200 rounded" />
+              <div className="mt-2 mb-4 space-y-2">
+                <div className="h-3.5 w-full bg-gray-200 rounded" />
+                <div className="h-3.5 w-4/5 bg-gray-200 rounded" />
+              </div>
+              <div className="space-y-3 mb-4">
+                <div className="h-3.5 w-1/2 bg-gray-200 rounded" />
+                <div className="h-3.5 w-2/5 bg-gray-200 rounded" />
+                <div className="h-3.5 w-3/5 bg-gray-200 rounded" />
+                <div className="h-3.5 w-1/2 bg-gray-200 rounded" />
+              </div>
+              <div className="h-11 w-full bg-gray-200 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Student/public can open the organizer profile, guests and organizers cannot */}
+        <div className="bg-card mt-2 px-4 py-4 lg:rounded-xl lg:mt-6 lg:mx-6 lg:mb-6">
+          <h3 className="font-semibold text-foreground text-sm mb-3">Organized by:</h3>
+          {(user?.role === 'student' || user?.role === 'public') ? (
+            <button
+              className="flex items-center gap-3 w-full text-left cursor-pointer"
+              onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
+            >
+              <Avatar
+                src={toImageUrl(typedEvent.organizer_image_url) || undefined}
+                alt={typedEvent.organizer_name ?? 'Organizer'}
+                className="w-12 h-12"
+              />
+              <p className="flex-1 text-sm font-medium text-foreground">{typedEvent.organizer_name ?? 'Organizer'}</p>
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Avatar
+                src={toImageUrl(typedEvent.organizer_image_url) || undefined}
+                alt={typedEvent.organizer_name ?? 'Organizer'}
+                className="w-12 h-12"
+              />
+              <p className="text-sm font-medium text-foreground">{typedEvent.organizer_name ?? 'Organizer'}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+
+  // organizers get a read-only view, they can view events but cannot register or save
+  const isOrganizer = user?.role === 'organizer'
 
   return (
     <div className="bg-surface">
@@ -161,14 +255,16 @@ export default function StudentEventDetailsPage() {
               <h2 className="font-bold text-foreground text-lg leading-tight flex-1">
                 {typedEvent.name}
               </h2>
-              <div className="flex gap-2 flex-shrink-0 mt-1">
-                <button
-                  onClick={() => saveMutation.mutate()}
-                  className="text-primary cursor-pointer"
-                >
-              <Bookmark fill={saved ? 'currentColor' : 'none'} />
-                </button>
-              </div>
+              {user && !isOrganizer && (
+                <div className="flex gap-2 flex-shrink-0 mt-1">
+                  <button
+                    onClick={() => saveMutation.mutate()}
+                    className="text-primary cursor-pointer"
+                  >
+                    <Bookmark fill={saved ? 'currentColor' : 'none'} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Category labels */}
@@ -280,7 +376,20 @@ export default function StudentEventDetailsPage() {
             )}
 
             {/* Register Button */}
-            {!typedEvent.cancelled_at &&
+            {isOrganizer ? (
+              <div className="w-full py-3 rounded-full text-center text-sm bg-surface border border-border text-muted-foreground">
+                Organizer accounts cannot register for events
+              </div>
+            ) : !user ? (
+              !typedEvent.cancelled_at && (
+                <button
+                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/events/${id}`)}`)}
+                  className="w-full py-3 rounded-full text-white font-semibold text-sm bg-accent transition-colors cursor-pointer"
+                >
+                  Log in to register
+                </button>
+              )
+            ) : !typedEvent.cancelled_at &&
               (() => {
                 const eventEnded = typedEvent.end_time
                   ? new Date() > new Date(typedEvent.end_time)
@@ -348,24 +457,42 @@ export default function StudentEventDetailsPage() {
         <h3 className="font-semibold text-foreground text-sm mb-3">
           Organized by:
         </h3>
-        <button
-          className="flex items-center gap-3 w-full text-left cursor-pointer"
-          onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
-        >
-          <div className="flex-shrink-0">
-            <Avatar
-              src={toImageUrl(typedEvent.organizer_image_url) || undefined}
-              alt={typedEvent.organizer_name ?? 'Organizer'}
-              className="w-12 h-12"
-            />
+        {/* Only students and public can open the organizer profile */}
+        {(user?.role === 'student' || user?.role === 'public') ? (
+          <button
+            className="flex items-center gap-3 w-full text-left cursor-pointer"
+            onClick={() => navigate(`/organizers/${typedEvent.organizer_id}`)}
+          >
+            <div className="flex-shrink-0">
+              <Avatar
+                src={toImageUrl(typedEvent.organizer_image_url) || undefined}
+                alt={typedEvent.organizer_name ?? 'Organizer'}
+                className="w-12 h-12"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {typedEvent.organizer_name ?? "Organizer"}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-3 w-full text-left">
+            <div className="flex-shrink-0">
+              <Avatar
+                src={toImageUrl(typedEvent.organizer_image_url) || undefined}
+                alt={typedEvent.organizer_name ?? 'Organizer'}
+                className="w-12 h-12"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {typedEvent.organizer_name ?? "Organizer"}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
-              {typedEvent.organizer_name ?? "Organizer"}
-            </p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        </button>
+        )}
       </div>
     </div>
   )
