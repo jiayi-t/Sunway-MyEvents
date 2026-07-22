@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, ChevronUp, Info } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
 import { useOrganizerAccountsQuery, type OrganizerAccount } from '../../api/queries'
@@ -52,6 +52,12 @@ export default function OrganizerLoginPage() {
   const [showAccounts, setShowAccounts] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // came from "Log in to register", send them back to the event (read-only view for organizers)
+  const redirectParam = searchParams.get('redirect')
+  const safeRedirect = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+    ? redirectParam
+    : null
 
   const { data: accounts = [], isLoading: accountsLoading } = useOrganizerAccountsQuery(showAccounts)
 
@@ -65,7 +71,7 @@ export default function OrganizerLoginPage() {
       const payload = { sunwayId: form.sunwayId, password: form.password, role: 'organizer' }
       const res = await api.post('/auth/login', payload)
       login(res.data.user)
-      navigate('/organizer/dashboard')
+      navigate(safeRedirect ?? '/organizer/dashboard')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid username or password')
     } finally {

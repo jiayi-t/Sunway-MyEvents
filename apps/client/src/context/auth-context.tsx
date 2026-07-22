@@ -50,6 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const login = (user: User) => {
+    // a new identity must not reuse cached queries from the previous session
+    queryClient.clear()
     setUser(user)
     localStorage.setItem('user', JSON.stringify(user))
   }

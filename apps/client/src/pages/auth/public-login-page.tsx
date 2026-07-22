@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import LoginFooter from '../../components/login-footer'
 import api from '../../services/api'
@@ -10,6 +10,12 @@ export default function PublicLoginPage() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // only honor same-origin app paths to avoid open-redirects
+  const redirectParam = searchParams.get('redirect')
+  const safeRedirect = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+    ? redirectParam
+    : null
 
   const handleSubmit = async () => {
     setError('')
@@ -19,7 +25,12 @@ export default function PublicLoginPage() {
       const res = await api.post('/auth/login', payload)
       login(res.data.user)
       const interests = res.data.user.interests
-      navigate((!interests || interests.length === 0) ? '/select-interests' : '/')
+      if (!interests || interests.length === 0) {
+        navigate('/select-interests')
+        return
+      }
+      // only send back to the event if they have already completed the first-time walkthrough
+      navigate(safeRedirect && res.data.user.tour_completed_at ? safeRedirect : '/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid email or password')
     } finally {

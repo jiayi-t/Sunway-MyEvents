@@ -7,6 +7,10 @@ export default function SelectLoginPage() {
   const [searchParams] = useSearchParams()
   const [showBanner, setShowBanner] = useState(searchParams.get('reason') === 'session_expired')
 
+  // carry the post-login redirect (from "Log in to register") through to the role login page
+  const redirect = searchParams.get('redirect')
+  const redirectSuffix = redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
+
   useEffect(() => {
     if (!showBanner) return
     // remove the query param so navigating back does not show the banner again
@@ -48,21 +52,21 @@ export default function SelectLoginPage() {
 
           <div className="flex flex-col gap-4">
             <button
-              onClick={() => navigate('/login/student')}
+              onClick={() => navigate(`/login/student${redirectSuffix}`)}
               className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               General Sunway Student
             </button>
 
             <button
-              onClick={() => navigate('/login/organizer')}
+              onClick={() => navigate(`/login/organizer${redirectSuffix}`)}
               className="w-full bg-primary text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               Organizer (SLB / C&S)
             </button>
 
             <button
-              onClick={() => navigate('/login/public')}
+              onClick={() => navigate(`/login/public${redirectSuffix}`)}
               className="w-full bg-accent text-white font-semibold py-3 rounded-lg text-sm cursor-pointer"
             >
               General Public
