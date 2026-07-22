@@ -372,6 +372,7 @@ export function InterestsTab() {
                   type="time"
                   value={selectedFrom}
                   onChange={e => { setInterestsSaved(false); setSelectedFrom(e.target.value) }}
+                  onClick={e => e.currentTarget.showPicker?.()}
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
@@ -382,6 +383,7 @@ export function InterestsTab() {
                   type="time"
                   value={selectedTo}
                   onChange={e => { setInterestsSaved(false); setSelectedTo(e.target.value) }}
+                  onClick={e => e.currentTarget.showPicker?.()}
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>

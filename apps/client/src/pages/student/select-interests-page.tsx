@@ -94,7 +94,8 @@ export default function SelectInterestsPage() {
                   type="time"
                   value={selectedFrom}
                   onChange={e => setSelectedFrom(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                  onClick={e => e.currentTarget.showPicker?.()}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
               <span className="text-muted-foreground pb-2.5">–</span>
@@ -104,7 +105,8 @@ export default function SelectInterestsPage() {
                   type="time"
                   value={selectedTo}
                   onChange={e => setSelectedTo(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white"
+                  onClick={e => e.currentTarget.showPicker?.()}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
             </div>
