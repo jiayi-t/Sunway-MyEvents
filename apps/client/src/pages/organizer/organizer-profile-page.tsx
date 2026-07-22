@@ -1,12 +1,12 @@
-import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { hasSeenOrganizerTour, startOrganizerTour } from '../../tours/organizer-tour'
 import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, type SocialLinks } from '../../api/queries'
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff } from 'lucide-react'
+import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, TrendingUp, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
 function SocialIcon({ type }: { type: SocialLinks['type'] }) {
@@ -53,8 +53,10 @@ export default function OrganizerProfilePage() {
   const isOwnProfile = !id
   const profileId = id ?? user?.id?.toString()
 
-  const { data: profile, isLoading } = usePublicOrganizerProfileQuery(profileId)
-  const { data: notifyStatus } = useOrganizerNotificationsStatusQuery(isOwnProfile ? undefined : profileId)
+  const { data: profile, isLoading, isError, error } = usePublicOrganizerProfileQuery(profileId)
+  // only students/public can follow an organizer
+  const canFollow = user?.role === 'student' || user?.role === 'public'
+  const { data: notifyStatus } = useOrganizerNotificationsStatusQuery(canFollow && !isOwnProfile ? profileId : undefined)
   const toggleNotifyMutation = useToggleOrganizerNotificationsMutation(isOwnProfile ? undefined : profileId)
 
   const following = notifyStatus?.following ?? false
@@ -66,6 +68,18 @@ export default function OrganizerProfilePage() {
     if (hasSeenOrganizerTour()) return
     startOrganizerTour(navigate)
   }, [isOwnProfile, user?.role, isLoading, profile, navigate])
+
+  // /organizers/:id has no route guard, so redirect guests to login if they try to view a profile
+  const prevUserRef = useRef(user)
+  useEffect(() => {
+    if (prevUserRef.current && !user && id) navigate('/login', { replace: true })
+    prevUserRef.current = user
+  }, [user, id, navigate])
+
+  // organizers have no public-profile view, viewing /organizers/:id sends them to their dashboard
+  if (id && user?.role === 'organizer') {
+    return <Navigate to="/organizer/dashboard" replace />
+  }
 
   return (
     <div className="bg-surface">
@@ -87,6 +101,53 @@ export default function OrganizerProfilePage() {
             <EventListSkeleton />
           </div>
         </>
+      ) : isError ? (
+        (() => {
+          const code = (error as any)?.response?.data?.code
+          if (code === 'auth_required') {
+            // locked view, login prompt on the blue banner, static event-card placeholders below
+            return (
+              <>
+                {/* Lock prompt on the primary banner */}
+                <div className="bg-primary px-6 py-10 flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-full border-2 border-white/70 flex items-center justify-center">
+                    <Lock className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-white font-bold text-lg">Log in to view organizer profiles</h2>
+                  <p className="text-blue-100 text-sm max-w-xs">Log in with a Sunway student or general public account to see this organizer's events.</p>
+                  <button
+                    onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/organizers/${id}`)}`)}
+                    className="mt-1 bg-accent text-white px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer"
+                  >
+                    Log in
+                  </button>
+                </div>
+
+                {/* Static event-card placeholders */}
+                <div className="px-4 mt-6">
+                  <div className="h-4 w-32 bg-gray-200 rounded mb-3" />
+                  <div className="space-y-3">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="bg-card rounded-xl shadow flex gap-3 p-3 items-center">
+                        <div className="flex-shrink-0 rounded-lg bg-gray-200" style={{ width: '100px', aspectRatio: '4/5' }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                          <div className="h-3 w-1/3 bg-gray-200 rounded mt-2" />
+                          <div className="mt-3 space-y-1.5">
+                            <div className="h-3 w-1/2 bg-gray-200 rounded" />
+                            <div className="h-3 w-2/5 bg-gray-200 rounded" />
+                            <div className="h-3 w-3/5 bg-gray-200 rounded" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
+          }
+          return <p className="text-muted-foreground text-sm text-center mt-12">Organizer not found.</p>
+        })()
       ) : !profile ? (
         <p className="text-muted-foreground text-sm text-center mt-12">Organizer not found.</p>
       ) : (
@@ -117,7 +178,7 @@ export default function OrganizerProfilePage() {
                 <p className="text-white font-semibold text-base">{profile.name}</p>
               </div>
 
-              {/* Edit (own) / notifications (student) */}
+              {/* Edit (own) / follow notifications (student/public) */}
               {isOwnProfile ? (
                 <button
                   data-tour="edit-profile"
@@ -126,7 +187,7 @@ export default function OrganizerProfilePage() {
                 >
                   <Pen className="text-accent w-4 h-4" />
                 </button>
-              ) : (
+              ) : user?.role !== 'organizer' && (
                 <button
                   onClick={() => toggleNotifyMutation.mutate()}
                   disabled={toggleNotifyMutation.isPending}

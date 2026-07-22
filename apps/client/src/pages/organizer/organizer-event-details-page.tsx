@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../../context/auth-context'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
@@ -60,6 +61,7 @@ const formatTime = (value?: string) => {
 export default function OrganizerEventDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState(false)
@@ -122,6 +124,11 @@ export default function OrganizerEventDetailsPage() {
       <p className="text-muted-foreground text-sm">{actionError || 'Event not found'}</p>
     </div>
   )
+
+  // only the organizer gets the organizer view for their own events, anyone else sees the student/public view
+  if (user && event.organizer_id !== user.id) {
+    return <Navigate to={`/events/${id}`} replace />
+  }
 
   const sold = Number(event.registered_count ?? 0)
 

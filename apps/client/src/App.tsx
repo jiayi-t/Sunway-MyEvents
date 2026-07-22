@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/auth-context'
@@ -44,7 +44,15 @@ import type { ReactNode } from 'react'
 // cache query results for 1 minute before marking them stale and refetching
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 1000 * 60 },
+    queries: {
+      staleTime: 1000 * 60,
+      // do not retry client errors (401/403/404) as they will never resolve, and retrying keeps pages on the skeleton loader
+      retry: (failureCount, error: any) => {
+        const status = error?.response?.status
+        if (status >= 400 && status < 500) return false
+        return failureCount < 3
+      },
+    },
   },
 })
 
@@ -56,6 +64,23 @@ const AUTH_PATHS = [
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth()
   return user ? children : <Navigate to="/login" replace />
+}
+
+// gate student/public-only pages, organizers land on their dashboard (they have no student pages), guests go to login
+const StudentPublicRoute = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role === 'organizer') return <Navigate to="/organizer/dashboard" replace />
+  return children
+}
+
+// gate /organizer/* routes to the organizer role, non-organizers (students, public, guests) get their own event details page, otherwise home (logged in) or login (guest)
+const OrganizerRoute = ({ children, eventFallback = false }: { children: ReactNode; eventFallback?: boolean }) => {
+  const { user } = useAuth()
+  const { id } = useParams()
+  if (user?.role === 'organizer') return children
+  if (eventFallback && id) return <Navigate to={`/events/${id}`} replace />
+  return <Navigate to={user ? '/' : '/login'} replace />
 }
 
 // /settings renders a different page for students and the general public
@@ -105,81 +130,76 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<SelectLoginPage />} />
       <Route path="/login/student" element={<StudentLoginPage />} />
-      <Route path="/" 
+      <Route path="/"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <HomePage />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
       <Route path="/browse"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <BrowseEventsPage />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
       <Route path="/select-interests"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <SelectInterestsPage />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
       <Route path="/student-onboarding"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <StudentOnboardingPage />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
-      <Route path="/events/:id"
-        element={
-        <ProtectedRoute>
-          <StudentEventDetailsPage />
-        </ProtectedRoute>
-        }
-      />
+      {/* open to public event details are viewable without an account */}
+      <Route path="/events/:id" element={<StudentEventDetailsPage />} />
       <Route path="/events/:id/pay"
         element={
-        <ProtectedRoute>
+        <StudentPublicRoute>
           <MockPaymentPage />
-        </ProtectedRoute>
+        </StudentPublicRoute>
         }
       />
       <Route path="/events/:id/checkin"
         element={
-        <ProtectedRoute>
+        <StudentPublicRoute>
           <CheckinRoute />
-        </ProtectedRoute>
+        </StudentPublicRoute>
         }
       />
       <Route path="/events/:id/feedback"
         element={
-        <ProtectedRoute>
+        <StudentPublicRoute>
           <StudentFeedbackPage />
-        </ProtectedRoute>
+        </StudentPublicRoute>
         }
       />
       <Route path="/profile"
         element={
-        <ProtectedRoute>
+        <StudentPublicRoute>
           <ProfileRoute />
-        </ProtectedRoute>
+        </StudentPublicRoute>
         }
       />
-      <Route path="/my-events" 
+      <Route path="/my-events"
         element={
-        <ProtectedRoute>
+        <StudentPublicRoute>
           <MyEventsPage />
-        </ProtectedRoute>
-        } 
+        </StudentPublicRoute>
+        }
       />
       <Route path="/settings"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <SettingsRoute />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
       <Route path="/change-password"
@@ -191,104 +211,99 @@ function AppRoutes() {
       />
       <Route path="/notifications"
         element={
-          <ProtectedRoute>
+          <StudentPublicRoute>
             <NotificationsPage />
-          </ProtectedRoute>
+          </StudentPublicRoute>
         }
       />
-      <Route path="/organizers/:id"
-        element={
-          <ProtectedRoute>
-            <OrganizerProfilePage />
-          </ProtectedRoute>
-        }
-      />
+      {/* viewable without a token so guests get a login prompt, access is enforced server-side */}
+      <Route path="/organizers/:id" element={<OrganizerProfilePage />} />
       <Route path="/login/organizer" element={<OrganizerLoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/login/organizer/register" element={<OrganizerCreateAccount />} />
-      <Route path="/organizer/dashboard" 
+      <Route path="/organizer/dashboard"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerProfilePage />
-        </ProtectedRoute>
-        } 
+        </OrganizerRoute>
+        }
       />
       <Route path="/organizer/profile"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerEditProfilePage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerEventsPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/new"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerCreateEventPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute eventFallback>
           <OrganizerEventDetailsPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id/edit"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerEditEventPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id/checkin"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerCheckinScannerPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id/participants"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerParticipantsPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id/feedback-form"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerFeedbackFormPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/feedback-form/new"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerFeedbackFormPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/analytics"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerAnalyticsPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/organizer/events/:id/analytics"
         element={
-        <ProtectedRoute>
+        <OrganizerRoute>
           <OrganizerEventAnalyticsPage />
-        </ProtectedRoute>
+        </OrganizerRoute>
         }
       />
       <Route path="/login/public" element={<PublicLoginPage />} />
