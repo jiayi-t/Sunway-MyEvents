@@ -59,7 +59,9 @@ export default function OrganizerLoginPage() {
     ? redirectParam
     : null
 
-  const { data: accounts = [], isLoading: accountsLoading } = useOrganizerAccountsQuery(showAccounts)
+  const { data, isLoading: accountsLoading } = useOrganizerAccountsQuery(showAccounts)
+  const accounts = data?.accounts ?? []
+  const seededPassword = data?.password ?? ''
 
   const slbAccounts = accounts.filter(a => a.category === 'SLB')
   const csAccounts = accounts.filter(a => a.category !== 'SLB')
@@ -132,19 +134,19 @@ export default function OrganizerLoginPage() {
                   <p className="text-xs text-muted-foreground py-2">No demo accounts yet.</p>
                 ) : (
                   <>
-                    <p className="text-[10px] text-muted-foreground py-2 border-b border-primary/10">Password for all: <span className="font-semibold text-foreground">sunway123</span></p>
+                    <p className="text-[10px] text-muted-foreground py-2 border-b border-primary/10">Password for all: <span className="font-semibold text-foreground">{seededPassword}</span></p>
                     {slbAccounts.length > 0 && (
                       <AccountGroup
                         heading="SLB"
                         accounts={slbAccounts}
-                        onPick={id => setForm({ ...form, sunwayId: id })}
+                        onPick={id => setForm({ sunwayId: id, password: seededPassword })}
                       />
                     )}
                     {csAccounts.length > 0 && (
                       <AccountGroup
                         heading="C&S"
                         accounts={csAccounts}
-                        onPick={id => setForm({ ...form, sunwayId: id })}
+                        onPick={id => setForm({ sunwayId: id, password: seededPassword })}
                       />
                     )}
                   </>

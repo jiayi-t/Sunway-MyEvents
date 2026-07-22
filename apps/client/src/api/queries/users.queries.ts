@@ -72,6 +72,12 @@ export interface OrganizerAccount {
   category: string | null
 }
 
+// GET /organizers payload: the seeded accounts and their shared login password
+export interface OrganizerAccountsResponse {
+  accounts: OrganizerAccount[]
+  password: string
+}
+
 export const userKeys = {
   profile: ['profile'] as const,
   organizerProfile: ['organizer-profile'] as const,
@@ -115,7 +121,7 @@ export function usePublicOrganizerProfileQuery(id: string | undefined) {
 export function useOrganizerAccountsQuery(enabled: boolean) {
   return useQuery({
     queryKey: userKeys.organizerAccounts,
-    queryFn: () => api.get('/organizers').then(res => res.data as OrganizerAccount[]),
+    queryFn: () => api.get('/organizers').then(res => res.data as OrganizerAccountsResponse),
     enabled,
   })
 }

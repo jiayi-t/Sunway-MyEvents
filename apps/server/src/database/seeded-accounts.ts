@@ -19,3 +19,7 @@ export const SEEDED_ORGANIZER_USERNAMES = [
 // Remove an account from the seeded list above to allow password and username changes
 export const isSeededOrganizer = (sunwayId: string | null | undefined) =>
   !!sunwayId && SEEDED_ORGANIZER_USERNAMES.includes(sunwayId)
+
+// Shared password for every account created by `npm run seed`
+// Single source of truth: seed.ts hashes it, GET /organizers serves it to the login page
+export const SEEDED_ACCOUNT_PASSWORD = 'sunway123'

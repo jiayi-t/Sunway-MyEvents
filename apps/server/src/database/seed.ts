@@ -2,12 +2,12 @@ import bcrypt from 'bcryptjs'
 import { eq, and, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, registrations, saved_events, feedback } from './schema'
-import { SEEDED_ORGANIZER_USERNAMES } from './seeded-accounts'
+import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from './seeded-accounts'
 
 const seed = async () => {
   console.log('Seeding database...')
 
-  const defaultPassword = await bcrypt.hash('sunway123', 10)
+  const defaultPassword = await bcrypt.hash(SEEDED_ACCOUNT_PASSWORD, 10)
 
   const seedUsers = [
     // Students

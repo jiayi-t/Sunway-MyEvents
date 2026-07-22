@@ -3,7 +3,7 @@ import { eq, and, isNull, asc, gte, ne, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, followed_organizers, notifications } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
-import { SEEDED_ORGANIZER_USERNAMES } from '../database/seeded-accounts'
+import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from '../database/seeded-accounts'
 
 const router = Router()
 
@@ -21,7 +21,8 @@ router.get('/', async (_req, res) => {
       .where(and(eq(users.role, 'organizer'), inArray(users.sunway_id, SEEDED_ORGANIZER_USERNAMES)))
       .orderBy(asc(users.name))
 
-    res.json(rows)
+    // password is the shared seed default (already shown on the login page
+    res.json({ accounts: rows, password: SEEDED_ACCOUNT_PASSWORD })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
