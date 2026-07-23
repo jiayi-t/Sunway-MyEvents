@@ -81,6 +81,34 @@
   padding: 1rem;
   max-width: 300px;
 }
+
+/* park the popover in one spot for every step of the tour */
+.driver-popover.tour-pinned {
+  top: auto !important;
+  right: auto !important;
+  bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+  width: calc(100vw - 2rem);
+  max-width: 320px;
+}
+/* wider on desktop */
+@media (min-width: 768px) {
+  .driver-popover.tour-pinned {
+    max-width: 480px;
+  }
+}
+/* move popover to the middle on small screens if it covers something on the bottom */
+@media (max-width: 767px) {
+  .driver-popover.tour-pinned-middle {
+    top: auto !important;
+    bottom: 45% !important;
+  }
+}
+/* the arrow points at the element, meaningless once the popover is parked */
+.driver-popover-arrow {
+  display: none !important;
+}
 .driver-popover-title {
   color: var(--primary);
   font-size: 0.95rem;

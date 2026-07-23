@@ -60,6 +60,8 @@ export function startOrganizerTour(navigate: (to: string) => void) {
         description: 'This is your Upcoming events page. The + button here also creates a new event.',
         side: 'top',
         align: 'end',
+        // on mobile a bottom-pinned popover would cover the + button, so this step and the last one both sit mid-screen instead of moving away and back
+        popoverClass: 'tour-pinned tour-pinned-middle',
         // the previous step's anchor is back on the dashboard
         onPrevClick: () => {
           navigate('/organizer/dashboard')
@@ -73,6 +75,8 @@ export function startOrganizerTour(navigate: (to: string) => void) {
         title: 'Replay this tour anytime',
         description: 'Open this menu and tap Website Tour to watch the walkthrough again.<br><br>That’s the end of the tour, good luck with your events!',
         side: 'bottom',
+        // stays where the + button step put it rather than dropping back to the bottom for one last step
+        popoverClass: 'tour-pinned tour-pinned-middle',
       },
     },
   ], () => {

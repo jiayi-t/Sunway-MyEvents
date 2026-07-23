@@ -58,6 +58,8 @@ export function startTour(buildSteps: (tour: Driver) => DriveStep[], onSeen: () 
 
   const tour = driver({
     showProgress: true,
+    // pinned to a fixed spot on screen 
+    popoverClass: 'tour-pinned',
     allowClose: false,
     showButtons: ['next', 'previous'],
     overlayOpacity: 0.6,
