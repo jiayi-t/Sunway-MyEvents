@@ -1,7 +1,11 @@
-import { boolean, integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial, unique, index } from 'drizzle-orm/pg-core'
+import { boolean, integer, jsonb, numeric, pgTable, varchar, text, timestamp, serial, unique, index, uuid } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
+  // unguessable identifier used in public URLs (/organizers/:id), integer id stays internal
+  public_id: uuid('public_id').defaultRandom().notNull().unique(),
+  // old integer id, backfilled only for rows that existed at the UUID migration (NULL for new rows) so legacy bookmarks resolve but new rows are not reachable by number
+  legacy_numeric_id: integer('legacy_numeric_id').unique(),
   sunway_id: varchar('sunway_id', { length: 8 }).unique().notNull(),
   email: varchar('email', { length: 255 }).unique().notNull(),
   password: varchar('password', { length: 255 }).notNull(),
@@ -29,6 +33,10 @@ export const users = pgTable('users', {
 
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
+  // unguessable identifier used in public URLs (/events/:id), integer id stays internal
+  public_id: uuid('public_id').defaultRandom().notNull().unique(),
+  // old integer id, backfilled only for rows that existed at the UUID migration (NULL for new rows) so legacy bookmarks resolve but new rows are not reachable by number
+  legacy_numeric_id: integer('legacy_numeric_id').unique(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   date: timestamp('date').notNull(),

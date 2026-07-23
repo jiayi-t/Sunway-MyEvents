@@ -15,6 +15,13 @@
       "when": 1784545590155,
       "tag": "0001_sessions_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784745269066,
+      "tag": "0002_square_mesmero",
+      "breakpoints": true
     }
   ]
 }
