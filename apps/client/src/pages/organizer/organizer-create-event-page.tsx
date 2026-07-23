@@ -124,13 +124,13 @@ export default function OrganizerCreateEventPage() {
             className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.date ? 'border-red-400' : 'border-border'}`} />
         </div>
         <div className="flex gap-3">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-sm font-medium text-foreground mb-1">Start Time</label>
             <input type="time" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })}
               onClick={e => e.currentTarget.showPicker?.()}
               className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white cursor-pointer ${submitted && !form.start_time ? 'border-red-400' : 'border-border'}`} />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-sm font-medium text-foreground mb-1">End Time</label>
             <input type="time" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })}
               onClick={e => e.currentTarget.showPicker?.()}

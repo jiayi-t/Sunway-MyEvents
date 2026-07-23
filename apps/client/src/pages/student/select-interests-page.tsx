@@ -69,14 +69,14 @@ export default function SelectInterestsPage() {
           {/* Categories */}
           <div className="bg-card rounded-xl shadow p-4">
             <p className="text-sm font-semibold text-foreground mb-4">Select your interested event categories</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 gap-3">
               {CATEGORIES.map(label => (
-                <label key={label} className="flex items-center gap-2 text-sm text-foreground border border-border rounded-lg px-3 py-2 cursor-pointer">
+                <label key={label} className="flex items-center gap-2 min-w-0 text-sm text-foreground border border-border rounded-lg px-2 py-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selected.includes(label)}
                     onChange={() => toggle(label)}
-                    className="accent-primary"
+                    className="accent-primary flex-shrink-0"
                   />
                   {label}
                 </label>
@@ -87,26 +87,26 @@ export default function SelectInterestsPage() {
           {/* Time range */}
           <div className="bg-card rounded-xl shadow p-4">
             <p className="text-sm font-semibold text-foreground mb-4">Select your preferred event timings <span className="text-muted-foreground font-normal">(Optional)</span></p>
-            <div className="flex items-end gap-3">
-              <div className="flex-1">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">From</p>
                 <input
                   type="time"
                   value={selectedFrom}
                   onChange={e => setSelectedFrom(e.target.value)}
                   onClick={e => e.currentTarget.showPicker?.()}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
+                  className="w-full min-w-0 border border-border rounded-lg px-2 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
               <span className="text-muted-foreground pb-2.5">–</span>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">To</p>
                 <input
                   type="time"
                   value={selectedTo}
                   onChange={e => setSelectedTo(e.target.value)}
                   onClick={e => e.currentTarget.showPicker?.()}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-white cursor-pointer"
+                  className="w-full min-w-0 border border-border rounded-lg px-2 py-2 text-sm text-foreground bg-white cursor-pointer"
                 />
               </div>
             </div>
