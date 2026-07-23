@@ -242,6 +242,7 @@ export default function BrowseEventsPage() {
                 type="date"
                 value={draftFilters.dateFrom}
                 onChange={e => setDraftFilters(f => ({ ...f, dateFrom: e.target.value }))}
+                onClick={e => e.currentTarget.showPicker?.()}
                 className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               />
               <span className="text-muted-foreground text-xs">to</span>
@@ -250,6 +251,7 @@ export default function BrowseEventsPage() {
                 value={draftFilters.dateTo}
                 min={draftFilters.dateFrom || undefined}
                 onChange={e => setDraftFilters(f => ({ ...f, dateTo: e.target.value }))}
+                onClick={e => e.currentTarget.showPicker?.()}
                 className="flex-1 min-w-0 text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               />
             </div>

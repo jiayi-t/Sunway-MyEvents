@@ -199,7 +199,8 @@ export default function OrganizerEditEventPage() {
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Date</label>
           <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
-            className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.date ? 'border-red-400' : 'border-border'}`} />
+            onClick={e => e.currentTarget.showPicker?.()}
+            className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white cursor-pointer ${submitted && !form.date ? 'border-red-400' : 'border-border'}`} />
         </div>
         <div className="flex gap-3">
           <div className="flex-1 min-w-0">
@@ -255,7 +256,8 @@ export default function OrganizerEditEventPage() {
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Registration Deadline <span className="text-muted-foreground font-normal">(Optional)</span></label>
           <input type="date" value={form.registration_deadline} onChange={e => setForm({ ...form, registration_deadline: e.target.value })}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white" />
+            onClick={e => e.currentTarget.showPicker?.()}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white cursor-pointer" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Poster</label>
