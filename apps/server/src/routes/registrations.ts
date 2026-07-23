@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { registrations, events, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { resolveEventPk } from '../utils/resolve-public-id'
 
 const router = Router()
 
@@ -13,7 +14,7 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
     const result = await db
       .select({
         id: registrations.id,
-        event_id: registrations.event_id,
+        event_id: events.public_id,
         registered_at: registrations.registered_at,
         checked_in_at: registrations.checked_in_at,
         event_name: events.name,
@@ -41,7 +42,8 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
 // GET /api/registrations/event/:eventId - event participant list (organizer only)
 router.get('/event/:eventId', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
-  const eventId = parseInt(req.params.eventId as string)
+  const eventId = await resolveEventPk(req.params.eventId)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const [event] = await db.select({ organizer_id: events.organizer_id })
       .from(events).where(eq(events.id, eventId)).limit(1)

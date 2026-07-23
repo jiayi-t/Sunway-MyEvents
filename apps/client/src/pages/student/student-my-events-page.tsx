@@ -8,7 +8,7 @@ type Tab = 'upcoming' | 'past' | 'saved'
 
 interface Registration {
   id: number
-  event_id: number
+  event_id: string
   registered_at?: string
   checked_in_at?: string | null
   event_name: string
@@ -24,7 +24,7 @@ interface Registration {
 
 interface SavedEvent {
   id: number
-  event_id: number
+  event_id: string
   saved_at: string
   event_name: string
   event_date: string

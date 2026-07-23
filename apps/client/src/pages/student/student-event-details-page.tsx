@@ -8,7 +8,7 @@ import Avatar from '../../components/avatar'
 import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark, Lock } from 'lucide-react'
 
 interface Event {
-  id: number
+  id: string
   name: string
   description: string
   date: string
@@ -21,7 +21,7 @@ interface Event {
   capacity: number
   registration_deadline: string
   image_url: string
-  organizer_id: number
+  organizer_id: string
   organizer_name: string
   organizer_image_url?: string
   registered_count: number

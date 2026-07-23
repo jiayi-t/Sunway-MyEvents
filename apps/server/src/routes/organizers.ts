@@ -4,6 +4,8 @@ import { db } from '../db'
 import { users, events, followed_organizers, notifications } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
 import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from '../database/seeded-accounts'
+import { resolveUserPk } from '../utils/resolve-public-id'
+import { eventClientColumns } from '../utils/event-columns'
 
 const router = Router()
 
@@ -30,21 +32,22 @@ router.get('/', async (_req, res) => {
 
 // GET /api/organizers/:id - organizer profile for student view
 router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
-  const id = parseInt(req.params.id as string)
-  const now = new Date()
+  const id = await resolveUserPk(req.params.id)
 
   // only students/public can browse organizer profiles, organizers may only load their own dashboard
   if (!req.user) {
     return res.status(403).json({ error: 'Log in as a student or general public to view organizer profiles', code: 'auth_required' })
   }
+  if (id === null) return res.status(404).json({ error: 'Organizer not found' })
   if (req.user.role === 'organizer' && req.user.id !== id) {
     return res.status(403).json({ error: 'Organizer accounts cannot view other organizer profiles', code: 'organizer_forbidden' })
   }
 
+  const now = new Date()
   try {
     const [organizer] = await db
       .select({
-        id: users.id,
+        id: users.public_id,
         name: users.name,
         email: users.email,
         image_url: users.image_url,
@@ -61,7 +64,7 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
     // general public cannot see students-only events
     const hideStudentsOnly = req.user!.role === 'public'
     const upcomingEvents = await db
-      .select()
+      .select(eventClientColumns)
       .from(events)
       .where(and(
         eq(events.organizer_id, id),
@@ -87,7 +90,8 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
 
 // GET /api/organizers/:id/follow-status
 router.get('/:id/follow-status', authenticate, async (req: AuthRequest, res) => {
-  const organizerId = parseInt(req.params.id as string)
+  const organizerId = await resolveUserPk(req.params.id)
+  if (organizerId === null) return res.status(404).json({ error: 'Organizer not found' })
   try {
     const [row] = await db
       .select({ id: followed_organizers.id })
@@ -109,7 +113,8 @@ router.post('/:id/follow-toggle', authenticate, async (req: AuthRequest, res) =>
   if (req.user?.role === 'organizer') {
     return res.status(403).json({ error: 'Organizer accounts cannot follow other organizers' })
   }
-  const organizerId = parseInt(req.params.id as string)
+  const organizerId = await resolveUserPk(req.params.id)
+  if (organizerId === null) return res.status(404).json({ error: 'Organizer not found' })
   try {
     const [existing] = await db
       .select({ id: followed_organizers.id })

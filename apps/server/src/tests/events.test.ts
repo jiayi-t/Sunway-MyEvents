@@ -137,7 +137,7 @@ describe('POST /api/events/:id/register', () => {
     }).returning()
 
     const res = await request(app)
-      .post(`/api/events/${cancelled.id}/register`)
+      .post(`/api/events/${cancelled.public_id}/register`)
       .set('Cookie', studentCookie)
 
     expect(res.status).toBe(400)
@@ -164,7 +164,7 @@ describe('POST /api/events/:id/register', () => {
     await db.insert(registrations).values({ user_id: organizerId, event_id: soldOut.id })
 
     const res = await request(app)
-      .post(`/api/events/${soldOut.id}/register`)
+      .post(`/api/events/${soldOut.public_id}/register`)
       .set('Cookie', studentCookie)
 
     expect(res.status).toBe(400)
@@ -172,5 +172,66 @@ describe('POST /api/events/:id/register', () => {
 
     await db.delete(registrations).where(eq(registrations.event_id, soldOut.id))
     await db.delete(events).where(eq(events.id, soldOut.id))
+  })
+})
+
+describe('GET /api/events/:id public_id resolution', () => {
+  it('resolves by public_id but not by the raw integer id of a new event', async () => {
+    const [ev] = await db.insert(events).values({
+      name: 'UUID Resolution Event',
+      date: new Date('2027-06-21'),
+      start_time: new Date('2027-06-21T09:00:00'),
+      end_time: new Date('2027-06-21T11:00:00'),
+      venue: 'Test Hall',
+      pricing: '0',
+      category: 'Sports',
+      image_url: '/uploads/test.jpg',
+      organizer_id: organizerId,
+    }).returning()
+
+    // the uuid is the public identifier and resolves
+    const byUuid = await request(app).get(`/api/events/${ev.public_id}`)
+    expect(byUuid.status).toBe(200)
+    expect(byUuid.body.id).toBe(ev.public_id)
+    // the response never leaks the internal integer id or legacy id
+    expect(byUuid.body.legacy_numeric_id).toBeUndefined()
+
+    // a new event has no legacy_numeric_id, so its integer id is not reachable by number
+    const byInt = await request(app).get(`/api/events/${ev.id}`)
+    expect(byInt.status).toBe(404)
+
+    await db.delete(events).where(eq(events.id, ev.id))
+  })
+
+  it('returns 404 (not a server error) for a malformed or out-of-range id', async () => {
+    // a non-uuid string would make postgres reject the uuid comparison if it reached the query
+    const malformed = await request(app).get('/api/events/not-a-uuid')
+    expect(malformed.status).toBe(404)
+    // a number larger than postgres integer would overflow the legacy_numeric_id comparison
+    const overflow = await request(app).get('/api/events/99999999999999999999')
+    expect(overflow.status).toBe(404)
+  })
+
+  it('resolves a legacy numeric id for events that predate the migration (old bookmarks)', async () => {
+    const [ev] = await db.insert(events).values({
+      name: 'Legacy Bookmark Event',
+      date: new Date('2027-06-21'),
+      start_time: new Date('2027-06-21T09:00:00'),
+      end_time: new Date('2027-06-21T11:00:00'),
+      venue: 'Test Hall',
+      pricing: '0',
+      category: 'Sports',
+      image_url: '/uploads/test.jpg',
+      organizer_id: organizerId,
+    }).returning()
+    // simulate a pre-migration row by backfilling its legacy id
+    await db.update(events).set({ legacy_numeric_id: ev.id }).where(eq(events.id, ev.id))
+
+    const byLegacy = await request(app).get(`/api/events/${ev.id}`)
+    expect(byLegacy.status).toBe(200)
+    // even via the legacy url, the response carries the uuid, not the integer id
+    expect(byLegacy.body.id).toBe(ev.public_id)
+
+    await db.delete(events).where(eq(events.id, ev.id))
   })
 })

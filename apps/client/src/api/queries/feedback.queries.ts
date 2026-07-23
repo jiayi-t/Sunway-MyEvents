@@ -28,7 +28,7 @@ export const feedbackKeys = {
 
 export interface MyFeedback {
   id: number
-  event_id: number
+  event_id: string
   rating: number
   created_at: string
 }

@@ -51,7 +51,8 @@ export default function OrganizerProfilePage() {
   const navigate = useNavigate()
 
   const isOwnProfile = !id
-  const profileId = id ?? user?.id?.toString()
+  // own dashboard: prefer the uuid, fall back to the integer id for pre-migration sessions whose stored user has no public_id (resolves via legacy_numeric_id)
+  const profileId = id ?? user?.public_id ?? user?.id?.toString()
 
   const { data: profile, isLoading, isError, error } = usePublicOrganizerProfileQuery(profileId)
   // only students/public can follow an organizer

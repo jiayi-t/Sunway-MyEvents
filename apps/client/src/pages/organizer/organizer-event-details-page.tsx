@@ -7,7 +7,7 @@ import { EventDetailsSkeleton } from '../../components/skeletons'
 import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
-  id: number
+  id: string
   name: string
   description: string
   date: string
@@ -20,10 +20,11 @@ interface OrganizerEventDetail {
   capacity: number
   registration_deadline: string
   image_url: string
-  organizer_id: number
+  organizer_id: string
   registered_count: number
   cancelled_at: string | null
   archived_at: string | null
+  is_owner: boolean
 }
 
 const toImageUrl = (url?: string | null) => {
@@ -126,7 +127,8 @@ export default function OrganizerEventDetailsPage() {
   )
 
   // only the organizer gets the organizer view for their own events, anyone else sees the student/public view
-  if (user && event.organizer_id !== user.id) {
+  // is_owner is computed server-side (uuid urls mean organizer_id is no longer the caller's integer id)
+  if (user && !event.is_owner) {
     return <Navigate to={`/events/${id}`} replace />
   }
 

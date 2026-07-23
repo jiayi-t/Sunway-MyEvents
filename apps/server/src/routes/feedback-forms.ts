@@ -3,13 +3,15 @@ import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { feedback_forms, events } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { resolveEventPk } from '../utils/resolve-public-id'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
 
 const router = Router()
 
 // GET /api/events/:id/feedback-form
 router.get('/:id/feedback-form', async (req, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const [row] = await db
       .select({ questions: feedback_forms.questions })
@@ -28,7 +30,8 @@ router.put('/:id/feedback-form', authenticate, async (req: AuthRequest, res) => 
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Only organizers can edit feedback forms' })
   }
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   const { questions } = req.body
 
   if (!Array.isArray(questions) || questions.length === 0) {

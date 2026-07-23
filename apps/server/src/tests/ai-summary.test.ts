@@ -16,9 +16,11 @@ let organizerCookie: string
 let organizer2Cookie: string
 let studentCookie: string
 // 3 responses on one open-ended question
-let eventId: number      
+let eventId: number
+let eventPublicId: string
 // 3 open-ended questions answered by 1 user
-let sparseEventId: number 
+let sparseEventId: number
+let sparseEventPublicId: string
 let studentIds: number[]
 
 const ORIGINAL_GEMINI_KEY = process.env.GEMINI_API_KEY
@@ -95,8 +97,10 @@ beforeAll(async () => {
   }
   const [ev] = await db.insert(events).values({ ...eventValues, name: 'AI Summary Test Event' }).returning()
   eventId = ev.id
+  eventPublicId = ev.public_id
   const [sparse] = await db.insert(events).values({ ...eventValues, name: 'AI Summary Sparse Event' }).returning()
   sparseEventId = sparse.id
+  sparseEventPublicId = sparse.public_id
 
   // sparse event: custom form with 3 open-ended questions, all answered by a single user, 3 responses in total, but no individual question reaches the per-question minimum
   await db.insert(feedback_forms).values({
@@ -130,13 +134,13 @@ afterEach(() => {
 
 describe('GET /api/analytics/events/:id/ai-summary auth', () => {
   it('returns 401 without auth token', async () => {
-    const res = await request(app).get(`/api/analytics/events/${eventId}/ai-summary`)
+    const res = await request(app).get(`/api/analytics/events/${eventPublicId}/ai-summary`)
     expect(res.status).toBe(401)
   })
 
   it('returns 403 for student token', async () => {
     const res = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', studentCookie)
     expect(res.status).toBe(403)
   })
@@ -150,7 +154,7 @@ describe('GET /api/analytics/events/:id/ai-summary auth', () => {
 
   it("returns 403 for another organizer's event", async () => {
     const res = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizer2Cookie)
     expect(res.status).toBe(403)
   })
@@ -160,7 +164,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
   it('returns available: false when GEMINI_API_KEY is not set', async () => {
     delete process.env.GEMINI_API_KEY
     const res = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'not_configured' })
@@ -172,7 +176,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const res = await request(app)
-      .get(`/api/analytics/events/${sparseEventId}/ai-summary`)
+      .get(`/api/analytics/events/${sparseEventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'not_enough_responses' })
@@ -184,7 +188,7 @@ describe('GET /api/analytics/events/:id/ai-summary availability', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 429 }))
 
     const res = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ available: false, reason: 'generation_failed' })
@@ -199,7 +203,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
 
     // first call generates and persists
     const first = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(first.status).toBe(200)
     expect(first.body.available).toBe(true)
@@ -214,7 +218,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
 
     // second call is a cache hit, no new Gemini call, same generated_at
     const second = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(second.status).toBe(200)
     expect(second.body.generated_at).toBe(first.body.generated_at)
@@ -226,7 +230,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
       answers: { q_suggestions: 'Loved the venue' },
     })
     const third = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(third.status).toBe(200)
     expect(third.body.available).toBe(true)
@@ -245,7 +249,7 @@ describe('GET /api/analytics/events/:id/ai-summary generation and caching', () =
       .where(eq(feedback_ai_summaries.event_id, eventId))
 
     const res = await request(app)
-      .get(`/api/analytics/events/${eventId}/ai-summary`)
+      .get(`/api/analytics/events/${eventPublicId}/ai-summary`)
       .set('Cookie', organizerCookie)
     expect(res.status).toBe(200)
     expect(fetchMock).toHaveBeenCalledTimes(1)

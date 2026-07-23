@@ -101,6 +101,7 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
     res.json({
       user: {
         id: user.id,
+        public_id: user.public_id,
         sunway_id: user.sunway_id,
         email: user.email,
         name: user.name,

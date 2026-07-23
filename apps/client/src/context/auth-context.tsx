@@ -5,6 +5,8 @@ import api from '../services/api'
 
 interface User {
   id: number
+  // uuid used in public URLs, the integer id stays internal to the server
+  public_id?: string
   sunway_id: string
   email?: string
   name: string

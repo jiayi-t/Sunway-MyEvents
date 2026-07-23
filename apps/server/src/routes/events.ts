@@ -1,10 +1,12 @@
 import { Router } from 'express'
-import { eq, asc, desc, and, or, isNull, gt, ne, getTableColumns } from 'drizzle-orm'
+import { eq, asc, desc, and, or, isNull, gt, ne } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
 import { sendEmail, getEmailAddresses, eventCancelledEmail, eventUpdatedEmail, newEventEmail } from '../email'
+import { resolveEventPk } from '../utils/resolve-public-id'
+import { eventClientColumns, eventClientColumnsWithOrganizer } from '../utils/event-columns'
 
 const router = Router()
 
@@ -15,7 +17,7 @@ router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
     const result = await db
       .select({
-        ...getTableColumns(events),
+        ...eventClientColumnsWithOrganizer,
         organizer_name: users.name,
         organizer_image_url: users.image_url
       })
@@ -40,7 +42,7 @@ router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
     const now = new Date()
     const rows = await db
       .select({
-        ...getTableColumns(events),
+        ...eventClientColumnsWithOrganizer,
         organizer_name: users.name,
         organizer_image_url: users.image_url,
         registration_count: db.$count(registrations, eq(registrations.event_id, events.id)),
@@ -87,7 +89,7 @@ router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
   try {
     const result = await db
       .select({
-        ...getTableColumns(events),
+        ...eventClientColumns,
         registered_count: db.$count(registrations, eq(registrations.event_id, events.id))
       })
       .from(events)
@@ -105,7 +107,7 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
     const result = await db
       .select({
         id: saved_events.id,
-        event_id: events.id,
+        event_id: events.public_id,
         saved_at: saved_events.saved_at,
         event_name: events.name,
         event_date: events.date,
@@ -133,7 +135,7 @@ router.get('/followed-orgs', authenticate, async (req: AuthRequest, res) => {
   try {
     const result = await db
       .select({
-        ...getTableColumns(events),
+        ...eventClientColumnsWithOrganizer,
         organizer_name: users.name,
         organizer_image_url: users.image_url,
       })
@@ -160,7 +162,8 @@ router.get('/followed-orgs', authenticate, async (req: AuthRequest, res) => {
 // POST /api/events/:id/view - record student's event views
 router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'student' && req.user?.role !== 'public') return res.status(403).json({ error: 'Forbidden' })
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     await db.insert(event_views).values({ user_id: req.user!.id, event_id: eventId })
     res.status(201).json({ ok: true })
@@ -171,14 +174,17 @@ router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
 
 // GET /api/events/:id - get single event
 router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
-  const id = parseInt(req.params.id as string)
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const result = await db
       .select({
-        ...getTableColumns(events),
+        ...eventClientColumnsWithOrganizer,
         organizer_name: users.name,
         organizer_image_url: users.image_url,
-        registered_count: db.$count(registrations, eq(registrations.event_id, events.id))
+        registered_count: db.$count(registrations, eq(registrations.event_id, events.id)),
+        // internal organizer PK, used only to compute is_owner below, never sent to the client
+        _owner_pk: events.organizer_id,
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
@@ -198,7 +204,9 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
         restricted: 'students_only',
       })
     }
-    res.json(result[0])
+    // server-authoritative ownership flag so the organizer view does not have to compare ids client-side
+    const { _owner_pk, ...event } = result[0]
+    res.json({ ...event, is_owner: req.user?.role === 'organizer' && _owner_pk === req.user.id })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -206,7 +214,8 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
 
 // GET /api/events/:id/registration-status
 router.get('/:id/registration-status', authenticate, async (req: AuthRequest, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const result = await db
       .select({ id: registrations.id })
@@ -227,7 +236,8 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role === 'organizer') {
     return res.status(403).json({ error: 'Organizer accounts cannot register for events' })
   }
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const [event] = await db
       .select({ cancelled_at: events.cancelled_at, end_time: events.end_time, registration_deadline: events.registration_deadline, capacity: events.capacity, audience: events.audience })
@@ -277,7 +287,8 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
 
 // GET /api/events/:id/checkin-token - generate signed QR token for student check-in
 router.get('/:id/checkin-token', authenticate, async (req: AuthRequest, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   const userId = req.user!.id
   try {
     const [row] = await db
@@ -304,7 +315,8 @@ router.get('/:id/checkin-token', authenticate, async (req: AuthRequest, res) => 
 
 // GET /api/events/:id/save-status
 router.get('/:id/save-status', authenticate, async (req: AuthRequest, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const result = await db
       .select({ id: saved_events.id })
@@ -318,7 +330,8 @@ router.get('/:id/save-status', authenticate, async (req: AuthRequest, res) => {
 
 // POST /api/events/:id/save-toggle
 router.post('/:id/save-toggle', authenticate, async (req: AuthRequest, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const existing = await db
       .select({ id: saved_events.id })
@@ -405,7 +418,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
         }))
       )]
       if (emailAddresses.length > 0) {
-        const eventUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/events/${newEvent.id}`
+        const eventUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/events/${newEvent.public_id}`
         sendEmail(
           emailAddresses,
           `New event by ${organizerName}: ${newEvent.name}`,
@@ -414,7 +427,9 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       }
     }
 
-    res.status(201).json(newEvent)
+    // never expose the internal integer id / legacy id, the client should only ever see the public uuid
+    const { id: _pk, public_id, legacy_numeric_id: _legacy, organizer_id: _org, ...rest } = newEvent
+    res.status(201).json({ ...rest, id: public_id })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -425,7 +440,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Forbidden' })
   }
-  const id = parseInt(req.params.id as string)
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const existing = await db.select().from(events).where(eq(events.id, id))
     if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
@@ -497,7 +513,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       }
     }
 
-    res.json(result[0])
+    const { id: _pk, public_id, legacy_numeric_id: _legacy, organizer_id: _org, ...rest } = result[0]
+    res.json({ ...rest, id: public_id })
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
@@ -508,7 +525,8 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Forbidden' })
   }
-  const id = parseInt(req.params.id as string)
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const existing = await db.select().from(events).where(eq(events.id, id))
     if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
@@ -583,7 +601,8 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Forbidden' })
   }
-  const id = parseInt(req.params.id as string)
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const existing = await db.select().from(events).where(eq(events.id, id))
     if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
@@ -598,7 +617,8 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
 
 // POST /api/events/:id/feedback - student's event feedback submission
 router.post('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   const { rating, answers } = req.body
 
   if (typeof rating !== 'number' || rating < 1 || rating > 5) {
@@ -644,7 +664,8 @@ router.get('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Only organizers can view feedback' })
   }
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const [event] = await db.select({ organizer_id: events.organizer_id }).from(events).where(eq(events.id, eventId)).limit(1)
     if (!event) return res.status(404).json({ error: 'Event not found' })
@@ -672,7 +693,8 @@ router.patch('/:id/unarchive', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') {
     return res.status(403).json({ error: 'Forbidden' })
   }
-  const id = parseInt(req.params.id as string)
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
   try {
     const existing = await db.select().from(events).where(eq(events.id, id))
     if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })

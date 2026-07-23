@@ -7,7 +7,7 @@ import { BarChart2, ScanQrCode, Calendar, ChevronRight, Clock, MapPin, ImageOff,
 type Tab = 'upcoming' | 'past'
 
 interface OrganizerEvent {
-  id: number
+  id: string
   name: string
   date: string
   start_time: string
@@ -17,7 +17,6 @@ interface OrganizerEvent {
   audience: string
   pricing: number
   image_url?: string | null
-  organizer_id: number
   capacity?: number
   registered_count?: number
   cancelled_at?: string | null
@@ -81,7 +80,7 @@ function CountdownBadge({ startTime }: { startTime?: string }) {
   )
 }
 
-function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEvent; onCheckin: (id: number) => void; onViewDetails: (id: number) => void }) {
+function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEvent; onCheckin: (id: string) => void; onViewDetails: (id: string) => void }) {
   const sold = event.registered_count ?? 0
   const cap = event.capacity ?? 0
   const isSoldOut = cap > 0 && sold >= cap
@@ -152,7 +151,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
   )
 }
 
-function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent; onAnalytics: (id: number) => void; onViewDetails: (id: number) => void }) {
+function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent; onAnalytics: (id: string) => void; onViewDetails: (id: string) => void }) {
   return (
     <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center cursor-pointer" onClick={() => onViewDetails(event.id)}>
       <div className="flex-shrink-0 self-center overflow-hidden rounded-lg" style={{ width: '100px', aspectRatio: '4/5' }}>
@@ -261,9 +260,9 @@ export default function OrganizerEventsPage() {
     { key: 'past', label: 'Past', count: pastEvents.length },
   ]
 
-  const handleCheckin = (id: number) => navigate(`/organizer/events/${id}/checkin`)
-  const handleAnalytics = (id: number) => navigate(`/organizer/events/${id}/analytics`)
-  const handleViewDetails = (id: number) => navigate(`/organizer/events/${id}`)
+  const handleCheckin = (id: string) => navigate(`/organizer/events/${id}/checkin`)
+  const handleAnalytics = (id: string) => navigate(`/organizer/events/${id}/analytics`)
+  const handleViewDetails = (id: string) => navigate(`/organizer/events/${id}`)
 
   return (
     <div className="bg-surface">

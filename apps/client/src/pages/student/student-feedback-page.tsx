@@ -121,8 +121,9 @@ export default function StudentFeedbackPage() {
   const [submitError, setSubmitError] = useState('')
 
   const questions: FeedbackQuestion[] = formData?.questions ?? []
-  const alreadySubmitted = (myFeedbackData ?? []).some(f => f.event_id === Number(id))
-  const myReg = (myRegistrations as any[] | undefined ?? []).find((r: any) => r.event_id === Number(id))
+  // event_id (from both feedback and registrations) and the url param are the event's public uuid
+  const alreadySubmitted = (myFeedbackData ?? []).some(f => f.event_id === id)
+  const myReg = (myRegistrations as any[] | undefined ?? []).find((r: any) => r.event_id === id)
   const checkedIn = !!myReg?.checked_in_at
 
   const isLoading = eventLoading || formLoading

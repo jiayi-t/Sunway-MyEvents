@@ -155,7 +155,7 @@ function AttendanceTab({
 }: {
   data: AttendanceAnalytics | undefined
   loading: boolean
-  onRowClick: (id: number) => void
+  onRowClick: (id: string) => void
 }) {
   if (loading) return <AnalyticsTabSkeleton />
   if (!data) return null
@@ -221,7 +221,7 @@ function FeedbackTab({
 }: {
   data: FeedbackAnalytics | undefined
   loading: boolean
-  onRowClick: (id: number) => void
+  onRowClick: (id: string) => void
 }) {
   if (loading) return <AnalyticsTabSkeleton />
   if (!data) return null

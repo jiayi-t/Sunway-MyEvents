@@ -213,6 +213,8 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
         ...getTableColumns(events),
         organizer_name: users.name,
         organizer_image_url: users.image_url,
+        // the organizer's uuid, exposed as organizer_id in the response (integer organizer_id stays internal for scoring)
+        organizer_public_id: users.public_id,
       })
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
@@ -261,8 +263,12 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
           b._score - a._score ||
           new Date(a.date).getTime() - new Date(b.date).getTime()
       )
-      // returns only the event data, excluding the internal _score field
-      .map(({ _score, ...e }) => e)
+      // return the event data with the uuid as its public id, drop the internal _score, integer id, legacy id, and integer organizer_id so nothing enumerable leaks to the client
+      .map(({ _score, id, public_id, legacy_numeric_id, organizer_id, organizer_public_id, ...e }) => ({
+        ...e,
+        id: public_id,
+        organizer_id: organizer_public_id,
+      }))
 
     res.json(scored)
   } catch (err) {

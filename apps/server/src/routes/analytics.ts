@@ -3,6 +3,7 @@ import { eq, sql, desc, count, countDistinct } from 'drizzle-orm'
 import { db } from '../db'
 import { events, registrations, feedback, feedback_forms, feedback_ai_summaries, users, event_views } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { resolveEventPk } from '../utils/resolve-public-id'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
 import { aiAvailable, summarizeFeedback, type AiSummary, type OpenEndedGroup } from '../ai'
 
@@ -18,7 +19,7 @@ router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
   try {
     const rows = await db
       .select({
-        id: events.id,
+        id: events.public_id,
         name: events.name,
         date: events.date,
         image_url: events.image_url,
@@ -67,7 +68,7 @@ router.get('/feedback', authenticate, async (req: AuthRequest, res) => {
   try {
     const rows = await db
       .select({
-        id: events.id,
+        id: events.public_id,
         name: events.name,
         date: events.date,
         image_url: events.image_url,
@@ -129,12 +130,13 @@ router.get('/feedback', authenticate, async (req: AuthRequest, res) => {
 // GET /api/analytics/events/:id - per-event analytics
 router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
 
   try {
     const [eventRow] = await db
       .select({
-        id: events.id,
+        id: events.public_id,
         name: events.name,
         date: events.date,
         image_url: events.image_url,
@@ -266,7 +268,8 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
 // GET /api/analytics/events/:id/ai-summary - AI summary of open-ended feedback, cached per event
 router.get('/events/:id/ai-summary', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
-  const eventId = parseInt(req.params.id as string)
+  const eventId = await resolveEventPk(req.params.id)
+  if (eventId === null) return res.status(404).json({ error: 'Event not found' })
 
   try {
     const [eventRow] = await db
@@ -366,7 +369,7 @@ router.get('/views', authenticate, async (req: AuthRequest, res) => {
   try {
     const rows = await db
       .select({
-        id: events.id,
+        id: events.public_id,
         name: events.name,
         date: events.date,
         image_url: events.image_url,

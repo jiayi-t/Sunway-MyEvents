@@ -10,7 +10,7 @@ export const analyticsKeys = {
 }
 
 export interface AttendanceEvent {
-  id: number
+  id: string
   name: string
   date: string
   image_url: string | null
@@ -29,7 +29,7 @@ export interface AttendanceAnalytics {
 }
 
 export interface FeedbackEvent {
-  id: number
+  id: string
   name: string
   date: string
   image_url: string | null
@@ -55,7 +55,7 @@ export type QuestionAnalysis =
   | { question: string; type: string; options?: string[]; responses: Record<string, number> }
 
 export interface EventAnalytics {
-  event: { id: number; name: string; date: string; image_url: string | null }
+  event: { id: string; name: string; date: string; image_url: string | null }
   attendance: { registrations: number; attendees: number; attendance_rate: number }
   feedback: {
     count: number
@@ -86,7 +86,7 @@ export interface EventAiSummary {
 }
 
 export interface ViewsEvent {
-  id: number
+  id: string
   name: string
   date: string
   image_url: string | null

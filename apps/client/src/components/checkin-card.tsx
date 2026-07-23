@@ -7,7 +7,7 @@ import { Calendar, Clock, MapPin } from 'lucide-react'
 
 interface Registration {
   id: number
-  event_id: number
+  event_id: string
   event_name: string
   event_date: string
   event_start_time: string
@@ -49,7 +49,7 @@ export default function CheckinCard({ identifier }: { identifier?: string }) {
   const { data: token, isLoading: tokenLoading } = useCheckinTokenQuery(id)
 
   const registrations = (data || []) as Registration[]
-  const registration = registrations.find(r => r.event_id === Number(id))
+  const registration = registrations.find(r => r.event_id === id)
 
   if (regsLoading || tokenLoading) return <CheckinCardSkeleton />
 
