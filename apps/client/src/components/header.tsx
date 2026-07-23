@@ -254,7 +254,7 @@ export default function Header() {
             <div className="w-6" />
           )}
         </div>
-        <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold pointer-events-none z-40">
+        <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold whitespace-nowrap pointer-events-none z-40">
           <button onClick={goHome} className="pointer-events-auto cursor-pointer">
             <span className="text-primary">Sunway </span>
             <span className="text-accent">MyEvents</span>
