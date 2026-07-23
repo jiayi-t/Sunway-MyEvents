@@ -366,7 +366,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       pricing: pricing ?? 0,
       category,
       audience: audience ?? 'everyone',
-      capacity,
+      capacity: capacity || null,
       registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
       image_url,
       organizer_id: req.user!.id
@@ -453,7 +453,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       pricing: pricing ?? 0,
       category,
       audience: audience ?? 'everyone',
-      capacity,
+      capacity: capacity || null,
       registration_deadline: registration_deadline ? new Date(registration_deadline) : null,
       image_url: image_url || null
     }).where(eq(events.id, id)).returning()

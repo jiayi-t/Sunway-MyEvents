@@ -151,7 +151,7 @@ export default function OrganizerEditEventPage() {
       pricing: Number(form.pricing) || 0,
       category: form.category,
       audience: form.audience,
-      capacity: Number(form.capacity),
+      capacity: form.capacity ? Number(form.capacity) : null,
       registration_deadline: form.registration_deadline ? `${form.registration_deadline}T23:59:59+08:00` : null,
       image_url: form.image_url || null,
       notify_participants: notify,
