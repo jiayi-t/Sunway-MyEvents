@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
-import { useCompleteTourMutation } from '../../api/mutations'
 import { useAuth } from '../../context/auth-context'
-import { startStudentPublicTour } from '../../tours/student-public-tour'
 import { FeaturedEventSkeleton, EventListSkeleton } from '../../components/skeletons'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
@@ -48,8 +46,7 @@ export default function HomePage() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const navigate = useNavigate()
-  const { user, updateUser } = useAuth()
-  const completeTourMutation = useCompleteTourMutation()
+  const { user } = useAuth()
 
   // pause auto-scroll and resume after 15 seconds
   const pauseAutoScroll = () => {
@@ -64,18 +61,6 @@ export default function HomePage() {
     // resume after 15 seconds
     }, 15000) 
   }
-
-  // first-login walkthrough, account-wide flag so it does not replay on new devices
-  useEffect(() => {
-    if (user?.role !== 'student' && user?.role !== 'public') return
-    if (user.tour_completed_at) return
-    startStudentPublicTour(navigate, () => {
-      completeTourMutation.mutate(undefined, {
-        onSuccess: data => updateUser({ tour_completed_at: data.tour_completed_at }),
-      })
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, navigate])
 
   const { data: featuredData, isLoading } = useFeaturedEventsQuery()
   const featuredEvents = (featuredData ?? []) as Event[]

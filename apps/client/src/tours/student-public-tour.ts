@@ -100,5 +100,9 @@ export function startStudentPublicTour(navigate: (to: string) => void, onSeen: (
         side: 'bottom',
       },
     },
-  ], onSeen)
+  ], () => {
+    onSeen()
+    // redirect back to home after the tour
+    navigate('/')
+  })
 }

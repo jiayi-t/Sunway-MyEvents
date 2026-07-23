@@ -60,10 +60,23 @@ export default function Header() {
 
   // persist the account-wide seen flag and keep the cached user in sync
   const markStudentTourSeen = () => {
+    updateUser({ tour_completed_at: new Date().toISOString() })
     completeTourMutation.mutate(undefined, {
       onSuccess: data => updateUser({ tour_completed_at: data.tour_completed_at }),
     })
   }
+
+  // first-login walkthrough, account-wide for students and public users, device-local for organizers
+  const tourStarted = useRef(false)
+  useEffect(() => {
+    if (tourStarted.current) return
+    if (user?.role !== 'student' && user?.role !== 'public') return
+    if (user.tour_completed_at) return
+    if (location.pathname !== '/') return
+    tourStarted.current = true
+    startStudentPublicTour(navigate, markStudentTourSeen)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, location.pathname, navigate])
 
   const studentNav = [
     { label: 'Home', path: '/' },

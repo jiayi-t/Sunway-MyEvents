@@ -75,5 +75,9 @@ export function startOrganizerTour(navigate: (to: string) => void) {
         side: 'bottom',
       },
     },
-  ], () => localStorage.setItem(TOUR_KEY, '1'))
+  ], () => {
+    localStorage.setItem(TOUR_KEY, '1')
+    // redirect back to the dashboard after the tour
+    navigate('/organizer/dashboard')
+  })
 }
