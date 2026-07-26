@@ -70,7 +70,7 @@ function QuestionAiSummary({ query, question, responseCount }: {
       </div>
       <ul className="space-y-1">
         {points.map((pt, i) => (
-          <li key={i} className="text-xs text-muted-foreground pl-3 relative">
+          <li key={i} className="text-xs text-muted-foreground pl-3 relative break-words">
             <span className="absolute left-0 text-accent">•</span>
             {pt}
           </li>
@@ -96,7 +96,7 @@ function QuestionBreakdown({ q, aiSummary }: { q: QuestionAnalysis; aiSummary: R
             <QuestionAiSummary query={aiSummary} question={q.question} responseCount={responses.length} />
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {responses.map((r, i) => (
-                <p key={i} className="text-xs text-muted-foreground bg-surface rounded-lg px-3 py-2">
+                <p key={i} className="text-xs text-muted-foreground bg-surface rounded-lg px-3 py-2 break-words">
                   {r}
                 </p>
               ))}
