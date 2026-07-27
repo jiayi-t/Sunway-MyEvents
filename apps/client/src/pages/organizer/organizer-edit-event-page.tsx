@@ -125,6 +125,10 @@ export default function OrganizerEditEventPage() {
       setUploadError('End time must be later than start time')
       return
     }
+    if (form.registration_deadline && form.date && form.registration_deadline > form.date) {
+      setUploadError('Registration deadline cannot be after the event date')
+      return
+    }
     if (form.capacity && Number(form.capacity) === 0) {
       setUploadError('Event capacity cannot be 0. Leave blank for unlimited capacity.')
       return
@@ -257,6 +261,7 @@ export default function OrganizerEditEventPage() {
           <label className="block text-sm font-medium text-foreground mb-1">Registration Deadline <span className="text-muted-foreground font-normal">(Optional)</span></label>
           <input type="date" value={form.registration_deadline} onChange={e => setForm({ ...form, registration_deadline: e.target.value })}
             onClick={e => e.currentTarget.showPicker?.()}
+            max={form.date}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white cursor-pointer" />
         </div>
         <div>
