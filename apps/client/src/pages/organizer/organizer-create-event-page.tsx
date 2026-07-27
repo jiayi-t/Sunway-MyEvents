@@ -55,9 +55,9 @@ export default function OrganizerCreateEventPage() {
       setError('Event capacity cannot be 0. Leave blank for unlimited capacity.')
       return
     }
-    const eventDate = `${form.date}T00:00:00`
-    const startDateTime = `${form.date}T${form.start_time}:00`
-    const endDateTime = `${form.date}T${form.end_time}:00`
+    const eventDate = `${form.date}T00:00:00+08:00`
+    const startDateTime = `${form.date}T${form.start_time}:00+08:00`
+    const endDateTime = `${form.date}T${form.end_time}:00+08:00`
 
     createMutation.mutate({
       name: form.name,

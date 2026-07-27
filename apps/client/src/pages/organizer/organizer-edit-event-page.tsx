@@ -143,12 +143,12 @@ export default function OrganizerEditEventPage() {
 
   const submitWithNotify = (notify: boolean) => {
     setShowNotifyModal(false)
-    const startDateTime = `${form.date}T${form.start_time}:00`
-    const endDateTime = `${form.date}T${form.end_time}:00`
+    const startDateTime = `${form.date}T${form.start_time}:00+08:00`
+    const endDateTime = `${form.date}T${form.end_time}:00+08:00`
     updateMutation.mutate({
       name: form.name,
       description: form.description,
-      date: `${form.date}T00:00:00`,
+      date: `${form.date}T00:00:00+08:00`,
       start_time: startDateTime,
       end_time: endDateTime,
       venue: form.venue,
