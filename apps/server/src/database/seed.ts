@@ -4,6 +4,9 @@ import { db } from '../db'
 import { users, events, registrations, saved_events, feedback } from './schema'
 import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from './seeded-accounts'
 
+// Pins the seed literals below (meant as MYT) to +08:00, mirroring fromMYT() in the client's utils/datetime.utils.ts
+const fromMYT = (wallClock: string) => new Date(`${wallClock}+08:00`)
+
 const seed = async () => {
   console.log('Seeding database...')
 
@@ -874,17 +877,17 @@ const seed = async () => {
     const eventData = {
       name: ev.name,
       description: ev.description ?? '',
-      date: new Date(ev.date),
-      start_time: new Date(ev.start_time),
-      end_time: new Date(ev.end_time),
+      date: fromMYT(ev.date),
+      start_time: fromMYT(ev.start_time),
+      end_time: fromMYT(ev.end_time),
       venue: ev.venue,
       pricing: ev.pricing,
       category: ev.category,
       capacity: ev.capacity,
-      registration_deadline: ev.registration_deadline ? new Date(ev.registration_deadline) : null,
+      registration_deadline: ev.registration_deadline ? fromMYT(ev.registration_deadline) : null,
       image_url: ev.image_url ?? null,
       organizer_id: organizerId,
-      cancelled_at: ev.cancelled ? new Date(ev.date) : null,
+      cancelled_at: ev.cancelled ? fromMYT(ev.date) : null,
     }
 
     const [existing] = await db
@@ -936,13 +939,13 @@ const seed = async () => {
   groupA.forEach((uid, i) => {
     if (i === 0) {
       // FET Student 1 (Year 2): heavy Academics signal
-      seedRegistrations.push({ user_id: uid, event_id: eventMap['Face Recognition Workshop'], checked_in_at: new Date('2025-12-06T12:55:00') })
-      seedRegistrations.push({ user_id: uid, event_id: eventMap['Building AI Automation Skills - Learn to Build Real AI Systems'], checked_in_at: new Date('2026-02-10T19:25:00') })
+      seedRegistrations.push({ user_id: uid, event_id: eventMap['Face Recognition Workshop'], checked_in_at: fromMYT('2025-12-06T12:55:00') })
+      seedRegistrations.push({ user_id: uid, event_id: eventMap['Building AI Automation Skills - Learn to Build Real AI Systems'], checked_in_at: fromMYT('2026-02-10T19:25:00') })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Gaming Law: Know Your Rights?'], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Cybersecurity in the Age of AI'], checked_in_at: null })
     } else {
       // FET Student 2 (Year 1): Academics + Year 1 social
-      seedRegistrations.push({ user_id: uid, event_id: eventMap['Gaming Law: Know Your Rights?'], checked_in_at: new Date('2026-05-13T17:55:00') })
+      seedRegistrations.push({ user_id: uid, event_id: eventMap['Gaming Law: Know Your Rights?'], checked_in_at: fromMYT('2026-05-13T17:55:00') })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['From Names to Networks'], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Freshman Fiesta: 2.0: Golden Groves'], checked_in_at: null })
     }
@@ -952,13 +955,13 @@ const seed = async () => {
   groupB.forEach((uid, i) => {
     if (i === 0) {
       // FASS Student 1 (Year 2)
-      seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: new Date('2025-07-01T18:25:00') })
+      seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: fromMYT('2025-07-01T18:25:00') })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Open Mic'], checked_in_at: null })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Moru Doll Companion Workshop'], checked_in_at: null })
     } else {
       // FASS Student 2 (Year 3)
       seedRegistrations.push({ user_id: uid, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: null })
-      seedRegistrations.push({ user_id: uid, event_id: eventMap['Jam Session'], checked_in_at: new Date('2026-03-25T19:25:00') })
+      seedRegistrations.push({ user_id: uid, event_id: eventMap['Jam Session'], checked_in_at: fromMYT('2026-03-25T19:25:00') })
       seedRegistrations.push({ user_id: uid, event_id: eventMap['Tile & Style'], checked_in_at: null })
     }
   })
@@ -967,14 +970,14 @@ const seed = async () => {
   if (groupC) {
     // SHTM Student 1 (Year 2)
     seedRegistrations.push({ user_id: groupC, event_id: eventMap["Sunway's Got Talent Season 7: Eternal Radiance Grand Finale"], checked_in_at: null })
-    seedRegistrations.push({ user_id: groupC, event_id: eventMap['Open Mic'], checked_in_at: new Date('2026-06-10T18:55:00') })
+    seedRegistrations.push({ user_id: groupC, event_id: eventMap['Open Mic'], checked_in_at: fromMYT('2026-06-10T18:55:00') })
     seedRegistrations.push({ user_id: groupC, event_id: eventMap['Jam Session'], checked_in_at: null })
   }
 
   // Group D (SBS - Academics/Social)
   if (groupD) {
     // SBS Student 1 (Year 1)
-    seedRegistrations.push({ user_id: groupD, event_id: eventMap['From Data to Decisions: How AI Agents Are Reshaping Industries'], checked_in_at: new Date('2026-05-15T17:55:00') })
+    seedRegistrations.push({ user_id: groupD, event_id: eventMap['From Data to Decisions: How AI Agents Are Reshaping Industries'], checked_in_at: fromMYT('2026-05-15T17:55:00') })
     seedRegistrations.push({ user_id: groupD, event_id: eventMap['Gaming Law: Know Your Rights?'], checked_in_at: null })
     seedRegistrations.push({ user_id: groupD, event_id: eventMap['Freshman Fiesta: 2.0: Golden Groves'], checked_in_at: null })
   }
@@ -987,7 +990,7 @@ const seed = async () => {
       .map(u => idMap[u.sunway_id])
       .filter(Boolean) as number[]
     for (const uid of studentIds) {
-      seedRegistrations.push({ user_id: uid, event_id: sgtS8Id, checked_in_at: new Date('2026-07-07T18:15:00') })
+      seedRegistrations.push({ user_id: uid, event_id: sgtS8Id, checked_in_at: fromMYT('2026-07-07T18:15:00') })
     }
   }
 
@@ -1043,7 +1046,7 @@ const seed = async () => {
       user_id: fetStudent1Id,
       event_id: sgtS8EventId,
       rating: 4,
-      created_at: new Date('2026-07-08T18:05:00'),
+      created_at: fromMYT('2026-07-08T18:05:00'),
       answers: {
         q_source: ['eLearn announcements', 'iMail blasting'],
         q_suggestions: 'Great event with diverse talent. The sound quality was better than last year. Only issue was the queue at entry was long.',
@@ -1053,7 +1056,7 @@ const seed = async () => {
       user_id: fetStudent2Id,
       event_id: sgtS8EventId,
       rating: 5,
-      created_at: new Date('2026-07-08T18:10:00'),
+      created_at: fromMYT('2026-07-08T18:10:00'),
       answers: {
         q_source: ['Campus booths', 'WhatsApp'],
         q_suggestions: 'Fantastic show! The variety of performances was impressive - singing, dancing, comedy, all top-notch. Definitely coming again next year.',
@@ -1063,7 +1066,7 @@ const seed = async () => {
       user_id: fassStudent1Id,
       event_id: sgtS8EventId,
       rating: 5,
-      created_at: new Date('2026-07-08T18:15:00'),
+      created_at: fromMYT('2026-07-08T18:15:00'),
       answers: {
         q_source: ['Word of mouth', 'Social media'],
         q_suggestions: 'Amazing performances from all finalists! The energy was electric. Venue was well-organized and committee were helpful.',
@@ -1073,7 +1076,7 @@ const seed = async () => {
       user_id: fassStudent2Id,
       event_id: sgtS8EventId,
       rating: 4,
-      created_at: new Date('2026-07-08T18:20:00'),
+      created_at: fromMYT('2026-07-08T18:20:00'),
       answers: {
         q_source: ['Physical posters'],
         q_suggestions: 'Really enjoyed the show. The production value was high. Some acts could have been shorter to keep the pace up.',
@@ -1083,7 +1086,7 @@ const seed = async () => {
       user_id: shtmStudent1Id,
       event_id: sgtS8EventId,
       rating: 5,
-      created_at: new Date('2026-07-08T18:25:00'),
+      created_at: fromMYT('2026-07-08T18:25:00'),
       answers: {
         q_source: ['Social media'],
         q_suggestions: 'One of the best events I attended this year! The talent showcase was incredible. Great atmosphere and community spirit.',
@@ -1093,7 +1096,7 @@ const seed = async () => {
       user_id: sbsStudent1Id,
       event_id: sgtS8EventId,
       rating: 4,
-      created_at: new Date('2026-07-08T18:30:00'),
+      created_at: fromMYT('2026-07-08T18:30:00'),
       answers: {
         q_source: ['Campus booths', 'iMail blasting'],
         q_suggestions: 'Enjoyed the performances. Would suggest having more interactive segments between acts to keep audience engaged.',
