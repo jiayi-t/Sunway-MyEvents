@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import { EventListSkeleton } from '../../components/skeletons'
+import { toMYT, todayMYT } from '../../utils/datetime.utils'
 import { Calendar, ChevronRight, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
@@ -98,8 +99,7 @@ export default function BrowseEventsPage() {
   const isLoading = loading || (isForYouActive && recLoading) || (isFollowedActive && followedLoading)
 
   const filtered = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = todayMYT()
 
     let base: Event[]
     if (search.trim()) {
@@ -118,22 +118,14 @@ export default function BrowseEventsPage() {
     if (!filtersActive(filters)) return base
 
     return base.filter(e => {
-      const eventDate = new Date(e.date)
-      eventDate.setHours(0, 0, 0, 0)
+      // the date inputs already hold YYYY-MM-DD, so comparing MYT calendar days keeps every side of these comparisons in the same timezone and format
+      const eventDay = toMYT(e.date)
 
-      if (filters.upcoming && !filters.past && eventDate < today) return false
-      if (filters.past && !filters.upcoming && eventDate >= today) return false
+      if (filters.upcoming && !filters.past && eventDay < today) return false
+      if (filters.past && !filters.upcoming && eventDay >= today) return false
 
-      if (filters.dateFrom) {
-        const from = new Date(filters.dateFrom)
-        from.setHours(0, 0, 0, 0)
-        if (eventDate < from) return false
-      }
-      if (filters.dateTo) {
-        const to = new Date(filters.dateTo)
-        to.setHours(0, 0, 0, 0)
-        if (eventDate > to) return false
-      }
+      if (filters.dateFrom && eventDay < filters.dateFrom) return false
+      if (filters.dateTo && eventDay > filters.dateTo) return false
 
       if (filters.categories.length > 0 && !filters.categories.includes(e.category)) return false
 

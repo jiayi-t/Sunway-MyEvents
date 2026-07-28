@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
 import { NotificationListSkeleton } from '../../components/skeletons'
+import { toMYT, todayMYT, yesterdayMYT } from '../../utils/datetime.utils'
 import { Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
 
 function timeAgo(dateStr: string) {
@@ -16,6 +17,7 @@ function timeAgo(dateStr: string) {
   const weeks = Math.floor(days / 7)
   if (weeks < 5) return `${weeks}w ago`
   return new Date(dateStr).toLocaleDateString('en-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -23,20 +25,11 @@ function timeAgo(dateStr: string) {
 }
 
 function isToday(dateStr: string) {
-  const d = new Date(dateStr)
-  const now = new Date()
-  return d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
+  return toMYT(dateStr) === todayMYT()
 }
 
 function isYesterday(dateStr: string) {
-  const d = new Date(dateStr)
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  return d.getFullYear() === yesterday.getFullYear() &&
-    d.getMonth() === yesterday.getMonth() &&
-    d.getDate() === yesterday.getDate()
+  return toMYT(dateStr) === yesterdayMYT()
 }
 
 function isLast7Days(dateStr: string) {

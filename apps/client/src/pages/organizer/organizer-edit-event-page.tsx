@@ -4,6 +4,7 @@ import api from '../../services/api'
 import { useEventQuery } from '../../api/queries'
 import { useUpdateEventMutation } from '../../api/mutations'
 import { FormSkeleton } from '../../components/skeletons'
+import { fromMYT, toMYT, todayMYT } from '../../utils/datetime.utils'
 import { ChevronRight, Upload, ClipboardPen } from 'lucide-react'
 
 interface Event {
@@ -24,10 +25,7 @@ interface Event {
 
 const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
-const toLocalDateStr = (isoStr?: string | null) => {
-  if (!isoStr) return ''
-  return new Date(isoStr).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' })
-}
+const toLocalDateStr = (isoStr?: string | null) => (isoStr ? toMYT(isoStr) : '')
 
 const toLocalTimeStr = (isoStr?: string | null) => {
   if (!isoStr) return ''
@@ -143,12 +141,12 @@ export default function OrganizerEditEventPage() {
 
   const submitWithNotify = (notify: boolean) => {
     setShowNotifyModal(false)
-    const startDateTime = `${form.date}T${form.start_time}:00+08:00`
-    const endDateTime = `${form.date}T${form.end_time}:00+08:00`
+    const startDateTime = fromMYT(form.date, form.start_time)
+    const endDateTime = fromMYT(form.date, form.end_time)
     updateMutation.mutate({
       name: form.name,
       description: form.description,
-      date: `${form.date}T00:00:00+08:00`,
+      date: fromMYT(form.date),
       start_time: startDateTime,
       end_time: endDateTime,
       venue: form.venue,
@@ -156,7 +154,7 @@ export default function OrganizerEditEventPage() {
       category: form.category,
       audience: form.audience,
       capacity: form.capacity ? Number(form.capacity) : null,
-      registration_deadline: form.registration_deadline ? `${form.registration_deadline}T23:59:59+08:00` : null,
+      registration_deadline: form.registration_deadline ? fromMYT(form.registration_deadline, '23:59:59') : null,
       image_url: form.image_url || null,
       notify_participants: notify,
     }, {
@@ -204,7 +202,7 @@ export default function OrganizerEditEventPage() {
           <label className="block text-sm font-medium text-foreground mb-1">Date</label>
           <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
             onClick={e => e.currentTarget.showPicker?.()}
-            min={new Date().toISOString().split('T')[0]}
+            min={todayMYT()}
             className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white cursor-pointer ${submitted && !form.date ? 'border-red-400' : 'border-border'}`} />
         </div>
         <div className="flex gap-3">
