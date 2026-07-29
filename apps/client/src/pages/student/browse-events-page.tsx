@@ -331,7 +331,11 @@ export default function BrowseEventsPage() {
         {isLoading ? (
           <EventListSkeleton count={4} />
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center mt-8">No events found.</p>
+          <p className="text-muted-foreground text-sm text-center mt-8">
+            {isForYouActive
+              ? 'No recommendations yet, explore events to get personalised suggestions.'
+              : 'No events found.'}
+          </p>
         ) : (
           filtered.map(event => (
             <div
