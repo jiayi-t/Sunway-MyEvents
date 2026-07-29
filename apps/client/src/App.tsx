@@ -39,6 +39,7 @@ import PublicProfilePage from './pages/general-public/public-profile-page'
 import PublicCheckinPage from './pages/general-public/public-checkin-page'
 import Header from './components/header'
 import Footer from './components/footer'
+import { isTourActive } from './tours/tour-base'
 import type { ReactNode } from 'react'
 
 // cache query results for 1 minute before marking them stale and refetching
@@ -104,7 +105,10 @@ function CheckinRoute() {
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  useEffect(() => {
+    if (isTourActive()) return
+    window.scrollTo(0, 0)
+  }, [pathname])
   return null
 }
 

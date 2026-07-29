@@ -311,6 +311,7 @@ export default function BrowseEventsPage() {
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
+                data-tour={cat === 'For You' ? 'for-you' : undefined}
                 onClick={() => handleCategoryFilter(cat)}
                 className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
                   ${activeCategory === cat

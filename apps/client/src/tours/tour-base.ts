@@ -4,6 +4,34 @@ import 'driver.js/dist/driver.css'
 // prevent the first tour from being destroyed and the second tour from starting when the user clicks Back/Next quickly
 let activeTour: Driver | null = null
 
+// lets the router skip its scroll-to-top so it does not interfere with driver.js's own scroll during cross-page steps
+export const isTourActive = () => !!activeTour?.isActive()
+
+// locks page scroll during the tour
+const SCROLL_KEYS = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End']
+
+const blockGesture = (e: Event) => e.preventDefault()
+
+const blockScrollKeys = (e: KeyboardEvent) => {
+  if (!SCROLL_KEYS.includes(e.key)) return
+  // let the popover's own buttons and any focused field keep their key handling
+  const target = e.target as HTMLElement | null
+  if (target?.closest('input, textarea, select, button, [contenteditable]')) return
+  e.preventDefault()
+}
+
+const lockScroll = () => {
+  window.addEventListener('wheel', blockGesture, { passive: false })
+  window.addEventListener('touchmove', blockGesture, { passive: false })
+  window.addEventListener('keydown', blockScrollKeys)
+}
+
+const unlockScroll = () => {
+  window.removeEventListener('wheel', blockGesture)
+  window.removeEventListener('touchmove', blockGesture)
+  window.removeEventListener('keydown', blockScrollKeys)
+}
+
 // some anchors exist twice (mobile + desktop header), pick the visible one
 export const visibleElement = (selector: string) => () =>
   Array.from(document.querySelectorAll<HTMLElement>(selector))
@@ -28,13 +56,38 @@ export function startTour(buildSteps: (tour: Driver) => DriveStep[], onSeen: () 
   let lastRectKey = ''
   // record the last re-drove element so it only attempts one re-drive per element, otherwise it would loop infinitely on a hidden element
   let reResolvedFor: HTMLElement | null = null
+  // the element driver.js holds is stale once a breakpoint swap replaces it with a different element, so re-drive to pick up the new node and its box
+  const resolveStepTarget = (): HTMLElement | null => {
+    const def = activeTour?.getActiveStep()?.element
+    if (!def) return null
+    const node = typeof def === 'function' ? def() : typeof def === 'string' ? document.querySelector(def) : def
+    // driver.js highlights nothing when the selector was missing at drive time, so recover as soon as the real element appears, otherwise the step stays dimmed with no stage for the rest of the tour
+    return node && node !== document.body ? (node as HTMLElement) : null
+  }
+
   const trackElement = () => {
     trackRaf = requestAnimationFrame(trackElement)
     const el = activeTour?.getActiveElement() as HTMLElement | undefined
-    // if the element is gone, hidden, or the dummy element used to drive to a non-existent selector, stop tracking and wait for the next step
+    // if the element is gone, or is the dummy element driver.js uses when the selector was missing, or is the body, re-drive to pick up the real element and its box
     if (!el || el === document.body || el.id === 'driver-dummy-element') {
       lastRectKey = ''
+      const target = resolveStepTarget()
+      const i = activeTour?.getActiveIndex()
+      if (target && i !== undefined) {
+        const tr = target.getBoundingClientRect()
+        if (tr.width > 0 || tr.height > 0) activeTour?.moveTo(i)
+      }
       return
+    }
+    // the node driver.js holds is stale once a breakpoint swap replaces it with a different element
+    const current = resolveStepTarget()
+    if (current && current !== el) {
+      const i = activeTour?.getActiveIndex()
+      if (i !== undefined) {
+        lastRectKey = ''
+        activeTour?.moveTo(i)
+        return
+      }
     }
     const r = el.getBoundingClientRect()
     // if the element is hidden (0x0), re-drive to it in case it has moved to a different DOM node (mobile vs desktop header)
@@ -54,6 +107,19 @@ export function startTour(buildSteps: (tour: Driver) => DriveStep[], onSeen: () 
       lastRectKey = key
       activeTour?.refresh()
     }
+  }
+
+  // debounced because a dragged resize fires this continuously, only re-align after the user has stopped resizing for a moment
+  let resizeTimer = 0
+  const onResize = () => {
+    window.clearTimeout(resizeTimer)
+    resizeTimer = window.setTimeout(() => {
+      const i = activeTour?.getActiveIndex()
+      if (i === undefined) return
+      lastRectKey = ''
+      reResolvedFor = null
+      activeTour?.moveTo(i)
+    }, 150)
   }
 
   const tour = driver({
@@ -82,12 +148,20 @@ export function startTour(buildSteps: (tour: Driver) => DriveStep[], onSeen: () 
     // fires on Done and Skip, skipping counts as seen
     onDestroyed: () => {
       cancelAnimationFrame(trackRaf)
+      window.clearTimeout(resizeTimer)
+      window.removeEventListener('resize', onResize)
+      unlockScroll()
       onSeen()
       activeTour = null
     },
   })
-  tour.setSteps(buildSteps(tour))
+  const steps = buildSteps(tour)
+  tour.setSteps(steps)
   activeTour = tour
+  lockScroll()
+  window.addEventListener('resize', onResize)
+  // an elementless first step has nothing for driver.js to scroll to, so scroll to the top 
+  if (!steps[0]?.element) window.scrollTo({ top: 0 })
   tour.drive()
   trackElement()
 }

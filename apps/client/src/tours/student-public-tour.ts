@@ -10,11 +10,15 @@ export function startStudentPublicTour(navigate: (to: string) => void, onSeen: (
       },
     },
     {
-      element: '[data-tour="for-you"]',
+      element: '[data-tour="calendar"]',
       popover: {
-        title: 'Events picked for you',
-        description: 'Recommendations based on your interests. The more events you view and join, the better these get.',
-        side: 'bottom',
+        title: 'Events happening monthly',
+        description: 'Every event happening this month in one calendar. Filter by category, and tap on any date to see events happening that day.',
+        side: 'top',
+        onPrevClick: () => {
+          window.scrollTo({ top: 0 })
+          tour.movePrevious()
+        },
       },
     },
     {
@@ -41,6 +45,14 @@ export function startStudentPublicTour(navigate: (to: string) => void, onSeen: (
           navigate('/')
           moveWhenPresent('[data-tour="browse-all"]', () => tour.movePrevious())
         },
+      },
+    },
+    {
+      element: '[data-tour="for-you"]',
+      popover: {
+        title: 'Events picked for you',
+        description: 'Recommendations based on your interests. The more events you view and join, the better these get.',
+        side: 'bottom',
         onNextClick: () => {
           navigate('/my-events')
           moveWhenPresent('[data-tour="my-events-tabs"]', () => tour.moveNext())
@@ -55,7 +67,7 @@ export function startStudentPublicTour(navigate: (to: string) => void, onSeen: (
         side: 'bottom',
         onPrevClick: () => {
           navigate('/browse')
-          moveWhenPresent('[data-tour="browse-search"]', () => tour.movePrevious())
+          moveWhenPresent('[data-tour="for-you"]', () => tour.movePrevious())
         },
       },
     },
