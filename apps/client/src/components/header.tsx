@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useNotificationsQuery } from '../api/queries'
@@ -12,6 +13,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const desktopMenuRef = useRef<HTMLDivElement>(null)
+  const desktopPanelRef = useRef<HTMLDivElement>(null)
   const { user, logout, updateUser } = useAuth()
   const completeTourMutation = useCompleteTourMutation()
 
@@ -20,7 +22,8 @@ export default function Header() {
     const handler = (e: MouseEvent) => {
       if (
         !mobileMenuRef.current?.contains(e.target as Node) &&
-        !desktopMenuRef.current?.contains(e.target as Node)
+        !desktopMenuRef.current?.contains(e.target as Node) &&
+        !desktopPanelRef.current?.contains(e.target as Node)
       ) {
         setMenuOpen(false)
       }
@@ -103,17 +106,19 @@ export default function Header() {
     </button>
   )
 
+  const menuUserInfo = user && (
+    <div className="px-4 py-4 border-b flex flex-col items-start">
+      <Avatar src={user.image_url} alt={user.name} className="w-16 h-16" />
+      <p className="text-sm font-semibold text-foreground truncate max-w-full mt-2">{user.name}</p>
+      <p className="text-xs text-gray-500 truncate max-w-full">
+        {user.role === 'public' ? user.email : user.sunway_id}
+      </p>
+    </div>
+  )
+
   const mobileMenuItems = (
     <>
-      {user && (
-        <div className="px-4 py-4 border-b flex flex-col items-start">
-          <Avatar src={user.image_url} alt={user.name} className="w-16 h-16" />
-          <p className="text-sm font-semibold text-foreground truncate max-w-full mt-2">{user.name}</p>
-          <p className="text-xs text-gray-500 truncate max-w-full">
-            {user.role === 'public' ? user.email : user.sunway_id}
-          </p>
-        </div>
-      )}
+      {menuUserInfo}
       {user?.role === 'organizer' ? (
         <>
           <button
@@ -174,32 +179,38 @@ export default function Header() {
 
   const desktopMenuItems = (
     <>
-      {user && <div className="px-4 py-2 text-sm text-gray-600 border-b">{user.name}</div>}
+      {menuUserInfo}
       {(user?.role === 'student' || user?.role === 'public') && (
         <>
           <button
             onClick={() => { navigate('/profile'); setMenuOpen(false) }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">My Profile
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+            <User className="w-4 h-4 text-gray-500" aria-hidden="true" />My Profile
           </button>
           <button
             onClick={handleReplayTour}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Website Tour
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+            <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
           </button>
           <button
             onClick={() => { navigate('/settings'); setMenuOpen(false) }}
-            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Settings
+            className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+            <Settings className="w-4 h-4 text-gray-500" aria-hidden="true" />Settings
           </button>
         </>
       )}
       {user?.role === 'organizer' && (
         <button
           onClick={handleReplayTour}
-          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">Website Tour
+          className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+          <HelpCircle className="w-4 h-4 text-gray-500" aria-hidden="true" />Website Tour
         </button>
       )}
+      <div className="border-t my-2" />
       <button
         onClick={handleLogout}
-        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">Sign Out
+        className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">
+        <LogOut className="w-4 h-4" aria-hidden="true" />Sign Out
       </button>
     </>
   )
@@ -331,10 +342,40 @@ export default function Header() {
                   <span className="font-medium">{user.name}</span>
                   <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" />
                 </button>
-                {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded shadow-lg z-50 border border-gray-100">
-                    {desktopMenuItems}
-                  </div>
+                {createPortal(
+                  <>
+                    <div
+                      className={`hidden lg:block fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
+                        menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
+                      onClick={() => setMenuOpen(false)}
+                    />
+                    <div
+                      ref={desktopPanelRef}
+                      inert={!menuOpen}
+                      className={`hidden lg:flex fixed right-0 top-0 h-full w-64 bg-white shadow-lg z-50 flex-col transition-transform duration-300 ${
+                        menuOpen ? 'translate-x-0' : 'translate-x-full'
+                      }`}
+                    >
+                      <div className="px-4 py-3 border-b flex items-center justify-between">
+                        <span className="text-lg font-bold">
+                          <span className="text-primary">Sunway </span>
+                          <span className="text-accent">MyEvents</span>
+                        </span>
+                        <button
+                          onClick={() => setMenuOpen(false)}
+                          className="text-gray-500 hover:text-black cursor-pointer"
+                          aria-label="Close menu"
+                        >
+                          <X className="w-5 h-5" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <div className="py-3 overflow-y-auto">
+                        {desktopMenuItems}
+                      </div>
+                    </div>
+                  </>,
+                  document.body
                 )}
               </div>
             </>
