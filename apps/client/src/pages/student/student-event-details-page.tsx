@@ -5,6 +5,8 @@ import { useEventQuery, useRegistrationStatusQuery, useSaveStatusQuery } from '.
 import { useRegisterEventMutation, useToggleSaveMutation, useRecordViewMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
+import AddToCalendarButton from '../../components/add-to-calendar'
+import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
 import { Calendar, CalendarClock, ChevronRight, Clock, ImageOff, MapPin, Ticket, Bookmark, Lock } from 'lucide-react'
 
 interface Event {
@@ -268,17 +270,17 @@ export default function StudentEventDetailsPage() {
             </div>
 
             {/* Category labels */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {typedEvent.category && (
-                <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                <span className="text-xs px-3 py-1 rounded-full" {...categoryPillStyle(typedEvent.category)}>
                   {typedEvent.category}
                 </span>
               )}
-              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {typedEvent.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+              <span className={`text-xs px-3 py-1 rounded-full ${audiencePillClass(typedEvent.audience)}`}>
+                {typedEvent.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
               </span>
-              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
-            {Number(typedEvent.pricing) === 0 ? 'Free' : 'Paid'}
+              <span className={`text-xs px-3 py-1 rounded-full ${pricingPillClass(typedEvent.pricing)}`}>
+                {Number(typedEvent.pricing) === 0 ? 'Free' : 'Paid'}
               </span>
             </div>
 
@@ -400,12 +402,26 @@ export default function StudentEventDetailsPage() {
                 const isSoldOut = typedEvent.capacity && typedEvent.registered_count >= typedEvent.capacity
                 if (registered) {
                   return (
-                    <button
-                      disabled
-                      className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default"
-                    >
-                      Registered
-                    </button>
+                    <div className="flex flex-col items-center gap-3">
+                      <button
+                        disabled
+                        className="w-full py-3 rounded-full text-white font-semibold text-sm bg-green-500 cursor-default"
+                      >
+                        Registered
+                      </button>
+                      <AddToCalendarButton
+                        event={{
+                          id: typedEvent.id,
+                          name: typedEvent.name,
+                          description: typedEvent.description,
+                          start_time: typedEvent.start_time,
+                          end_time: typedEvent.end_time,
+                          venue: typedEvent.venue,
+                          organizer_name: typedEvent.organizer_name,
+                        }}
+                        cancelled={!!typedEvent.cancelled_at}
+                      />
+                    </div>
                   )
                 }
                 if (isSoldOut) {
