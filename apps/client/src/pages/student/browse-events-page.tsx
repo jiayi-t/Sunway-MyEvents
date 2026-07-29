@@ -84,7 +84,11 @@ export default function BrowseEventsPage() {
   }, [filterOpen, filters])
 
   const { data: eventsData, isLoading: loading } = useEventsQuery()
-  const events = (eventsData ?? []) as Event[]
+  // GET /events keeps cancelled events the caller registered for so they still appear on the calendar, but browsing is a discovery surface, so they are dropped here
+  const events = useMemo(
+    () => ((eventsData ?? []) as Event[]).filter(e => !e.cancelled_at),
+    [eventsData]
+  )
 
   // the filter chips are hidden while searching or filtering, so those views only drive results when neither is on
   const chipsActive = !search.trim() && !filtersActive(filters)

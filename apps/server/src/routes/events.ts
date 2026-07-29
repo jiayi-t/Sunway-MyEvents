@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, desc, and, or, isNull, gt, ne } from 'drizzle-orm'
+import { eq, asc, desc, and, or, isNull, gt, ne, exists } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
@@ -11,6 +11,20 @@ import { eventClientColumns, eventClientColumnsWithOrganizer } from '../utils/ev
 const router = Router()
 
 const AUDIENCES = ['everyone', 'students_only']
+
+// a cancelled event is hidden from listings unless the caller registered for it
+const cancelledVisibleTo = (req: AuthRequest) =>
+  req.user
+    ? or(
+        isNull(events.cancelled_at),
+        exists(
+          db
+            .select()
+            .from(registrations)
+            .where(and(eq(registrations.event_id, events.id), eq(registrations.user_id, req.user.id)))
+        )
+      )
+    : isNull(events.cancelled_at)
 
 // GET /api/events - get all events
 router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
@@ -24,10 +38,10 @@ router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        // cancelled events leave every discovery surface, they only stay visible to the organizer and users who registered/saved
+        // cancelled events leave every discovery surface, they only stay visible to the organizer and users who registered (for their calendar)
         !req.user || req.user.role === 'public'
-          ? and(isNull(events.archived_at), isNull(events.cancelled_at), ne(events.audience, 'students_only'))
-          : and(isNull(events.archived_at), isNull(events.cancelled_at))
+          ? and(isNull(events.archived_at), cancelledVisibleTo(req), ne(events.audience, 'students_only'))
+          : and(isNull(events.archived_at), cancelledVisibleTo(req))
       )
       .orderBy(desc(events.created_at))
     res.json(result)
