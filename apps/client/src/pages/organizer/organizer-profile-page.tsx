@@ -6,6 +6,7 @@ import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, t
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
+import { categoryPillStyle, pricingPillClass } from '../../utils/event-colors.utils'
 import { Pen, Bell, BellRing, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
@@ -88,7 +89,7 @@ export default function OrganizerProfilePage() {
       {isLoading ? (
         <>
           {/* banner skeleton on the primary background, lighter tones for contrast */}
-          <div className="bg-primary px-4 py-5">
+          <div className="bg-primary full-bleed-bar py-5">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-full animate-pulse bg-white/20" />
               <div className="flex-1">
@@ -154,7 +155,7 @@ export default function OrganizerProfilePage() {
       ) : (
         <>
           {/* Profile Banner */}
-          <div className="bg-primary px-4 py-5">
+          <div className="bg-primary full-bleed-bar py-5">
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
@@ -319,9 +320,11 @@ export default function OrganizerProfilePage() {
 
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {event.category && (
-                            <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{event.category}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full" {...categoryPillStyle(event.category)}>
+                              {event.category}
+                            </span>
                           )}
-                          <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${pricingPillClass(event.pricing)}`}>
                             {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
                           </span>
                         </div>

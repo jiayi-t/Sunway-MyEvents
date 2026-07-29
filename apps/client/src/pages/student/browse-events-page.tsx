@@ -4,6 +4,7 @@ import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery } from '.
 import { useAuth } from '../../context/auth-context'
 import { EventListSkeleton } from '../../components/skeletons'
 import { toMYT, todayMYT } from '../../utils/datetime.utils'
+import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
 import { Calendar, ChevronRight, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
 
 interface Event {
@@ -369,12 +370,14 @@ export default function BrowseEventsPage() {
 
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {event.category && (
-                    <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{event.category}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full" {...categoryPillStyle(event.category)}>
+                      {event.category}
+                    </span>
                   )}
-                  <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${audiencePillClass(event.audience)}`}>
                     {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
                   </span>
-                  <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${pricingPillClass(event.pricing)}`}>
                     {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
                   </span>
                 </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/auth-context'
 import { useEventQuery } from '../../api/queries'
 import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
+import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
 import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
@@ -113,7 +114,7 @@ export default function OrganizerEventDetailsPage() {
 
   if (isLoading) return (
     <div className="min-h-screen bg-surface">
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
       </div>
       <EventDetailsSkeleton />
@@ -138,7 +139,7 @@ export default function OrganizerEventDetailsPage() {
     <div className="min-h-screen bg-surface">
 
       {/* Sub-header */}
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
       </div>
 
@@ -225,16 +226,16 @@ export default function OrganizerEventDetailsPage() {
             </p>
 
             {/* Category labels */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {event.category && (
-                <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+                <span className="text-xs px-3 py-1 rounded-full" {...categoryPillStyle(event.category)}>
                   {event.category}
                 </span>
               )}
-              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+              <span className={`text-xs px-3 py-1 rounded-full ${audiencePillClass(event.audience)}`}>
                 {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
               </span>
-              <span className="border border-accent text-accent text-xs px-3 py-1 rounded-full">
+              <span className={`text-xs px-3 py-1 rounded-full ${pricingPillClass(event.pricing)}`}>
                 {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
               </span>
             </div>
