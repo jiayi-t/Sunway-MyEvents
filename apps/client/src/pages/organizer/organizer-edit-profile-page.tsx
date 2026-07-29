@@ -228,7 +228,7 @@ export default function OrganizerEditProfilePage() {
     <div className="bg-surface">
 
       {/* Sub-header */}
-      <div className="bg-primary px-4 py-3 flex items-center">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center">
         <h1 className="text-white font-bold text-base flex-1 text-center">Profile</h1>
       </div>
 

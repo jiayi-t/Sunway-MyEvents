@@ -27,7 +27,7 @@ export function ProfileBanner({ identifier }: { identifier?: string }) {
 
   // Profile Banner
   return (
-    <div className="bg-primary px-4 py-5">
+    <div className="bg-primary full-bleed-bar py-5">
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">

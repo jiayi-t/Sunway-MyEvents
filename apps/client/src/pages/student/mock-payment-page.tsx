@@ -51,7 +51,7 @@ export default function MockPaymentPage() {
 
   return (
     <div className="bg-surface flex flex-col">
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Payment</h1>
       </div>
 

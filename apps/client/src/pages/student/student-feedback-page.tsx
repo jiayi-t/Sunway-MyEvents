@@ -165,7 +165,7 @@ export default function StudentFeedbackPage() {
   if (isLoading) {
     return (
       <div className="bg-surface min-h-screen">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
         </div>
         <div className="px-4 py-4">
@@ -180,7 +180,7 @@ export default function StudentFeedbackPage() {
   if (alreadySubmitted) {
     return (
       <div className="bg-surface min-h-screen">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
         </div>
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
@@ -195,7 +195,7 @@ export default function StudentFeedbackPage() {
   if (!checkedIn) {
     return (
       <div className="bg-surface min-h-screen">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
         </div>
         <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
@@ -209,7 +209,7 @@ export default function StudentFeedbackPage() {
   return (
     <div className="bg-surface min-h-screen">
 
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
       </div>
 

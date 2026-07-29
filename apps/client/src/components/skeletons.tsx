@@ -36,8 +36,9 @@ export function EventListSkeleton({ count = 3 }: { count?: number }) {
 // featured carousel card on the home page (rendered on the dark primary background)
 export function FeaturedEventSkeleton() {
   return (
-    <div className="max-w-3xl lg:max-w-3xl mx-auto rounded-xl overflow-hidden shadow-md bg-white">
-      <div className="w-full animate-pulse bg-gray-200 aspect-[4/5] lg:aspect-[4/3]" />
+    // narrower on desktop and 4:5 throughout, matching the real centred card rather than the full carousel row
+    <div className="max-w-3xl lg:max-w-md mx-auto rounded-xl overflow-hidden shadow-md bg-white">
+      <div className="w-full animate-pulse bg-gray-200 aspect-[4/5]" />
       <div className="p-4">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/3 mt-2" />
@@ -52,19 +53,30 @@ export function FeaturedEventSkeleton() {
 }
 
 // event details poster + info section (pages keep their own sub-header above this)
+// mirrors the real page's two-column desktop layout, otherwise the poster becomes a full-width 4:5 slab
 export function EventDetailsSkeleton() {
   return (
-    <div>
-      <div className="w-full animate-pulse bg-gray-200" style={{ aspectRatio: '4/5' }} />
-      <div className="p-4">
-        <Skeleton className="h-5 w-2/3" />
-        <Skeleton className="h-3 w-1/3 mt-2" />
-        <div className="mt-4 space-y-2">
-          <Skeleton className="h-3.5 w-1/2" />
-          <Skeleton className="h-3.5 w-2/5" />
-          <Skeleton className="h-3.5 w-3/5" />
+    <div className="lg:flex lg:items-start lg:gap-6 lg:p-6">
+      <div className="lg:w-5/12 lg:flex-shrink-0 lg:rounded-xl lg:overflow-hidden">
+        <div className="w-full animate-pulse bg-gray-200" style={{ aspectRatio: '4/5' }} />
+      </div>
+      <div className="lg:flex-1 lg:min-w-0">
+        <div className="p-4 lg:p-0">
+          <Skeleton className="h-5 w-2/3" />
+          <div className="flex gap-2 mt-4">
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+            <Skeleton className="h-6 w-14 rounded-full" />
+          </div>
+          <Skeleton className="h-3 w-1/3 mt-4" />
+          <div className="mt-3 space-y-2">
+            <Skeleton className="h-3.5 w-1/2" />
+            <Skeleton className="h-3.5 w-2/5" />
+            <Skeleton className="h-3.5 w-3/5" />
+          </div>
+          <Skeleton className="h-24 w-full mt-4" />
+          <Skeleton className="h-11 w-full rounded-full mt-4" />
         </div>
-        <Skeleton className="h-24 w-full mt-4" />
       </div>
     </div>
   )
@@ -159,7 +171,7 @@ export function AnalyticsTabSkeleton() {
 export function CheckinCardSkeleton() {
   return (
     <div className="bg-surface">
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Check In</h1>
       </div>
       <div className="px-4 py-6">

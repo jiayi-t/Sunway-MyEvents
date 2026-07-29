@@ -62,6 +62,17 @@
   --ring: var(--sunway-blue);
 }
 
+@layer components {
+  /* subheaders and profile banner stretch full width, but their content is aligned with the main content column */
+  .full-bleed-bar {
+    position: relative;
+    left: 50%;
+    margin-left: -50vw;
+    width: 100vw;
+    padding-inline: max(1rem, calc((100vw - 64rem) / 2));
+  }
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html, body {

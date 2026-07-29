@@ -294,7 +294,7 @@ export default function Header() {
         </button>
 
         {/* Nav (hidden for logged-out guests) */}
-        <div className="max-w-2xl lg:max-w-3xl mx-auto flex items-center gap-6 min-h-5">
+        <div className="max-w-2xl lg:max-w-5xl mx-auto flex items-center gap-6 min-h-5">
           {user && navLinks.map(link => (
             <button
               key={link.path}

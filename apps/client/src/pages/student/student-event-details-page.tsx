@@ -104,7 +104,7 @@ export default function StudentEventDetailsPage() {
   if (isLoading)
     return (
       <div className="bg-surface">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">
             Event Details
           </h1>
@@ -127,7 +127,7 @@ export default function StudentEventDetailsPage() {
   if ((typedEvent as any).restricted === 'students_only')
     return (
       <div className="bg-surface">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Event Details</h1>
         </div>
 
@@ -213,14 +213,14 @@ export default function StudentEventDetailsPage() {
   return (
     <div className="bg-surface">
       {/* Sub-header */}
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">
           Event Details
         </h1>
       </div>
 
       {typedEvent.cancelled_at && (
-        <div className="bg-red-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
+        <div className="bg-red-500 text-white text-sm font-semibold full-bleed-bar py-2.5 text-center">
           This event has been cancelled
         </div>
       )}

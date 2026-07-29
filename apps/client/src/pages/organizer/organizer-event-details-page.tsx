@@ -144,12 +144,12 @@ export default function OrganizerEventDetailsPage() {
       </div>
 
       {event.archived_at && (
-        <div className="bg-gray-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
+        <div className="bg-gray-500 text-white text-sm font-semibold full-bleed-bar py-2.5 text-center">
           This event has been archived
         </div>
       )}
       {event.cancelled_at && (
-        <div className="bg-red-500 text-white text-sm font-semibold px-4 py-2.5 text-center">
+        <div className="bg-red-500 text-white text-sm font-semibold full-bleed-bar py-2.5 text-center">
           This event has been cancelled
         </div>
       )}

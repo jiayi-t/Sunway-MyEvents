@@ -118,7 +118,7 @@ function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col lg:bg-slate-100">
       <Header />
-      <div className="flex-1 w-full max-w-2xl lg:max-w-3xl mx-auto bg-surface flex flex-col">
+      <div className="flex-1 w-full max-w-2xl lg:max-w-5xl mx-auto bg-surface flex flex-col">
         {children}
       </div>
       <Footer />

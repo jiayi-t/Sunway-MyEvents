@@ -165,7 +165,7 @@ export default function BrowseEventsPage() {
   return (
     <div className="bg-surface">
 
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Browse Events</h1>
       </div>
 

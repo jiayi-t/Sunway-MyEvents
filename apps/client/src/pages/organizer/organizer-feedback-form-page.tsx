@@ -379,7 +379,7 @@ export default function OrganizerFeedbackFormPage() {
   if (!isNewEvent && isLoading) {
     return (
       <div className="bg-surface min-h-screen">
-        <div className="bg-primary px-4 py-3 flex items-center gap-3">
+        <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback Form</h1>
         </div>
         <div className="px-4 py-4">
@@ -392,7 +392,7 @@ export default function OrganizerFeedbackFormPage() {
   return (
     <div className="bg-surface min-h-screen">
 
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
       </div>
 

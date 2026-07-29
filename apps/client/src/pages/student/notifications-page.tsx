@@ -101,7 +101,7 @@ export default function NotificationsPage() {
   return (
     <div className="bg-surface min-h-screen">
 
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
+      <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
         <h1 className="text-white font-bold text-base flex-1 text-center">Notifications</h1>
       </div>
 
