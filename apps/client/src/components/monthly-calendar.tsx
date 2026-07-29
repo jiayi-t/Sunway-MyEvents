@@ -364,7 +364,7 @@ export default function MonthlyCalendar({ enabled = true, header }: { enabled?: 
 
                   {/* desktop: organizer + event name */}
                   <div className="hidden lg:flex lg:flex-col gap-1 min-w-0">
-                    // show up to three events, the rest roll into a counter below
+                    {/* show up to three events, the rest roll into a counter below */}
                     {dayEvents.slice(0, 3).map(e => (
                       <button
                         key={e.id}
