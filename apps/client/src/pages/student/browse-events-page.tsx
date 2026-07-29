@@ -302,7 +302,7 @@ export default function BrowseEventsPage() {
 
       {/* Top-level views, hidden while a search or filter narrows the list */}
       {chipsActive && (
-        <div className="px-4 py-3 bg-card overflow-x-auto">
+        <div className="px-4 py-3 overflow-x-auto">
           <div className="flex gap-2 w-max">
             {CATEGORIES.map(cat => (
               <button
@@ -311,7 +311,7 @@ export default function BrowseEventsPage() {
                 className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
                   ${activeCategory === cat
                     ? 'bg-primary text-white'
-                    : 'bg-white text-primary cursor-pointer'
+                    : 'text-primary cursor-pointer'
                   }`}
               >
                 {cat}

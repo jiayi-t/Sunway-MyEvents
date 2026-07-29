@@ -343,18 +343,18 @@ export default function OrganizerAnalyticsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-card px-4 py-3 flex gap-2">
+      <div className="px-4 py-3 flex gap-2">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => !t.disabled && handleTabChange(t.key)}
             disabled={t.disabled}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors whitespace-nowrap
               ${tab === t.key
-                ? 'bg-primary text-white'
+                ? 'bg-primary border-primary text-white'
                 : t.disabled
-                  ? 'text-border cursor-not-allowed'
-                  : 'text-muted-foreground cursor-pointer'
+                  ? 'border-border/60 text-border cursor-not-allowed'
+                  : 'border-border text-muted-foreground cursor-pointer'
               }`}
           >
             {t.label}

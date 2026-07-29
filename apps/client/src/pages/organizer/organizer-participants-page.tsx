@@ -112,17 +112,17 @@ export default function OrganizerParticipantsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div className="bg-card px-4 py-3 flex gap-2">
+      <div className="px-4 py-3 flex gap-2">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
-              ${activeTab === tab.key ? 'bg-primary text-white' : 'text-muted-foreground'}`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
+              ${activeTab === tab.key ? 'bg-primary border-primary text-white' : 'border-border text-muted-foreground'}`}
           >
             {tab.label}
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-              activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-surface text-muted-foreground'
+              activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-gray-200 text-muted-foreground'
             }`}>
               {tab.count}
             </span>

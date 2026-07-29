@@ -55,16 +55,16 @@ export function SettingsTabBar({ activeTab, onTabChange }: { activeTab: Settings
   ]
 
   return (
-    <div className="flex gap-2 px-4 py-3 bg-card">
+    <div className="flex gap-2 px-4 py-3">
       {tabs.map(tab => (
         <button
           key={tab.key}
           data-tour={tab.key === 'interests' ? 'interests-tab' : tab.key === 'notifications' ? 'notifications-tab' : undefined}
           onClick={() => onTabChange(tab.key)}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors
+          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
             ${activeTab === tab.key
-              ? 'bg-primary text-white'
-              : 'border border-border text-muted-foreground hover:text-foreground cursor-pointer'
+              ? 'bg-primary border-primary text-white'
+              : 'border-border text-muted-foreground hover:text-foreground cursor-pointer'
             }`}
         >
           {tab.label}
