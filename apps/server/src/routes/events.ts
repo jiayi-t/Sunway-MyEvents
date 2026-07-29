@@ -24,10 +24,10 @@ router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
       .from(events)
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        // hide students-only events from the public and from unauthenticated callers
+        // cancelled events leave every discovery surface, they only stay visible to the organizer and users who registered/saved
         !req.user || req.user.role === 'public'
-          ? and(isNull(events.archived_at), ne(events.audience, 'students_only'))
-          : isNull(events.archived_at)
+          ? and(isNull(events.archived_at), isNull(events.cancelled_at), ne(events.audience, 'students_only'))
+          : and(isNull(events.archived_at), isNull(events.cancelled_at))
       )
       .orderBy(desc(events.created_at))
     res.json(result)
@@ -143,14 +143,19 @@ router.get('/followed-orgs', authenticate, async (req: AuthRequest, res) => {
       .innerJoin(followed_organizers, eq(followed_organizers.organizer_id, events.organizer_id))
       .leftJoin(users, eq(events.organizer_id, users.id))
       .where(
-        // hide students-only events from the public, same rule as GET /events
+        // hide students-only and cancelled events, same rule as GET /events
         req.user!.role === 'public'
           ? and(
               eq(followed_organizers.student_id, req.user!.id),
               isNull(events.archived_at),
+              isNull(events.cancelled_at),
               ne(events.audience, 'students_only'),
             )
-          : and(eq(followed_organizers.student_id, req.user!.id), isNull(events.archived_at))
+          : and(
+              eq(followed_organizers.student_id, req.user!.id),
+              isNull(events.archived_at),
+              isNull(events.cancelled_at),
+            )
       )
       .orderBy(desc(events.created_at))
     res.json(result)
@@ -193,6 +198,29 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
     if (result.length === 0) {
       return res.status(404).json({ error: 'Event not found' })
     }
+
+    // a cancelled event is only reachable by its organizer and by users who registered for or saved it
+    if (result[0].cancelled_at) {
+      const isOwner = req.user?.role === 'organizer' && result[0]._owner_pk === req.user.id
+      let hasStake = false
+
+      if (!isOwner && req.user) {
+        const [registered] = await db
+          .select({ id: registrations.id })
+          .from(registrations)
+          .where(and(eq(registrations.event_id, id), eq(registrations.user_id, req.user.id)))
+          .limit(1)
+        const [saved] = await db
+          .select({ id: saved_events.id })
+          .from(saved_events)
+          .where(and(eq(saved_events.event_id, id), eq(saved_events.user_id, req.user.id)))
+          .limit(1)
+        hasStake = !!registered || !!saved
+      }
+
+      if (!isOwner && !hasStake) return res.status(404).json({ error: 'Event not found' })
+    }
+
     // public and unauthenticated callers cannot view a students-only event's details
     if ((!req.user || req.user.role === 'public') && result[0].audience === 'students_only') {
       return res.json({
