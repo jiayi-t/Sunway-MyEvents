@@ -135,7 +135,20 @@ export function startTour(buildSteps: (tour: Driver) => DriveStep[], onSeen: () 
     prevBtnText: 'Back',
     doneBtnText: 'Done',
     // force the tracker to re-measure and re-align on the next frame
-    onHighlighted: () => { lastRectKey = '' },
+    onHighlighted: () => {
+      lastRectKey = ''
+      // scroll the target of every step into a safe band 
+      const el = activeTour?.getActiveElement() as HTMLElement | undefined
+      if (!el || el === document.body) return
+      const headerHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 0
+      const popoverHeight = document.querySelector('.driver-popover')?.getBoundingClientRect().height ?? 0
+      const buffer = 12
+      const safeTop = headerHeight + buffer
+      const safeBottom = window.innerHeight - popoverHeight - buffer
+      const rect = el.getBoundingClientRect()
+      if (rect.top < safeTop) window.scrollBy({ top: rect.top - safeTop })
+      else if (rect.bottom > safeBottom) window.scrollBy({ top: rect.bottom - safeBottom })
+    },
     onPopoverRender: (popover) => {
       // on the last step Done already ends the tour, so no Skip there
       if (tour.isLastStep()) return
