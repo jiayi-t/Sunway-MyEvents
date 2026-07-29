@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useFeaturedEventsQuery, useRecommendationsQuery } from '../../api/queries'
-import { useAuth } from '../../context/auth-context'
-import { FeaturedEventSkeleton, EventListSkeleton } from '../../components/skeletons'
+import { useFeaturedEventsQuery } from '../../api/queries'
+import { FeaturedEventSkeleton } from '../../components/skeletons'
+import MonthlyCalendar from '../../components/monthly-calendar'
+import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
 import { Calendar, Users, Search, Clock, MapPin, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface Event {
@@ -41,12 +42,11 @@ export default function HomePage() {
   const [search, setSearch] = useState('')
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [autoScroll, setAutoScroll] = useState(true)
-  
+
   const touchStartX = useRef<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   // pause auto-scroll and resume after 15 seconds
   const pauseAutoScroll = () => {
@@ -70,9 +70,6 @@ export default function HomePage() {
     const idx = (featuredIndex + offset + featuredEvents.length) % featuredEvents.length
     return featuredEvents[idx]
   }
-
-  const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(!!user)
-  const recommendations = (recommendationsData ?? []) as Event[]
 
   const prevFeatured = () => {
     pauseAutoScroll()
@@ -126,13 +123,13 @@ export default function HomePage() {
       <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen bg-primary text-white lg:min-h-[calc(100vh-3.5rem)]">
         {/* Hero Section */}
         <div className="px-4 pt-4 pb-3 lg:pt-3 lg:pb-2">
-          <div className="max-w-3xl lg:max-w-4xl mx-auto text-center">
+          <div className="max-w-3xl lg:max-w-5xl mx-auto text-center">
           <h1 className="text-white font-bold text-xl mb-3 lg:mb-2">
             Explore <span className="text-accent">#TheMostHappeningCampus</span>
           </h1>
 
           <div className="mb-2 lg:mb-1">
-            <div className="w-full max-w-3xl mx-auto flex items-center bg-white rounded-full shadow px-3 py-2">
+            <div className="w-full max-w-3xl lg:max-w-5xl mx-auto flex items-center bg-white rounded-full shadow px-3 py-2">
               <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" aria-hidden="true" />
               <input
                 type="text"
@@ -210,13 +207,13 @@ export default function HomePage() {
                       : <div className="absolute inset-0 bg-surface flex items-center justify-center"><ImageOff className="w-8 h-8 text-border" /></div>
                     }
                     <div className="absolute top-3 left-3 flex gap-2">
-                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                      <span className="text-[10px] px-2 py-1 rounded-full" {...categoryPillStyle(featured.category)}>
                         {featured.category || 'General'}
                       </span>
-                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                      <span className={`text-[10px] px-2 py-1 rounded-full ${audiencePillClass(featured.audience)}`}>
                         {featured.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
                       </span>
-                      <span className="bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                      <span className={`text-[10px] px-2 py-1 rounded-full ${pricingPillClass(featured.pricing)}`}>
                         {Number(featured.pricing) === 0 ? 'Free' : 'Paid'}
                       </span>
                     </div>
@@ -310,86 +307,22 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* For You */}
-      <div className="px-4 pt-4 pb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 data-tour="for-you" className="font-bold text-primary text-lg">For You</h2>
-          <button
-            data-tour="browse-all"
-            onClick={() => navigate('/browse')}
-            className="bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer"
-          >
-            Browse All Events
-          </button>
-        </div>
-        {recLoading ? (
-          <EventListSkeleton />
-        ) : recommendations.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No recommendations yet, explore events to get personalised suggestions.</p>
-        ) : (
-          <div className="space-y-3">
-            {recommendations.map(event => (
-              <div
-                key={event.id}
-                onClick={() => navigate(`/events/${event.id}`)}
-                className="bg-card rounded-xl shadow flex gap-3 p-3 cursor-pointer hover:shadow-md transition items-center"
+      {/* Monthly Calendar */}
+      <div className="pb-6">
+        <MonthlyCalendar
+          header={
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h2 className="font-bold text-primary text-lg">Monthly Calendar</h2>
+              <button
+                data-tour="browse-all"
+                onClick={() => navigate('/browse')}
+                className="bg-accent text-white text-sm font-semibold px-4 py-2 rounded-full shadow-sm cursor-pointer flex-shrink-0"
               >
-                <div
-                  className="flex-shrink-0 overflow-hidden rounded-lg self-center"
-                  style={{ width: '100px', aspectRatio: '4/5' }}
-                >
-                  {event.image_url
-                    ? <img 
-                        src={toImageUrl(event.image_url)} 
-                        alt={event.name} 
-                        className="w-full h-full object-cover object-center" 
-                      />
-                    : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
-                  }
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
-                    {event.cancelled_at && (
-                      <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
-                    )}
-                  </div>
-                  <p className="text-accent text-xs mt-0.5">{event.organizer_name ?? 'Organizer'}</p>
-
-                  <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
-                    <div className="inline-flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3 text-black flex-shrink-0" />
-                      <span>{formatDate(event.date)}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1.5">
-                      <Clock className="w-3 h-3 text-black flex-shrink-0" />
-                      <span>{formatTimeRange(event.start_time, event.end_time)}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-1.5">
-                      <MapPin className="w-3 h-3 text-black flex-shrink-0" />
-                      <span className="truncate">{event.venue}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {event.category && (
-                      <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{event.category}</span>
-                    )}
-                    <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
-                      {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
-                    </span>
-                    <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
-                      {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
-                    </span>
-                  </div>
-                </div>
-
-                <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
-              </div>
-            ))}
-          </div>
-        )}
+                Browse All Events
+              </button>
+            </div>
+          }
+        />
       </div>
     </div>
   )
