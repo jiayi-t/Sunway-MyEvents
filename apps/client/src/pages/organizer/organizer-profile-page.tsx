@@ -6,7 +6,7 @@ import { usePublicOrganizerProfileQuery, useOrganizerNotificationsStatusQuery, t
 import { useToggleOrganizerNotificationsMutation } from '../../api/mutations'
 import { Skeleton, EventListSkeleton } from '../../components/skeletons'
 import Avatar from '../../components/avatar'
-import { ShortcutTile } from '../../components/profile-sections'
+import { Stat, ShortcutTile } from '../../components/profile-sections'
 import OrganizerCalendar from '../../components/organizer-calendar'
 import OrganizerActivity from '../../components/organizer-activity'
 import { categoryPillStyle, pricingPillClass } from '../../utils/event-colors.utils'
@@ -234,14 +234,8 @@ export default function OrganizerProfilePage() {
 
             {/* counts sit on their own row under the identity block */}
             <div className="mt-6 flex flex-wrap gap-6">
-              <div>
-                <p className="text-lg font-bold text-white leading-none">{profile.event_stats.upcoming}</p>
-                <p className="text-[11px] text-white/60 mt-1">Upcoming</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold text-white leading-none">{profile.event_stats.total}</p>
-                <p className="text-[11px] text-white/60 mt-1">Organized</p>
-              </div>
+              <Stat value={profile.event_stats.upcoming} label="Upcoming" />
+              <Stat value={profile.event_stats.total} label="Organized" />
             </div>
           </div>
 
