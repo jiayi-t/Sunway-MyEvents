@@ -95,8 +95,11 @@ export default function Header() {
 
   const navLinks = user?.role === 'organizer' ? organizerNav : studentNav
 
-  const isActive = (path: string) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/'
+    if (location.pathname.endsWith('/analytics')) return path === '/organizer/analytics'
+    return location.pathname.startsWith(path)
+  }
 
   const mobileTourItem = (
     <button

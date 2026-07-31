@@ -58,6 +58,7 @@ export type QuestionAnalysis =
 export interface EventAnalytics {
   event: { id: string; name: string; date: string; image_url: string | null }
   attendance: { registrations: number; attendees: number; attendance_rate: number }
+  views: { total_views: number; unique_viewers: number }
   feedback: {
     count: number
     avg_rating: number

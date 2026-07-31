@@ -164,6 +164,15 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
     const regCount = Number(attRow?.registrations ?? 0)
     const attendeeCount = Number(attRow?.attendees ?? 0)
 
+    // view stats
+    const [viewRow] = await db
+      .select({
+        total_views: count(event_views.id),
+        unique_viewers: countDistinct(event_views.user_id),
+      })
+      .from(event_views)
+      .where(eq(event_views.event_id, eventId))
+
     // feedback rows
     const feedbackRows = await db
       .select({ rating: feedback.rating, answers: feedback.answers })
@@ -248,6 +257,10 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
         registrations: regCount,
         attendees: attendeeCount,
         attendance_rate: regCount > 0 ? Math.round((attendeeCount / regCount) * 1000) / 10 : 0,
+      },
+      views: {
+        total_views: Number(viewRow?.total_views ?? 0),
+        unique_viewers: Number(viewRow?.unique_viewers ?? 0),
       },
       demographics: {
         gender_distribution: genderRows.map(r => ({ gender: r.gender, count: Number(r.count) })),

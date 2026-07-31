@@ -127,15 +127,44 @@ function QuestionBreakdown({ q, aiSummary }: { q: QuestionAnalysis; aiSummary: R
   )
 }
 
+type View = 'attendance' | 'views' | 'feedback'
+
+const VIEWS: { key: View; label: string }[] = [
+  { key: 'attendance', label: 'Attendance' },
+  { key: 'views', label: 'Views' },
+  { key: 'feedback', label: 'Feedback' },
+]
+
 export default function OrganizerEventAnalyticsPage() {
   const { id } = useParams()
-  const [searchParams] = useSearchParams()
-  const view = searchParams.get('view') ?? 'attendance'
+  const [searchParams, setSearchParams] = useSearchParams()
+  const view = (searchParams.get('view') as View) ?? 'attendance'
+
+  // the tabs stay on this event, so switching between them never leaves the page
+  const setView = (next: View) => setSearchParams({ view: next }, { replace: true })
 
   const { data, isLoading, isError } = useEventAnalyticsQuery(id)
   const aiSummary = useEventAiSummaryQuery(id, {
     enabled: !!id && view === 'feedback' && (data?.feedback.count ?? 0) > 0,
   })
+
+  const tabBar = (
+    <div className="px-4 py-3 flex gap-2">
+      {VIEWS.map(t => (
+        <button
+          key={t.key}
+          onClick={() => setView(t.key)}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors whitespace-nowrap cursor-pointer
+            ${view === t.key
+              ? 'bg-primary border-primary text-white'
+              : 'border-border text-muted-foreground'
+            }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  )
 
   const subHeader = (title: string) => (
     <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
@@ -163,7 +192,7 @@ export default function OrganizerEventAnalyticsPage() {
     )
   }
 
-  const { event, attendance, feedback, demographics } = data
+  const { event, attendance, views, feedback, demographics } = data
   const totalFeedback = feedback.count
 
   return (
@@ -171,6 +200,37 @@ export default function OrganizerEventAnalyticsPage() {
 
       {/* Sub-header shows event name */}
       {subHeader(event.name)}
+
+      {tabBar}
+
+      {view === 'views' && (
+        <div className="mx-4 mt-4">
+          <p className="text-base font-bold text-primary mb-3">Page Views</p>
+          <div className="bg-card rounded-2xl shadow-sm">
+            <div className="flex divide-x divide-border py-4">
+              <div className="flex-1 text-center px-2">
+                <p className="text-xl font-bold text-accent">{views.total_views}</p>
+                <p className="text-xs text-muted-foreground mt-1">Total Views</p>
+              </div>
+              <div className="flex-1 text-center px-2">
+                <p className="text-xl font-bold text-accent">{views.unique_viewers}</p>
+                <p className="text-xs text-muted-foreground mt-1">Unique Viewers</p>
+              </div>
+              <div className="flex-1 text-center px-2">
+                <p className="text-xl font-bold text-accent">
+                  {views.unique_viewers > 0
+                    ? `${Math.round((attendance.registrations / views.unique_viewers) * 1000) / 10}%`
+                    : '—'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Viewer Conversion</p>
+              </div>
+            </div>
+          </div>
+          {views.total_views === 0 && (
+            <p className="text-sm text-muted-foreground text-center mt-4">No views recorded yet.</p>
+          )}
+        </div>
+      )}
 
       {view === 'attendance' && (
         <div className="mx-4 mt-4 space-y-6">
@@ -236,7 +296,7 @@ export default function OrganizerEventAnalyticsPage() {
       )}
 
       {view === 'feedback' && (
-      <div className="mx-4 mt-6">
+      <div className="mx-4 mt-4">
         <p className="text-base font-bold text-primary mb-3">Feedback Breakdown</p>
 
         {feedback.count === 0 ? (
