@@ -9,12 +9,15 @@ export const CATEGORY_COLORS: Record<string, string> = {
 
 export const UNCATEGORISED_COLOR = '#64748b'
 export const CANCELLED_COLOR = '#ef4444'
+export const ARCHIVED_COLOR = '#6b7280'
 
 export const categoryColor = (category?: string | null) =>
   CATEGORY_COLORS[category ?? ''] ?? UNCATEGORISED_COLOR
 
-export const eventColor = (event: { category?: string | null; cancelled_at?: string | null }) =>
-  event.cancelled_at ? CANCELLED_COLOR : categoryColor(event.category)
+export const eventColor = (event: { category?: string | null; cancelled_at?: string | null; archived_at?: string | null }) =>
+  event.archived_at ? ARCHIVED_COLOR
+    : event.cancelled_at ? CANCELLED_COLOR
+    : categoryColor(event.category)
 
 export const categoryPillStyle = (category?: string | null) => ({
   style: {

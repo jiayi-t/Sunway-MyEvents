@@ -170,10 +170,9 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
 
         {(event.archived_at || event.cancelled_at) && (
           <div className="flex items-center gap-1 mt-0.5">
-            {event.archived_at && (
+            {event.archived_at ? (
               <span className="bg-gray-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">ARCHIVED</span>
-            )}
-            {event.cancelled_at && !event.archived_at && (
+            ) : (
               <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
             )}
           </div>
