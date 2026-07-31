@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, or, isNull, asc, desc, gte, lt, ne, inArray, exists } from 'drizzle-orm'
+import { eq, and, or, isNull, asc, desc, gte, lt, ne, inArray, exists, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, registrations, followed_organizers, notifications } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
@@ -43,6 +43,33 @@ router.get('/following', authenticate, async (req: AuthRequest, res) => {
       .from(followed_organizers)
       .innerJoin(users, eq(followed_organizers.organizer_id, users.id))
       .where(eq(followed_organizers.student_id, req.user!.id))
+      .orderBy(asc(users.name))
+
+    res.json(rows)
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/organizers/directory - every SLB/C&S, for the browse page's organizer results
+// declared before /:id so the literal path is not captured as an id
+router.get('/directory', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const rows = await db
+      .select({
+        id: users.public_id,
+        name: users.name,
+        image_url: users.image_url,
+        category: users.category,
+        // joined on the caller only, so the row exists just for organizers they already follow
+        following: sql<boolean>`${followed_organizers.id} is not null`,
+      })
+      .from(users)
+      .leftJoin(followed_organizers, and(
+        eq(followed_organizers.organizer_id, users.id),
+        eq(followed_organizers.student_id, req.user!.id),
+      ))
+      .where(eq(users.role, 'organizer'))
       .orderBy(asc(users.name))
 
     res.json(rows)

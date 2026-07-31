@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery } from '../../api/queries'
+import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery, useOrganizerDirectoryQuery, type DirectoryOrganizer } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
+import Avatar from '../../components/avatar'
 import { EventListSkeleton } from '../../components/skeletons'
 import { toMYT, todayMYT } from '../../utils/datetime.utils'
 import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
@@ -23,7 +24,8 @@ interface Event {
 }
 
 const EVENT_CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
-const CATEGORIES = ['All Events', 'For You', 'Followed SLB/C&S']
+const ORGANIZER_CATEGORY = 'All SLB/C&S'
+const CATEGORIES = ['All Events', ORGANIZER_CATEGORY, 'Events For You', 'Followed SLB/C&S Events']
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
@@ -45,6 +47,8 @@ const formatTimeRange = (start?: string, end?: string) =>
 const toImageUrl = (url?: string) => url ?? ''
 
 interface Filters {
+  events: boolean
+  organizers: boolean
   categories: string[]
   dateFrom: string
   dateTo: string
@@ -54,10 +58,53 @@ interface Filters {
   paid: boolean
 }
 
-const EMPTY_FILTERS: Filters = { categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false, free: false, paid: false }
+const EMPTY_FILTERS: Filters = { events: false, organizers: false, categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false, free: false, paid: false }
 
 function filtersActive(f: Filters) {
-  return f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past || f.free || f.paid
+  return f.events || f.organizers || f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past || f.free || f.paid
+}
+
+// one titled block of organizer rows, rendered once for SLBs and once for C&S
+function OrganizerGroup({ title, organizers, onOpen }: {
+  title: string
+  organizers: DirectoryOrganizer[]
+  onOpen: (id: string) => void
+}) {
+  if (organizers.length === 0) return null
+
+  return (
+    <>
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-primary font-semibold text-sm">{title}</h2>
+        <span className="text-xs text-muted-foreground flex-shrink-0">{organizers.length}</span>
+      </div>
+
+      <div className="bg-card rounded-xl shadow p-2 divide-y divide-border">
+        {organizers.map(org => (
+          <div
+            key={org.id}
+            onClick={() => onOpen(org.id)}
+            className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-surface rounded-lg transition-colors"
+          >
+            <Avatar src={org.image_url} alt={org.name} className="w-9 h-9 flex-shrink-0" />
+
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground text-sm font-semibold leading-tight truncate">{org.name}</p>
+              {org.category && (
+                <p className="text-muted-foreground text-xs mt-0.5 truncate">{org.category}</p>
+              )}
+            </div>
+
+            {org.following && (
+              <span className="border border-accent text-accent text-xs font-medium px-3 py-1 rounded-full flex-shrink-0">
+                Following
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  )
 }
 
 export default function BrowseEventsPage() {
@@ -92,8 +139,9 @@ export default function BrowseEventsPage() {
 
   // the filter chips are hidden while searching or filtering, so those views only drive results when neither is on
   const chipsActive = !search.trim() && !filtersActive(filters)
-  const isForYouActive = activeCategory === 'For You' && chipsActive
-  const isFollowedActive = activeCategory === 'Followed SLB/C&S' && chipsActive
+  const isForYouActive = activeCategory === 'Events For You' && chipsActive
+  const isFollowedActive = activeCategory === 'Followed SLB/C&S Events' && chipsActive
+  const isAllOrgsActive = activeCategory === ORGANIZER_CATEGORY && chipsActive
 
   const { data: recommendationsData, isLoading: recLoading } = useRecommendationsQuery(isForYouActive && !!user)
   const recommendations = (recommendationsData ?? []) as Event[]
@@ -103,15 +151,35 @@ export default function BrowseEventsPage() {
 
   const isLoading = loading || (isForYouActive && recLoading) || (isFollowedActive && followedLoading)
 
+  // the Show filter narrows the page to one result type, otherwise both events and slb/c&s appear in the search results
+  const eventsOnly = filters.events && !filters.organizers
+  const showEvents = !(filters.organizers && !filters.events) && !isAllOrgsActive
+  const showOrganizers = isAllOrgsActive || (!eventsOnly && (filters.organizers || !!search.trim()))
+  // desktop view splits them into 2 columns instead of stacking
+  const twoColumn = showEvents && showOrganizers
+
+  const { data: organizerData, isLoading: organizersLoading } = useOrganizerDirectoryQuery(showOrganizers)
+
+  // the event filters below are event-only, so organizer results are narrowed by the search text alone
+  const matchedOrganizers = useMemo(() => {
+    const all = organizerData ?? []
+    const query = search.trim().toLowerCase()
+    if (!query) return all
+    return all.filter(o =>
+      o.name.toLowerCase().includes(query) ||
+      o.category?.toLowerCase().includes(query)
+    )
+  }, [organizerData, search])
+
+  const slbs = useMemo(() => matchedOrganizers.filter(o => o.category === 'SLB'), [matchedOrganizers])
+  const clubs = useMemo(() => matchedOrganizers.filter(o => o.category !== 'SLB'), [matchedOrganizers])
+
   const filtered = useMemo(() => {
     const today = todayMYT()
 
     let base: Event[]
     if (search.trim()) {
-      base = events.filter(e =>
-        e.name.toLowerCase().includes(search.toLowerCase()) ||
-        e.venue?.toLowerCase().includes(search.toLowerCase())
-      )
+      base = events.filter(e => e.name.toLowerCase().includes(search.toLowerCase()))
     } else if (isForYouActive) {
       base = recommendations
     } else if (isFollowedActive) {
@@ -170,7 +238,7 @@ export default function BrowseEventsPage() {
     <div className="bg-surface">
 
       <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
-        <h1 className="text-white font-bold text-base flex-1 text-center">Browse Events</h1>
+        <h1 className="text-white font-bold text-base flex-1 text-center">Browse Events and SLB/C&S</h1>
       </div>
 
       {/* Search */}
@@ -180,7 +248,7 @@ export default function BrowseEventsPage() {
             <Search className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search events"
+              placeholder="Search events and SLB/C&S"
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="flex-1 min-w-0 bg-transparent text-sm placeholder-gray-400 focus:outline-none"
@@ -214,6 +282,22 @@ export default function BrowseEventsPage() {
               <button onClick={() => { setFilterOpen(false); setDraftFilters(filters) }}>
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
+            </div>
+
+            {/* Result type */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Show</p>
+            <div className="flex gap-4 mb-4">
+              {([['events', 'Events'], ['organizers', 'SLB/C&S']] as const).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={draftFilters[key]}
+                    onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
+                    className="w-4 h-4 accent-primary rounded cursor-pointer"
+                  />
+                  <span className="text-sm text-foreground">{label}</span>
+                </label>
+              ))}
             </div>
 
             {/* Timing */}
@@ -308,93 +392,126 @@ export default function BrowseEventsPage() {
       {chipsActive && (
         <div className="px-4 py-3 overflow-x-auto">
           <div className="flex gap-2 w-max">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                data-tour={cat === 'For You' ? 'for-you' : undefined}
-                onClick={() => handleCategoryFilter(cat)}
-                className={`px-3 py-1 rounded-full text-sm font-medium border border-primary whitespace-nowrap transition-colors
-                  ${activeCategory === cat
-                    ? 'bg-primary text-white'
-                    : 'text-primary cursor-pointer'
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {CATEGORIES.map(cat => {
+              const isOrganizers = cat === ORGANIZER_CATEGORY
+              const active = activeCategory === cat
+              return (
+                <button
+                  key={cat}
+                  data-tour={cat === 'Events For You' ? 'for-you' : undefined}
+                  onClick={() => handleCategoryFilter(cat)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium border whitespace-nowrap transition-colors
+                    ${isOrganizers ? 'border-accent' : 'border-primary'}
+                    ${active
+                      ? isOrganizers ? 'bg-accent text-white' : 'bg-primary text-white'
+                      : `${isOrganizers ? 'text-accent' : 'text-primary'} cursor-pointer`
+                    }`}
+                >
+                  {cat}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
 
-      {/* Events List */}
-      <div className="px-4 py-3 space-y-3">
-        {isLoading ? (
-          <EventListSkeleton count={4} />
-        ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center mt-8">
-            {isForYouActive
-              ? 'No recommendations yet, explore events to get personalised suggestions.'
-              : 'No events found.'}
-          </p>
-        ) : (
-          filtered.map(event => (
-            <div
-              key={event.id}
-              onClick={() => navigate(`/events/${event.id}`)}
-              className="bg-card rounded-xl shadow flex gap-3 p-3 cursor-pointer hover:shadow-md transition items-center"
-            >
-              <div
-                className="flex-shrink-0 overflow-hidden rounded-lg self-center"
-                style={{ width: '100px', aspectRatio: '4/5' }}
-              >
-                {event.image_url
-                  ? <img src={toImageUrl(event.image_url)} alt={event.name} className="w-full h-full object-cover object-center" />
-                  : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
-                }
+      {/* Events first, SLB/C&S below on mobile and beside on desktop */}
+      <div className={`px-4 py-3 ${twoColumn ? 'lg:grid lg:grid-cols-3 lg:gap-4 lg:items-start' : ''}`}>
+        {showEvents && (
+          <div className={`space-y-3 ${twoColumn ? 'lg:col-span-2' : ''}`}>
+            {showOrganizers && (
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-primary font-semibold text-sm">Events</h2>
+                {!isLoading && filtered.length > 0 && (
+                  <span className="text-xs text-muted-foreground flex-shrink-0">{filtered.length}</span>
+                )}
               </div>
+            )}
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
-                  {event.cancelled_at && (
-                    <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
-                  )}
-                </div>
-                <p className="text-accent text-xs mt-0.5">{event.organizer_name ?? 'Organizer'}</p>
-
-                <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
-                  <div className="inline-flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3 text-black flex-shrink-0" />
-                    <span>{formatDate(event.date)}</span>
+            {isLoading ? (
+              <EventListSkeleton count={4} />
+            ) : filtered.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center mt-8">
+                {isForYouActive
+                  ? 'No recommendations yet, explore events to get personalised suggestions.'
+                  : 'No events found.'}
+              </p>
+            ) : (
+              filtered.map(event => (
+                <div
+                  key={event.id}
+                  onClick={() => navigate(`/events/${event.id}`)}
+                  className="bg-card rounded-xl shadow flex gap-3 p-3 cursor-pointer hover:shadow-md transition items-center"
+                >
+                  <div
+                    className="flex-shrink-0 overflow-hidden rounded-lg self-center"
+                    style={{ width: '100px', aspectRatio: '4/5' }}
+                  >
+                    {event.image_url
+                      ? <img src={toImageUrl(event.image_url)} alt={event.name} className="w-full h-full object-cover object-center" />
+                      : <div className="w-full h-full bg-surface flex items-center justify-center"><ImageOff className="w-6 h-6 text-border" /></div>
+                    }
                   </div>
-                  <div className="inline-flex items-center gap-1.5">
-                    <Clock className="w-3 h-3 text-black flex-shrink-0" />
-                    <span>{formatTimeRange(event.start_time, event.end_time)}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-black flex-shrink-0" />
-                    <span className="truncate">{event.venue}</span>
-                  </div>
-                </div>
 
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {event.category && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full" {...categoryPillStyle(event.category)}>
-                      {event.category}
-                    </span>
-                  )}
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${audiencePillClass(event.audience)}`}>
-                    {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
-                  </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${pricingPillClass(event.pricing)}`}>
-                    {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
-                  </span>
-                </div>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
+                      {event.cancelled_at && (
+                        <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
+                      )}
+                    </div>
+                    <p className="text-accent text-xs mt-0.5">{event.organizer_name ?? 'Organizer'}</p>
 
-              <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
-            </div>
-          ))
+                    <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
+                      <div className="inline-flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-black flex-shrink-0" />
+                        <span>{formatDate(event.date)}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-black flex-shrink-0" />
+                        <span>{formatTimeRange(event.start_time, event.end_time)}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-black flex-shrink-0" />
+                        <span className="truncate">{event.venue}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {event.category && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full" {...categoryPillStyle(event.category)}>
+                          {event.category}
+                        </span>
+                      )}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${audiencePillClass(event.audience)}`}>
+                        {event.audience === 'students_only' ? 'Students Only' : 'Open to Public'}
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${pricingPillClass(event.pricing)}`}>
+                        {Number(event.pricing) === 0 ? 'Free' : 'Paid'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <ChevronRight className="w-4 h-4 text-muted-foreground self-center flex-shrink-0" />
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {showOrganizers && (
+          <div className={`space-y-3 ${showEvents ? 'mt-3 lg:mt-0' : ''}`}>
+            {organizersLoading ? (
+              <p className="text-muted-foreground text-sm py-4">Loading organizers...</p>
+            ) : matchedOrganizers.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center mt-8">No SLB/C&S found.</p>
+            ) : (
+              <>
+                <OrganizerGroup title="Student Leadership Bodies" organizers={slbs} onOpen={id => navigate(`/organizers/${id}`)} />
+                <OrganizerGroup title="Clubs & Societies" organizers={clubs} onOpen={id => navigate(`/organizers/${id}`)} />
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>

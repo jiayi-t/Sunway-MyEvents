@@ -87,12 +87,19 @@ export const userKeys = {
   publicOrganizer: (id: string | undefined) => ['organizer', id] as const,
   organizerNotificationsStatus: (id: string | undefined) => ['organizer-notifications', id] as const,
   followedOrganizers: ['followed-organizers'] as const,
+  organizerDirectory: ['organizer-directory'] as const,
 }
 
 export interface FollowedOrganizer {
   id: string
   name: string
   image_url: string | null
+}
+
+// every SLB/C&S, with the caller's follow state, for the browse page's organizer results
+export interface DirectoryOrganizer extends FollowedOrganizer {
+  category: string | null
+  following: boolean
 }
 
 export function useProfileQuery() {
@@ -146,5 +153,14 @@ export function useFollowedOrganizersQuery() {
   return useQuery({
     queryKey: userKeys.followedOrganizers,
     queryFn: () => api.get('/organizers/following').then(res => res.data as FollowedOrganizer[]),
+  })
+}
+
+// only fetched once the browse page is showing organizer results
+export function useOrganizerDirectoryQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: userKeys.organizerDirectory,
+    queryFn: () => api.get('/organizers/directory').then(res => res.data as DirectoryOrganizer[]),
+    enabled,
   })
 }
