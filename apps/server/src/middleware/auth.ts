@@ -41,7 +41,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 }
 
-// decodes the JWT if present but never blocks the request, used by routes that need to know the caller's role without requiring auth (e.g. to filter audience-restricted events)
+// validates the session cookie if present but never blocks the request, used by routes that need to know the caller's role without requiring auth (e.g. to filter audience-restricted events)
 export const optionalAuthenticate = async (req: AuthRequest, _res: Response, next: NextFunction) => {
   const sessionId = req.cookies?.[SESSION_COOKIE]
   if (sessionId) {
