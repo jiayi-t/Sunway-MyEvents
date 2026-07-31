@@ -649,6 +649,12 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
     const existing = await db.select().from(events).where(eq(events.id, id))
     if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
     if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+    if (existing[0].cancelled_at) {
+      return res.status(400).json({ error: 'Cancelled events cannot be archived' })
+    }
+    if (new Date(existing[0].end_time) >= new Date()) {
+      return res.status(400).json({ error: 'Only events that have ended can be archived' })
+    }
 
     await db.update(events).set({ archived_at: new Date() }).where(eq(events.id, id))
     res.json({ message: 'Event archived' })
