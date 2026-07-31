@@ -25,6 +25,9 @@ interface Event {
 
 const CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 
+// max 5 digits
+const capPricingDigits = (value: string) => value.split('.')[0].replace('-', '').length <= 5
+
 const toLocalDateStr = (isoStr?: string | null) => (isoStr ? toMYT(isoStr) : '')
 
 const toLocalTimeStr = (isoStr?: string | null) => {
@@ -43,7 +46,7 @@ const toImageUrl = (url?: string | null) => {
 
 const EMPTY_FORM = {
   name: '', description: '', date: '', start_time: '', end_time: '',
-  venue: '', pricing: '', category: '', audience: 'everyone', capacity: '', registration_deadline: '', image_url: ''
+  venue: '', pricingType: 'free', pricing: '', category: '', audience: 'everyone', capacity: '', registration_deadline: '', image_url: ''
 }
 
 export default function OrganizerEditEventPage() {
@@ -80,6 +83,7 @@ export default function OrganizerEditEventPage() {
       start_time: toLocalTimeStr(e.start_time),
       end_time: toLocalTimeStr(e.end_time),
       venue: e.venue || '',
+      pricingType: e.pricing != null && Number(e.pricing) > 0 ? 'paid' : 'free',
       pricing: e.pricing != null ? String(e.pricing) : '',
       category: e.category || '',
       audience: e.audience || 'everyone',
@@ -115,8 +119,12 @@ export default function OrganizerEditEventPage() {
   const handleSubmit = () => {
     setUploadError('')
     setSubmitted(true)
-    if (!form.name || !form.date || !form.start_time || !form.end_time || !form.venue || form.pricing === '' || !form.category || !form.image_url) {
+    if (!form.name || !form.date || !form.start_time || !form.end_time || !form.venue || !form.category || !form.image_url) {
       setUploadError('Please fill in all required fields')
+      return
+    }
+    if (form.pricingType === 'paid' && (form.pricing === '' || Number(form.pricing) <= 0)) {
+      setUploadError('Enter a price greater than 0, or select Free')
       return
     }
     if (form.start_time && form.end_time && form.start_time >= form.end_time) {
@@ -150,7 +158,7 @@ export default function OrganizerEditEventPage() {
       start_time: startDateTime,
       end_time: endDateTime,
       venue: form.venue,
-      pricing: Number(form.pricing) || 0,
+      pricing: form.pricingType === 'paid' ? Number(form.pricing) : 0,
       category: form.category,
       audience: form.audience,
       capacity: form.capacity ? Number(form.capacity) : null,
@@ -225,12 +233,32 @@ export default function OrganizerEditEventPage() {
             className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && !form.venue ? 'border-red-400' : 'border-border'}`} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Pricing</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">RM</span>
-            <input type="number" min="0" value={form.pricing} onWheel={e => e.currentTarget.blur()} onChange={e => setForm({ ...form, pricing: e.target.value })}
-              className={`w-full border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white ${submitted && form.pricing === '' ? 'border-red-400' : 'border-border'}`} />
+          <label className="block text-sm font-medium text-foreground mb-2">Pricing</label>
+          <div className="flex gap-3">
+            {(['free', 'paid'] as const).map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setForm({ ...form, pricingType: type })}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold border transition-colors cursor-pointer
+                  ${form.pricingType === type
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-foreground border-border'
+                  }`}
+              >
+                {type === 'free' ? 'Free' : 'Paid'}
+              </button>
+            ))}
           </div>
+          {form.pricingType === 'paid' && (
+            <div className="relative mt-3">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">RM</span>
+              <input type="number" min="0.01" max="99999" step="0.01" value={form.pricing} onWheel={e => e.currentTarget.blur()}
+                onChange={e => capPricingDigits(e.target.value) && setForm({ ...form, pricing: e.target.value })}
+                // remove the increase/decrease arrows on price inputs
+                className={`w-full border rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${submitted && (form.pricing === '' || Number(form.pricing) <= 0) ? 'border-red-400' : 'border-border'}`} />
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Category</label>

@@ -11,6 +11,8 @@ import { eventClientColumns, eventClientColumnsWithOrganizer } from '../utils/ev
 const router = Router()
 
 const AUDIENCES = ['everyone', 'students_only']
+// max 5 digits
+const MAX_PRICING = 99999
 
 // a cancelled event is hidden from listings unless the caller registered for it
 const cancelledVisibleTo = (req: AuthRequest) =>
@@ -409,6 +411,9 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   if (audience !== undefined && !AUDIENCES.includes(audience)) {
     return res.status(400).json({ error: 'Invalid audience' })
   }
+  if (typeof pricing !== 'number' || pricing < 0 || pricing > MAX_PRICING) {
+    return res.status(400).json({ error: `Pricing must be between 0 and ${MAX_PRICING}` })
+  }
 
   try {
     const result = await db.insert(events).values({
@@ -418,7 +423,8 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
       start_time: new Date(start_time),
       end_time: new Date(end_time),
       venue,
-      pricing: pricing ?? 0,
+      // numeric column: drizzle-pg expects a string here, not a JS number
+      pricing: String(pricing),
       category,
       audience: audience ?? 'everyone',
       capacity: capacity || null,
@@ -500,6 +506,9 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     if (audience !== undefined && !AUDIENCES.includes(audience)) {
       return res.status(400).json({ error: 'Invalid audience' })
     }
+    if (typeof pricing !== 'number' || pricing < 0 || pricing > MAX_PRICING) {
+      return res.status(400).json({ error: `Pricing must be between 0 and ${MAX_PRICING}` })
+    }
 
     const result = await db.update(events).set({
       name,
@@ -508,7 +517,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       start_time: new Date(start_time),
       end_time: new Date(end_time),
       venue,
-      pricing: pricing ?? 0,
+      // numeric column: drizzle-pg expects a string here, not a JS number
+      pricing: String(pricing),
       category,
       audience: audience ?? 'everyone',
       capacity: capacity || null,
