@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { eq, sql, desc, count, countDistinct } from 'drizzle-orm'
+import { eq, sql, desc, count, countDistinct, and, gt } from 'drizzle-orm'
 import { db } from '../db'
-import { events, registrations, feedback, feedback_forms, feedback_ai_summaries, users, event_views } from '../database/schema'
+import { events, registrations, feedback, feedback_forms, feedback_ai_summaries, users, event_views, followed_organizers } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { resolveEventPk } from '../utils/resolve-public-id'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
@@ -11,6 +11,9 @@ const router = Router()
 
 // an open-ended question needs this many responses before it gets an AI response summary
 const MIN_RESPONSES_PER_QUESTION = 3
+
+// recent activities are only shown for the last 14 days
+const ACTIVITY_WINDOW_DAYS = 14
 
 // GET /api/analytics/attendance
 router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
@@ -398,6 +401,82 @@ router.get('/views', authenticate, async (req: AuthRequest, res) => {
         unique_viewers: Number(r.unique_viewers),
       })),
     })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/analytics/activity - recent activity on the organizer's own events, grouped per event
+// no read state is stored, this is a rolling log rather than an inbox
+router.get('/activity', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') return res.status(403).json({ error: 'Forbidden' })
+
+  const since = new Date(Date.now() - ACTIVITY_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+
+  try {
+    const [registrationRows, feedbackRows, followerRows] = await Promise.all([
+      db
+        .select({
+          event_id: events.public_id,
+          event_name: events.name,
+          count: sql<number>`COUNT(${registrations.id})`,
+          last_at: sql<string>`MAX(${registrations.registered_at})`,
+        })
+        .from(registrations)
+        .innerJoin(events, eq(registrations.event_id, events.id))
+        .where(and(eq(events.organizer_id, req.user!.id), gt(registrations.registered_at, since)))
+        .groupBy(events.public_id, events.name),
+
+      db
+        .select({
+          event_id: events.public_id,
+          event_name: events.name,
+          count: sql<number>`COUNT(${feedback.id})`,
+          last_at: sql<string>`MAX(${feedback.created_at})`,
+        })
+        .from(feedback)
+        .innerJoin(events, eq(feedback.event_id, events.id))
+        .where(and(eq(events.organizer_id, req.user!.id), gt(feedback.created_at, since)))
+        .groupBy(events.public_id, events.name),
+
+      db
+        .select({
+          count: sql<number>`COUNT(${followed_organizers.id})`,
+          last_at: sql<string>`MAX(${followed_organizers.created_at})`,
+        })
+        .from(followed_organizers)
+        .where(and(eq(followed_organizers.organizer_id, req.user!.id), gt(followed_organizers.created_at, since))),
+    ])
+
+    const items = [
+      ...registrationRows.map(r => ({
+        type: 'registration' as const,
+        event_id: r.event_id,
+        event_name: r.event_name,
+        count: Number(r.count),
+        last_at: r.last_at,
+      })),
+      ...feedbackRows.map(r => ({
+        type: 'feedback' as const,
+        event_id: r.event_id,
+        event_name: r.event_name,
+        count: Number(r.count),
+        last_at: r.last_at,
+      })),
+      // followers are not tied to an event, so they carry no event reference
+      ...followerRows
+        .filter(r => Number(r.count) > 0)
+        .map(r => ({
+          type: 'follower' as const,
+          event_id: null,
+          event_name: null,
+          count: Number(r.count),
+          last_at: r.last_at,
+        })),
+    ]
+
+    items.sort((a, b) => new Date(b.last_at).getTime() - new Date(a.last_at).getTime())
+    res.json(items)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }

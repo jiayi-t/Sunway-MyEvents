@@ -63,6 +63,7 @@ export interface PublicOrganizerProfile {
   social_links: SocialLinks[] | null
   event_stats: { upcoming: number; total: number }
   events: any[]
+  past_events: any[]
 }
 
 // seeded demo accounts only

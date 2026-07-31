@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { eq, and, isNull, asc, gte, ne, inArray } from 'drizzle-orm'
+import { eq, and, or, isNull, asc, desc, gte, lt, ne, inArray, exists } from 'drizzle-orm'
 import { db } from '../db'
-import { users, events, followed_organizers, notifications } from '../database/schema'
+import { users, events, registrations, followed_organizers, notifications } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
 import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from '../database/seeded-accounts'
 import { resolveUserPk } from '../utils/resolve-public-id'
@@ -63,17 +63,39 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
 
     // general public cannot see students-only events
     const hideStudentsOnly = req.user!.role === 'public'
+    // students/public will not see archived events
+    const visibleToViewer = [
+      eq(events.organizer_id, id),
+      isNull(events.archived_at),
+      ...(hideStudentsOnly ? [ne(events.audience, 'students_only')] : []),
+    ]
+
+    // upcoming shows cancelled events
     const upcomingEvents = await db
       .select(eventClientColumns)
       .from(events)
-      .where(and(
-        eq(events.organizer_id, id),
-        isNull(events.cancelled_at),
-        isNull(events.archived_at),
-        gte(events.date, now),
-        ...(hideStudentsOnly ? [ne(events.audience, 'students_only')] : []),
-      ))
+      .where(and(...visibleToViewer, gte(events.end_time, now)))
       .orderBy(asc(events.date))
+      .limit(10)
+
+    // past drops cancelled events, except for the ones the viewer registered for
+    const pastEvents = await db
+      .select(eventClientColumns)
+      .from(events)
+      .where(and(
+        ...visibleToViewer,
+        lt(events.end_time, now),
+        or(
+          isNull(events.cancelled_at),
+          exists(
+            db
+              .select()
+              .from(registrations)
+              .where(and(eq(registrations.event_id, events.id), eq(registrations.user_id, req.user!.id)))
+          )
+        ),
+      ))
+      .orderBy(desc(events.date))
       .limit(10)
 
     const totalCount = await db.$count(events, eq(events.organizer_id, id))
@@ -82,6 +104,7 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
       ...organizer,
       event_stats: { upcoming: upcomingEvents.length, total: totalCount },
       events: upcomingEvents,
+      past_events: pastEvents,
     })
   } catch {
     res.status(500).json({ error: 'Server error' })

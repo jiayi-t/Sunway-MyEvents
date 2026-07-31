@@ -5,6 +5,7 @@ export const analyticsKeys = {
   attendance: ['analytics', 'attendance'] as const,
   feedback: ['analytics', 'feedback'] as const,
   views: ['analytics', 'views'] as const,
+  activity: ['analytics', 'activity'] as const,
   eventAnalytics: (id: string | undefined) => ['analytics', 'event', id] as const,
   eventAiSummary: (id: string | undefined) => ['analytics', 'event', id, 'ai-summary'] as const,
 }
@@ -144,6 +145,23 @@ export function useEventAiSummaryQuery(id: string | undefined, options?: Omit<Us
     // each retry is a potential Gemini API call
     retry: false, 
     staleTime: 5 * 60 * 1000,
+    ...options,
+  })
+}
+
+export interface ActivityItem {
+  type: 'registration' | 'feedback' | 'follower'
+  // followers are not tied to an event
+  event_id: string | null
+  event_name: string | null
+  count: number
+  last_at: string
+}
+
+export function useOrganizerActivityQuery(options?: Omit<UseQueryOptions<ActivityItem[]>, 'queryKey' | 'queryFn'>) {
+  return useQuery<ActivityItem[]>({
+    queryKey: analyticsKeys.activity,
+    queryFn: () => api.get('/analytics/activity').then(res => res.data),
     ...options,
   })
 }
