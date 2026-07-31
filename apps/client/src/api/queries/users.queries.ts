@@ -86,6 +86,13 @@ export const userKeys = {
   notifications: ['notifications'] as const,
   publicOrganizer: (id: string | undefined) => ['organizer', id] as const,
   organizerNotificationsStatus: (id: string | undefined) => ['organizer-notifications', id] as const,
+  followedOrganizers: ['followed-organizers'] as const,
+}
+
+export interface FollowedOrganizer {
+  id: string
+  name: string
+  image_url: string | null
 }
 
 export function useProfileQuery() {
@@ -132,5 +139,12 @@ export function useOrganizerNotificationsStatusQuery(id: string | undefined) {
     queryKey: userKeys.organizerNotificationsStatus(id),
     queryFn: () => api.get(`/organizers/${id}/follow-status`).then(res => res.data as { following: boolean }),
     enabled: !!id,
+  })
+}
+
+export function useFollowedOrganizersQuery() {
+  return useQuery({
+    queryKey: userKeys.followedOrganizers,
+    queryFn: () => api.get('/organizers/following').then(res => res.data as FollowedOrganizer[]),
   })
 }

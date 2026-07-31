@@ -10,7 +10,7 @@ import { eventClientColumns } from '../utils/event-columns'
 const router = Router()
 
 // GET /api/organizers - demo organizer accounts (username + name + category) shown on the login page so testers can sign into an existing SLB/club instead of registering a duplicate
-// Deliberately excludes accounts registered through the app, only their owner knows the password
+// deliberately excludes accounts registered through the app, only their owner knows the password
 router.get('/', async (_req, res) => {
   try {
     const rows = await db
@@ -25,6 +25,27 @@ router.get('/', async (_req, res) => {
 
     // password is the shared seed default (already shown on the login page
     res.json({ accounts: rows, password: SEEDED_ACCOUNT_PASSWORD })
+  } catch {
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// GET /api/organizers/following - organizers the caller follows
+// declared before /:id so the literal path is not captured as an id
+router.get('/following', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const rows = await db
+      .select({
+        id: users.public_id,
+        name: users.name,
+        image_url: users.image_url,
+      })
+      .from(followed_organizers)
+      .innerJoin(users, eq(followed_organizers.organizer_id, users.id))
+      .where(eq(followed_organizers.student_id, req.user!.id))
+      .orderBy(asc(users.name))
+
+    res.json(rows)
   } catch {
     res.status(500).json({ error: 'Server error' })
   }
