@@ -21,7 +21,15 @@ interface Event {
   image_url: string
   organizer_name?: string
   cancelled_at?: string | null
+  created_at?: string
 }
+
+type SortOption = 'recent' | 'soonest' | 'latest'
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'recent', label: 'Recently Added' },
+  { value: 'soonest', label: 'Soonest Date' },
+  { value: 'latest', label: 'Latest Date' },
+]
 
 const EVENT_CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 const ORGANIZER_CATEGORY = 'All SLB/C&S'
@@ -56,10 +64,12 @@ interface Filters {
   past: boolean
   free: boolean
   paid: boolean
+  sort: SortOption
 }
 
-const EMPTY_FILTERS: Filters = { events: false, organizers: false, categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false, free: false, paid: false }
+const EMPTY_FILTERS: Filters = { events: false, organizers: false, categories: [], dateFrom: '', dateTo: '', upcoming: false, past: false, free: false, paid: false, sort: 'recent' }
 
+// narrows which events/organizers are shown, or which section is active — sort order is excluded, since it only reorders results rather than narrowing them
 function filtersActive(f: Filters) {
   return f.events || f.organizers || f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past || f.free || f.paid
 }
@@ -188,25 +198,33 @@ export default function BrowseEventsPage() {
       base = events
     }
 
-    if (!filtersActive(filters)) return base
+    let result = base
+    if (filtersActive(filters)) {
+      result = base.filter(e => {
+        // the date inputs already hold YYYY-MM-DD, so comparing MYT calendar days keeps every side of these comparisons in the same timezone and format
+        const eventDay = toMYT(e.date)
 
-    return base.filter(e => {
-      // the date inputs already hold YYYY-MM-DD, so comparing MYT calendar days keeps every side of these comparisons in the same timezone and format
-      const eventDay = toMYT(e.date)
+        if (filters.upcoming && !filters.past && eventDay < today) return false
+        if (filters.past && !filters.upcoming && eventDay >= today) return false
 
-      if (filters.upcoming && !filters.past && eventDay < today) return false
-      if (filters.past && !filters.upcoming && eventDay >= today) return false
+        if (filters.dateFrom && eventDay < filters.dateFrom) return false
+        if (filters.dateTo && eventDay > filters.dateTo) return false
 
-      if (filters.dateFrom && eventDay < filters.dateFrom) return false
-      if (filters.dateTo && eventDay > filters.dateTo) return false
+        if (filters.categories.length > 0 && !filters.categories.includes(e.category)) return false
 
-      if (filters.categories.length > 0 && !filters.categories.includes(e.category)) return false
+        const isFree = Number(e.pricing) === 0
+        if (filters.free && !filters.paid && !isFree) return false
+        if (filters.paid && !filters.free && isFree) return false
 
-      const isFree = Number(e.pricing) === 0
-      if (filters.free && !filters.paid && !isFree) return false
-      if (filters.paid && !filters.free && isFree) return false
+        return true
+      })
+    }
 
-      return true
+    return [...result].sort((a, b) => {
+      if (filters.sort === 'soonest') return new Date(a.date).getTime() - new Date(b.date).getTime()
+      if (filters.sort === 'latest') return new Date(b.date).getTime() - new Date(a.date).getTime()
+      // 'recent' - newest created first
+      return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
     })
   }, [events, recommendations, followedOrgs, search, filters, isForYouActive, isFollowedActive])
 
@@ -263,7 +281,7 @@ export default function BrowseEventsPage() {
           <button
             onClick={() => { setDraftFilters(filters); setFilterOpen(o => !o) }}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow border transition-colors ${
-              filtersActive(filters) ? 'bg-primary border-primary text-white cursor-pointer' : 'bg-white border-border text-gray-500 cursor-pointer'
+              filtersActive(filters) || filters.sort !== 'recent' ? 'bg-primary border-primary text-white cursor-pointer' : 'bg-white border-border text-gray-500 cursor-pointer'
             }`}
             aria-label="Open filters"
           >
@@ -294,6 +312,28 @@ export default function BrowseEventsPage() {
                     checked={draftFilters[key]}
                     onChange={() => setDraftFilters(f => ({ ...f, [key]: !f[key] }))}
                     className="w-4 h-4 accent-primary rounded cursor-pointer"
+                  />
+                  <span className="text-sm text-foreground">{label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Sort */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Sort by</p>
+            <div className="flex flex-wrap gap-4 mb-4">
+              {SORT_OPTIONS.map(({ value, label }) => (
+                <label key={value} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="sort"
+                    checked={draftFilters.sort === value}
+                    onChange={() => setDraftFilters(f => ({
+                      ...f,
+                      sort: value,
+                      // auto tick upcoming for soonest date
+                      ...(value === 'soonest' ? { upcoming: true, past: false } : {}),
+                    }))}
+                    className="w-4 h-4 accent-primary cursor-pointer"
                   />
                   <span className="text-sm text-foreground">{label}</span>
                 </label>
