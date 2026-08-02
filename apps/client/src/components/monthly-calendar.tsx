@@ -4,6 +4,7 @@ import { useEventsQuery, useMyRegistrationsQuery, useSavedEventsQuery } from '..
 import { toMYT, todayMYT } from '../utils/datetime.utils'
 import { categoryColor, eventColor, categoryPillStyle, audiencePillClass, pricingPillClass } from '../utils/event-colors.utils'
 import { ChevronLeft, ChevronRight, Clock, ImageOff, MapPin, User } from 'lucide-react'
+import { EventListSkeleton } from './skeletons'
 
 interface CalendarEvent {
   id: string
@@ -401,7 +402,7 @@ export default function MonthlyCalendar({ enabled = true, header }: { enabled?: 
             </div>
 
             {isLoading ? (
-              <p className="text-muted-foreground text-sm py-4">Loading events...</p>
+              <EventListSkeleton count={2} />
             ) : selectedEvents.length === 0 ? (
               <p className="text-muted-foreground text-sm py-4">No events on this day.</p>
             ) : (

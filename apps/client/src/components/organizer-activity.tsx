@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useOrganizerActivityQuery, type ActivityItem } from '../api/queries'
 import { Users, MessageSquare, Bell, ChevronRight } from 'lucide-react'
+import { DividedRowsSkeleton } from './skeletons'
 
 const timeAgo = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime()
@@ -46,7 +47,7 @@ export default function OrganizerActivity() {
       <h2 className="text-primary font-semibold text-sm mb-1">Latest Activities</h2>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm py-4">Loading activities...</p>
+        <DividedRowsSkeleton count={3} lines={3} trailing="icon" />
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm py-4">No recent activities.</p>
       ) : (

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEventsQuery, useRecommendationsQuery, useFollowedOrgsQuery, useOrganizerDirectoryQuery, type DirectoryOrganizer } from '../../api/queries'
 import { useAuth } from '../../context/auth-context'
 import Avatar from '../../components/avatar'
-import { EventListSkeleton } from '../../components/skeletons'
+import { EventListSkeleton, DividedRowsSkeleton, Skeleton } from '../../components/skeletons'
 import { toMYT, todayMYT } from '../../utils/datetime.utils'
 import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
 import { Calendar, ChevronRight, Clock, ImageOff, MapPin, Search, SlidersHorizontal, X } from 'lucide-react'
@@ -542,7 +542,15 @@ export default function BrowseEventsPage() {
         {showOrganizers && (
           <div className={`space-y-3 ${showEvents ? 'mt-3 lg:mt-0' : ''}`}>
             {organizersLoading ? (
-              <p className="text-muted-foreground text-sm py-4">Loading organizers...</p>
+              <>
+                <div className="flex items-baseline justify-between gap-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-4 flex-shrink-0" />
+                </div>
+                <div className="bg-card rounded-xl shadow p-2">
+                  <DividedRowsSkeleton count={4} lines={2} trailing="pill" />
+                </div>
+              </>
             ) : matchedOrganizers.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center mt-8">No SLB/C&S found.</p>
             ) : (

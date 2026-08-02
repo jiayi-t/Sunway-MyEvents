@@ -98,23 +98,57 @@ export default function OrganizerProfilePage() {
         <>
           {/* banner skeleton on the primary background, lighter tones for contrast */}
           <div className="bg-primary full-bleed-bar py-5">
-            <div className="flex flex-col lg:flex-row lg:items-start gap-3 lg:gap-5">
-              <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-full animate-pulse bg-white/20 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="animate-pulse bg-white/20 rounded h-5 w-1/3" />
-                <div className="animate-pulse bg-white/20 rounded h-3 w-2/3 mt-2" />
-                <div className="animate-pulse bg-white/20 rounded-full h-8 w-32 mt-3.5" />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-start gap-3 lg:gap-5 min-w-0 flex-1">
+                <Skeleton className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-white/20 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-6 w-1/3 bg-white/20" />
+                  <div className="mt-1.5 space-y-1.5 max-w-2xl">
+                    <Skeleton className="h-3 w-full bg-white/20" />
+                    <Skeleton className="h-3 w-2/3 bg-white/20" />
+                  </div>
+                  {/* social icons */}
+                  <div className="flex gap-2 mt-3.5">
+                    {[0, 1, 2].map(i => (
+                      <Skeleton key={i} className="w-8 h-8 rounded-full bg-white/20" />
+                    ))}
+                  </div>
+                </div>
               </div>
+              {/* edit/settings is a round icon button, follow is a wider pill */}
+              <Skeleton className={`h-8 rounded-full bg-white/20 flex-shrink-0 ${isOwnProfile ? 'w-8' : 'w-28'}`} />
             </div>
-            <div className="mt-6 flex gap-6">
-              <div className="animate-pulse bg-white/20 rounded h-8 w-16" />
-              <div className="animate-pulse bg-white/20 rounded h-8 w-16" />
+            <div className="mt-6 flex flex-wrap gap-6">
+              <Skeleton className="h-8 w-16 bg-white/20" />
+              <Skeleton className="h-8 w-16 bg-white/20" />
             </div>
           </div>
-          <div className="px-4 py-4 space-y-3">
-            <Skeleton className="h-16 w-full" />
-            <EventListSkeleton />
-          </div>
+
+          {isOwnProfile ? (
+            // shortcut cards beside the month view
+            <div className="px-4 pt-4 grid grid-cols-1 lg:grid-cols-[20rem_minmax(0,1fr)] gap-4 items-start">
+              <div className="flex flex-col gap-4 min-w-0">
+                {[0, 1].map(i => (
+                  <div key={i} className="bg-card rounded-xl shadow p-4">
+                    <Skeleton className="h-4 w-24" />
+                    <div className="flex justify-around mt-4">
+                      {[0, 1, 2].map(j => <Skeleton key={j} className="h-12 w-12 rounded-lg" />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Skeleton className="h-80 w-full rounded-xl" />
+            </div>
+          ) : (
+            <div className="px-4 mt-4">
+              {/* Upcoming / Past pill tabs */}
+              <div className="flex gap-2 mb-3">
+                <Skeleton className="h-8 w-28 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+              </div>
+              <EventListSkeleton />
+            </div>
+          )}
         </>
       ) : isError ? (
         (() => {

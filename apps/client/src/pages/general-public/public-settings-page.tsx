@@ -99,7 +99,7 @@ export default function PublicSettingsPage() {
       <div className={activeTab === 'profile' ? '' : 'hidden'}>
         <div className="px-4 py-4">
           {profileLoading ? (
-            <ProfileInfoSkeleton rows={4} />
+            <ProfileInfoSkeleton rows={5} />
           ) : (
             <>
             <ProfilePhoto />

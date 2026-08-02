@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useFollowedOrganizersQuery } from '../api/queries'
 import Avatar from './avatar'
+import { DividedRowsSkeleton } from './skeletons'
 
 // Followed SLB/C&S
 export default function FollowedOrganizers() {
@@ -18,7 +19,7 @@ export default function FollowedOrganizers() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm py-4">Loading organizers...</p>
+        <DividedRowsSkeleton count={3} trailing="pill" />
       ) : organizers.length === 0 ? (
         <p className="text-muted-foreground text-sm py-4">You are not following any organizers yet.</p>
       ) : (

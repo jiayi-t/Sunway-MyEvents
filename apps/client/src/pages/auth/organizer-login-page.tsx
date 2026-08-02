@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Info } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
 import { useOrganizerAccountsQuery, type OrganizerAccount } from '../../api/queries'
 import LoginFooter from '../../components/login-footer'
+import { Skeleton } from '../../components/skeletons'
 import api from '../../services/api'
 
 function AccountGroup({
@@ -129,7 +130,17 @@ export default function OrganizerLoginPage() {
             {showAccounts && (
               <div className="border-t border-primary/20 px-3 py-1 max-h-64 overflow-y-auto">
                 {accountsLoading ? (
-                  <p className="text-xs text-muted-foreground py-2">Loading accounts...</p>
+                  <div className="py-1.5">
+                    <Skeleton className="h-2.5 w-16" />
+                    <div className="divide-y divide-primary/10 mt-0.5">
+                      {[0, 1, 2].map(i => (
+                        <div key={i} className="py-2 flex items-baseline justify-between gap-3">
+                          <Skeleton className="h-3 w-2/5" />
+                          <Skeleton className="h-3 w-16 flex-shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : accounts.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-2">No demo accounts yet.</p>
                 ) : (

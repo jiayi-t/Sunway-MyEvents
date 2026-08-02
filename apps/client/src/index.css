@@ -63,6 +63,20 @@
 }
 
 @layer components {
+  /* left-to-right shimmer sweep for loading skeletons, overflow-hidden clips the gradient bar to the shape */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.5), transparent);
+    animation: skeleton-shimmer-sweep 1.5s infinite;
+  }
+
   /* subheaders and profile banner stretch full width, but their content is aligned with the main content column */
   .full-bleed-bar {
     position: relative;
@@ -85,6 +99,12 @@
     overflow-y: scroll;
   }
   h1, h2, h3, h4 { letter-spacing: -0.01em; }
+}
+
+@keyframes skeleton-shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .driver-popover {

@@ -1,15 +1,17 @@
 // shared skeleton loaders shown while queries are in flight, shapes mirror the real cards they replace
+import type { ComponentProps } from 'react'
 
-export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+// bg-border for visibility (--muted is too subtle) rounded base allows CSS-order overrides
+export function Skeleton({ className = '', ...props }: ComponentProps<'div'>) {
+  return <div className={`skeleton-shimmer rounded bg-border ${className}`} {...props} />
 }
 
 // horizontal event card used in browse, For You and my-events lists
 export function EventCardSkeleton() {
   return (
     <div className="bg-card rounded-xl shadow flex gap-3 p-3 items-center">
-      <div
-        className="flex-shrink-0 rounded-lg animate-pulse bg-gray-200"
+      <Skeleton
+        className="flex-shrink-0 rounded-lg"
         style={{ width: '100px', aspectRatio: '4/5' }}
       />
       <div className="flex-1 min-w-0">
@@ -19,6 +21,12 @@ export function EventCardSkeleton() {
           <Skeleton className="h-3 w-1/2" />
           <Skeleton className="h-3 w-2/5" />
           <Skeleton className="h-3 w-3/5" />
+        </div>
+        {/* category / audience / pricing pills */}
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          <Skeleton className="h-4 w-14 rounded-full" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-4 w-10 rounded-full" />
         </div>
       </div>
     </div>
@@ -38,7 +46,7 @@ export function FeaturedEventSkeleton() {
   return (
     // narrower on desktop and 4:5 throughout, matching the real centred card rather than the full carousel row
     <div className="max-w-3xl lg:max-w-md mx-auto rounded-xl overflow-hidden shadow-md bg-white">
-      <div className="w-full animate-pulse bg-gray-200 aspect-[4/5]" />
+      <Skeleton className="w-full rounded-none aspect-[4/5]" />
       <div className="p-4">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/3 mt-2" />
@@ -58,7 +66,7 @@ export function EventDetailsSkeleton() {
   return (
     <div className="lg:flex lg:items-start lg:gap-6 lg:p-6">
       <div className="lg:w-5/12 lg:flex-shrink-0 lg:rounded-xl lg:overflow-hidden">
-        <div className="w-full animate-pulse bg-gray-200" style={{ aspectRatio: '4/5' }} />
+        <Skeleton className="w-full rounded-none" style={{ aspectRatio: '4/5' }} />
       </div>
       <div className="lg:flex-1 lg:min-w-0">
         <div className="p-4 lg:p-0">
@@ -85,17 +93,21 @@ export function EventDetailsSkeleton() {
 // notification rows
 export function NotificationListSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <div className="px-4 pt-4 space-y-3">
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="bg-card rounded-xl shadow p-3 flex gap-3 items-start">
-          <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
-          <div className="flex-1">
-            <Skeleton className="h-3.5 w-1/3" />
-            <Skeleton className="h-3 w-full mt-2" />
-            <Skeleton className="h-3 w-2/3 mt-1.5" />
+    <div className="mt-4">
+      {/* the "Today" / "Yesterday" group heading */}
+      <Skeleton className="h-4 w-24 mx-4 mb-2" />
+      <div className="divide-y divide-border border-y border-border">
+        {Array.from({ length: count }, (_, i) => (
+          <div key={i} className="px-4 py-4 flex items-start gap-3 bg-card">
+            <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Skeleton className="h-3.5 w-1/3" />
+              <Skeleton className="h-3 w-full mt-2" />
+              <Skeleton className="h-3 w-2/3 mt-1.5" />
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
@@ -175,13 +187,43 @@ export function CheckinCardSkeleton() {
         <h1 className="text-white font-bold text-base flex-1 text-center">Check In</h1>
       </div>
       <div className="px-4 py-6">
-        <div className="bg-card rounded-xl shadow p-6 flex flex-col items-center">
+        <div className="bg-card rounded-xl shadow p-5 flex flex-col items-center">
           <Skeleton className="h-4 w-1/2" />
           <Skeleton className="h-3 w-1/3 mt-2" />
-          <Skeleton className="w-48 h-48 mt-4 rounded-lg" />
+          <Skeleton className="mt-4 rounded-lg" style={{ width: '220px', height: '220px' }} />
           <Skeleton className="h-3 w-2/5 mt-4" />
         </div>
       </div>
+    </div>
+  )
+}
+
+// divided rows inside an existing card panel (followed organizers, latest activities)
+export function DividedRowsSkeleton({
+  count = 3,
+  lines = 1,
+  trailing,
+}: {
+  count?: number
+  /** text lines beside the avatar */
+  lines?: number
+  /** the pill or chevron at the end of each row */
+  trailing?: 'pill' | 'icon'
+}) {
+  return (
+    <div className="divide-y divide-border">
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className="flex items-center gap-3 py-3 px-2">
+          <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
+          <div className="flex-1 min-w-0 space-y-1">
+            {Array.from({ length: lines }, (_, l) => (
+              <Skeleton key={l} className={l === 0 ? 'h-3.5 w-2/3' : 'h-3 w-1/3'} />
+            ))}
+          </div>
+          {trailing === 'pill' && <Skeleton className="h-6 w-20 rounded-full flex-shrink-0" />}
+          {trailing === 'icon' && <Skeleton className="h-4 w-4 flex-shrink-0" />}
+        </div>
+      ))}
     </div>
   )
 }

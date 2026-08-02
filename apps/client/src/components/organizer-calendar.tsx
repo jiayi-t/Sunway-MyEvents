@@ -4,6 +4,7 @@ import { useOrganizerEventsQuery } from '../api/queries'
 import { toMYT, todayMYT } from '../utils/datetime.utils'
 import { eventColor, categoryPillStyle, audiencePillClass, pricingPillClass } from '../utils/event-colors.utils'
 import { ChevronLeft, ChevronRight, Clock, MapPin, ImageOff } from 'lucide-react'
+import { EventListSkeleton } from './skeletons'
 
 interface OrganizerCalendarEvent {
   id: string
@@ -213,7 +214,7 @@ export default function OrganizerCalendar() {
           </div>
 
           {isLoading ? (
-            <p className="text-muted-foreground text-sm py-4">Loading events...</p>
+            <EventListSkeleton count={2} />
           ) : selectedEvents.length === 0 ? (
             <p className="text-muted-foreground text-sm py-4">No events on this day.</p>
           ) : (
