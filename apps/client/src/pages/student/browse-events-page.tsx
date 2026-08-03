@@ -33,7 +33,18 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 const EVENT_CATEGORIES = ['Academics', 'Arts', 'Cultural', 'Entertainment', 'Social', 'Sports']
 const ORGANIZER_CATEGORY = 'All SLB/C&S'
-const CATEGORIES = ['All Events', ORGANIZER_CATEGORY, 'Events For You', 'Followed SLB/C&S Events']
+const DEFAULT_CATEGORY = 'All Events'
+const CATEGORIES = [DEFAULT_CATEGORY, ORGANIZER_CATEGORY, 'Events For You', 'Followed SLB/C&S Events']
+
+// the chip labels are display text, so the url carries a slug instead
+const VIEW_SLUGS: Record<string, string> = {
+  [ORGANIZER_CATEGORY]: 'organizers',
+  'Events For You': 'for-you',
+  'Followed SLB/C&S Events': 'followed',
+}
+const CATEGORY_BY_SLUG: Record<string, string> = Object.fromEntries(
+  Object.entries(VIEW_SLUGS).map(([label, slug]) => [slug, label])
+)
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
   if (!value) return 'TBA'
@@ -72,6 +83,43 @@ const EMPTY_FILTERS: Filters = { events: false, organizers: false, categories: [
 // narrows which events/organizers are shown, or which section is active — sort order is excluded, since it only reorders results rather than narrowing them
 function filtersActive(f: Filters) {
   return f.events || f.organizers || f.categories.length > 0 || !!f.dateFrom || !!f.dateTo || f.upcoming || f.past || f.free || f.paid
+}
+
+// the filters live in the query string so they survive leaving the page and coming back, and so a filtered view can be shared or reloaded
+const FILTER_PARAM_KEYS = ['events', 'organizers', 'categories', 'dateFrom', 'dateTo', 'upcoming', 'past', 'free', 'paid', 'sort'] as const
+
+// merges the filters into the params already on the url rather than replacing them, so the header's `q` search survives an Apply
+function withFilterParams(current: URLSearchParams, f: Filters): URLSearchParams {
+  const params = new URLSearchParams(current)
+  FILTER_PARAM_KEYS.forEach(key => params.delete(key))
+
+  if (f.events) params.set('events', 'true')
+  if (f.organizers) params.set('organizers', 'true')
+  if (f.categories.length > 0) params.set('categories', f.categories.join(','))
+  if (f.dateFrom) params.set('dateFrom', f.dateFrom)
+  if (f.dateTo) params.set('dateTo', f.dateTo)
+  if (f.upcoming) params.set('upcoming', 'true')
+  if (f.past) params.set('past', 'true')
+  if (f.free) params.set('free', 'true')
+  if (f.paid) params.set('paid', 'true')
+  if (f.sort !== 'recent') params.set('sort', f.sort)
+  return params
+}
+
+function paramsToFilters(params: URLSearchParams): Filters {
+  const sort = params.get('sort')
+  return {
+    events: params.get('events') === 'true',
+    organizers: params.get('organizers') === 'true',
+    categories: params.get('categories')?.split(',').filter(c => EVENT_CATEGORIES.includes(c)) ?? [],
+    dateFrom: params.get('dateFrom') ?? '',
+    dateTo: params.get('dateTo') ?? '',
+    upcoming: params.get('upcoming') === 'true',
+    past: params.get('past') === 'true',
+    free: params.get('free') === 'true',
+    paid: params.get('paid') === 'true',
+    sort: SORT_OPTIONS.some(o => o.value === sort) ? (sort as SortOption) : 'recent',
+  }
 }
 
 // one titled block of organizer rows, rendered once for SLBs and once for C&S
@@ -119,15 +167,39 @@ function OrganizerGroup({ title, organizers, onOpen }: {
 
 export default function BrowseEventsPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user } = useAuth()
 
-  const [activeCategory, setActiveCategory] = useState('All Events')
-  const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
-  const [draftFilters, setDraftFilters] = useState<Filters>(EMPTY_FILTERS)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  // search text, chip, and filters live in the query string, so clicking into an event/organizer and coming back restores it
+  const search = searchParams.get('q') ?? ''
+  const activeCategory = CATEGORY_BY_SLUG[searchParams.get('view') ?? ''] ?? DEFAULT_CATEGORY
+  const filters = useMemo(() => paramsToFilters(searchParams), [searchParams])
+
+  // a dismissed panel discards its changes
+  const [draftFilters, setDraftFilters] = useState<Filters>(filters)
+
+  // every write replaces rather than pushes, so Back leaves the page instead of stepping through each keystroke and filter change
+  const patchParams = (patch: Record<string, string | null>) =>
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      Object.entries(patch).forEach(([key, value]) => {
+        if (value) next.set(key, value)
+        else next.delete(key)
+      })
+      return next
+    }, { replace: true })
+
+  const setSearch = (value: string) => patchParams({ q: value })
+
+  // when filters change (via URL/back/forward), sync the draft if the panel is not open, else the click-outside handler will discard stale edits
+  useEffect(() => {
+    if (!filterOpen) {
+      setDraftFilters(filters)
+    }
+  }, [filters, filterOpen])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -228,10 +300,9 @@ export default function BrowseEventsPage() {
     })
   }, [events, recommendations, followedOrgs, search, filters, isForYouActive, isFollowedActive])
 
-  const handleCategoryFilter = (cat: string) => {
-    setActiveCategory(cat)
-    setSearch('')
-  }
+  // picking a chip clears the search, since a search hides the chip row entirely
+  const handleCategoryFilter = (cat: string) =>
+    patchParams({ view: VIEW_SLUGS[cat] ?? null, q: null })
 
   const handleClearSearch = () => setSearch('')
 
@@ -242,13 +313,13 @@ export default function BrowseEventsPage() {
     }))
 
   const applyFilters = () => {
-    setFilters(draftFilters)
+    setSearchParams(prev => withFilterParams(prev, draftFilters), { replace: true })
     setFilterOpen(false)
   }
 
   const clearFilters = () => {
-    setFilters(EMPTY_FILTERS)
     setDraftFilters(EMPTY_FILTERS)
+    setSearchParams(prev => withFilterParams(prev, EMPTY_FILTERS), { replace: true })
     setFilterOpen(false)
   }
 
