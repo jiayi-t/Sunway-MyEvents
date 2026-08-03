@@ -15,6 +15,10 @@ const AUDIENCES = ['everyone', 'students_only']
 // max 5 digits
 const MAX_PRICING = 99999
 
+// describe what changed in an event-updated notification
+const joinWithAnd = (items: string[]): string =>
+  items.length <= 2 ? items.join(' and ') : `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`
+
 // a cancelled event is hidden from listings unless the caller registered for it
 const cancelledVisibleTo = (req: AuthRequest) =>
   req.user
@@ -525,6 +529,18 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: `Pricing must be between 0 and ${MAX_PRICING}` })
     }
 
+    const timeOfDayMYT = (d: Date) =>
+      d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' })
+
+    // compare against the pre-update row so the notification can say what actually changed, not just "updated"
+    const changedFields: string[] = []
+    if (new Date(date).getTime() !== new Date(existing[0].date).getTime()) changedFields.push('date')
+    if (
+      timeOfDayMYT(new Date(start_time)) !== timeOfDayMYT(new Date(existing[0].start_time)) ||
+      timeOfDayMYT(new Date(end_time)) !== timeOfDayMYT(new Date(existing[0].end_time))
+    ) changedFields.push('time')
+    if (venue !== existing[0].venue) changedFields.push('venue')
+
     const result = await db.update(events).set({
       name,
       description,
@@ -554,12 +570,17 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
         .where(eq(registrations.event_id, id))
 
       if (eventRegistrations.length > 0) {
+        // e.g. "the date and time have changed", falls back to a generic message when only non-listed fields (description, pricing, category...) changed
+        const changeMessage = changedFields.length > 0
+          ? `The ${joinWithAnd(changedFields)} ${changedFields.length > 1 ? 'have' : 'has'} changed.`
+          : 'Check the latest details.'
+
         await db.insert(notifications).values(
           eventRegistrations.map(r => ({
             user_id: r.user_id,
             type: 'event_updated' as const,
             title: 'Event Updated',
-            message: `"${name}" has been updated. Check the latest details.`,
+            message: `"${name}" has been updated. ${changeMessage}`,
             related_event_id: id,
           }))
         )
