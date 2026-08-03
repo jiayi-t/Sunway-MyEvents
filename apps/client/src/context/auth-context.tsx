@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import api from '../services/api'
+import { setSentryUser } from '../sentry'
 
 interface User {
   id: number
@@ -33,6 +34,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem('user')
     return saved ? JSON.parse(saved) : null
   })
+
+  // tells Sentry who was using the app when something broke, without exposing personal info (user id and role)
+  useEffect(() => {
+    setSentryUser(user ? { id: user.id, role: user.role } : null)
+  }, [user])
 
   // localStorage is shared across tabs, when another tab logs in/out, redirect this tab onto the new session instead of keeping stale UI
   useEffect(() => {

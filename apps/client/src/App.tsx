@@ -39,6 +39,8 @@ import PublicProfilePage from './pages/general-public/public-profile-page'
 import PublicCheckinPage from './pages/general-public/public-checkin-page'
 import Header from './components/header'
 import Footer from './components/footer'
+import ErrorFallback from './components/error-fallback'
+import { ErrorBoundary } from '@sentry/react'
 import { isTourActive } from './tours/tour-base'
 import type { ReactNode } from 'react'
 
@@ -319,15 +321,18 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <AppLayout>
-            <AppRoutes />
-          </AppLayout>
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    // outermost so a throw in the providers is caught too, the fallback deliberately avoids router context
+    <ErrorBoundary fallback={({ resetError }) => <ErrorFallback resetError={resetError} />}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <ScrollToTop />
+            <AppLayout>
+              <AppRoutes />
+            </AppLayout>
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
