@@ -10,7 +10,7 @@ import { Stat, ShortcutTile } from '../../components/profile-sections'
 import OrganizerCalendar from '../../components/organizer-calendar'
 import OrganizerActivity from '../../components/organizer-activity'
 import { categoryPillStyle, pricingPillClass } from '../../utils/event-colors.utils'
-import { Pen, Plus, Check, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Users, Eye, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
+import { Pen, Plus, Check, ChevronRight, Globe, Link, BookOpen, Mail, PlusSquare, Calendar, Clock, Pin, Users, Eye, MessageSquare, MapPin, ImageOff, Lock } from 'lucide-react'
 import { InstagramLogo, LinkedinLogo, TiktokLogo, FacebookLogo } from 'phosphor-react'
 
 function SocialIcon({ type }: { type: SocialLinks['type'] }) {
@@ -286,7 +286,8 @@ export default function OrganizerProfilePage() {
                     <div className="flex-1 flex justify-around">
                       <ShortcutTile icon={PlusSquare} label="New" tour="new-event" onClick={() => navigate('/organizer/events/new')} />
                     </div>
-                    <div data-tour="manage-events" className="flex-[2] flex justify-around">
+                    <div data-tour="manage-events" className="flex-[3] flex justify-around">
+                      <ShortcutTile icon={Pin} label="Pinned" onClick={() => navigate('/organizer/events?tab=pinned')} />
                       <ShortcutTile icon={Calendar} label="Upcoming" onClick={() => navigate('/organizer/events?tab=upcoming')} />
                       <ShortcutTile icon={Clock} label="Past" onClick={() => navigate('/organizer/events?tab=past')} />
                     </div>
