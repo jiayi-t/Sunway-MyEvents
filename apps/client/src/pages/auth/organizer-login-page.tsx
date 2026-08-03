@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronDown, ChevronUp, Info } from 'lucide-react'
+import { ChevronDown, ChevronUp, Info, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../context/auth-context'
 import { useOrganizerAccountsQuery, type OrganizerAccount } from '../../api/queries'
 import LoginFooter from '../../components/login-footer'
@@ -50,6 +50,7 @@ export default function OrganizerLoginPage() {
   const [form, setForm] = useState({ sunwayId: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [showAccounts, setShowAccounts] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -184,20 +185,27 @@ export default function OrganizerLoginPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm focus:outline-none focus:border-primary"
+                className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm focus:outline-none focus:border-primary pr-10"
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent text-xs font-medium underline cursor-pointer"
-                onClick={() => navigate('/forgot-password?role=organizer')}
+                onClick={() => setShowPassword(s => !s)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
               >
-                Forgot?
+                {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
               </button>
             </div>
+            <button
+              type="button"
+              className="mt-2 text-accent text-xs font-medium underline cursor-pointer"
+              onClick={() => navigate('/forgot-password?role=organizer')}
+            >
+              Forgot your password?
+            </button>
           </div>
 
           {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
