@@ -5,6 +5,7 @@ import { feedback_forms, events } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { resolveEventPk } from '../utils/resolve-public-id'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -20,7 +21,8 @@ router.get('/:id/feedback-form', async (req, res) => {
       .limit(1)
 
     res.json({ questions: row ? row.questions : DEFAULT_QUESTIONS })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -60,7 +62,8 @@ router.put('/:id/feedback-form', authenticate, async (req: AuthRequest, res) => 
       })
 
     res.json({ message: 'Saved', questions })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

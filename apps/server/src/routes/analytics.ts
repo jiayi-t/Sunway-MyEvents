@@ -6,6 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth'
 import { resolveEventPk } from '../utils/resolve-public-id'
 import { DEFAULT_QUESTIONS, type FeedbackQuestion } from '../constants/feedback-defaults'
 import { aiAvailable, summarizeFeedback, type AiSummary, type OpenEndedGroup } from '../ai'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -59,7 +60,8 @@ router.get('/attendance', authenticate, async (req: AuthRequest, res) => {
           : 0,
       })),
     })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -125,7 +127,8 @@ router.get('/feedback', authenticate, async (req: AuthRequest, res) => {
           : 0,
       })),
     })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -276,7 +279,8 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
         questions: questionAnalyses,
       },
     })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -349,8 +353,10 @@ router.get('/events/:id/ai-summary', authenticate, async (req: AuthRequest, res)
     let summary: AiSummary
     try {
       summary = await summarizeFeedback(eventRow.name, groups)
-    } catch {
+    } catch (err) {
       // Gemini down / rate limited / timed out: serve the stale cache if there is one
+      // still reported, the request degrades gracefully but a persistent outage needs to be visible
+      captureError(err, req)
       if (cached) {
         return res.json({
           available: true,
@@ -373,7 +379,8 @@ router.get('/events/:id/ai-summary', authenticate, async (req: AuthRequest, res)
       })
 
     res.json({ available: true, summary, feedback_count: currentCount, generated_at })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -414,7 +421,8 @@ router.get('/views', authenticate, async (req: AuthRequest, res) => {
         unique_viewers: Number(r.unique_viewers),
       })),
     })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -490,7 +498,8 @@ router.get('/activity', authenticate, async (req: AuthRequest, res) => {
 
     items.sort((a, b) => new Date(b.last_at).getTime() - new Date(a.last_at).getTime())
     res.json(items)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

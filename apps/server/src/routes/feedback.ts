@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { feedback, events } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -21,7 +22,8 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
       .innerJoin(events, eq(feedback.event_id, events.id))
       .where(eq(feedback.user_id, req.user!.id))
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

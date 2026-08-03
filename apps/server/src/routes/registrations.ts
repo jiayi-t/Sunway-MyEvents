@@ -5,6 +5,7 @@ import { db } from '../db'
 import { registrations, events, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { resolveEventPk } from '../utils/resolve-public-id'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -34,7 +35,8 @@ router.get('/my', authenticate, async (req: AuthRequest, res) => {
       .orderBy(asc(events.date))
 
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -68,7 +70,8 @@ router.get('/event/:eventId', authenticate, async (req: AuthRequest, res) => {
       .orderBy(asc(registrations.registered_at))
 
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -83,6 +86,7 @@ router.post('/checkin', authenticate, async (req: AuthRequest, res) => {
   try {
     payload = jwt.verify(token, process.env.JWT_SECRET!) as typeof payload
   } catch {
+    // deliberately not reported, an expired or tampered QR is a user error and not a bug
     return res.status(400).json({ error: 'Invalid or expired QR code' })
   }
 
@@ -114,7 +118,8 @@ router.post('/checkin', authenticate, async (req: AuthRequest, res) => {
       .from(users).where(eq(users.id, payload.userId)).limit(1)
 
     res.json({ success: true, student_name: student?.name, sunway_id: student?.sunway_id, email: student?.email, role: student?.role })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -149,7 +154,8 @@ router.post('/checkin/manual', authenticate, async (req: AuthRequest, res) => {
       .from(users).where(eq(users.id, registration.user_id)).limit(1)
 
     res.json({ success: true, student_name: attendee?.name, sunway_id: attendee?.sunway_id, email: attendee?.email, role: attendee?.role })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

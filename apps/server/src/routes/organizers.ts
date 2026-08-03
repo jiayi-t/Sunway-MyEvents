@@ -6,12 +6,13 @@ import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/a
 import { SEEDED_ORGANIZER_USERNAMES, SEEDED_ACCOUNT_PASSWORD } from '../database/seeded-accounts'
 import { resolveUserPk } from '../utils/resolve-public-id'
 import { eventClientColumns } from '../utils/event-columns'
+import { captureError } from '../instrument'
 
 const router = Router()
 
 // GET /api/organizers - demo organizer accounts (username + name + category) shown on the login page so testers can sign into an existing SLB/club instead of registering a duplicate
 // deliberately excludes accounts registered through the app, only their owner knows the password
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   try {
     const rows = await db
       .select({
@@ -25,7 +26,8 @@ router.get('/', async (_req, res) => {
 
     // password is the shared seed default (already shown on the login page
     res.json({ accounts: rows, password: SEEDED_ACCOUNT_PASSWORD })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -46,7 +48,8 @@ router.get('/following', authenticate, async (req: AuthRequest, res) => {
       .orderBy(asc(users.name))
 
     res.json(rows)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -73,7 +76,8 @@ router.get('/directory', authenticate, async (req: AuthRequest, res) => {
       .orderBy(asc(users.name))
 
     res.json(rows)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -154,7 +158,8 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
       events: upcomingEvents,
       past_events: pastEvents,
     })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -174,7 +179,8 @@ router.get('/:id/follow-status', authenticate, async (req: AuthRequest, res) => 
       .limit(1)
 
     res.json({ following: !!row })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -215,7 +221,8 @@ router.post('/:id/follow-toggle', authenticate, async (req: AuthRequest, res) =>
 
       res.json({ following: true })
     }
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

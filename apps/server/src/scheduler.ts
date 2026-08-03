@@ -3,6 +3,7 @@ import { and, eq, gte, isNull, lt } from 'drizzle-orm'
 import { db } from './db'
 import { events, registrations, notifications, users } from './database/schema'
 import { sendEmail, getEmailAddresses, eventReminderEmail } from './email'
+import { captureError } from './instrument'
 
 let lastReminderDate: string | null = null
 
@@ -81,6 +82,8 @@ async function runRemindersWithRetry(attempt = 1) {
       setTimeout(() => runRemindersWithRetry(attempt + 1), RETRY_DELAY_MS)
     } else {
       console.error(`[scheduler] giving up on reminders after ${MAX_ATTEMPTS} attempts`)
+      // only reported once the retries are exhausted, a run that recovers is not worth an alert
+      captureError(err)
     }
   }
 }

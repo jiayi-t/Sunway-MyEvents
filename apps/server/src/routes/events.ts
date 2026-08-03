@@ -7,6 +7,7 @@ import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/a
 import { sendEmail, getEmailAddresses, eventCancelledEmail, eventUpdatedEmail, newEventEmail } from '../email'
 import { resolveEventPk } from '../utils/resolve-public-id'
 import { eventClientColumns, eventClientColumnsWithOrganizer } from '../utils/event-columns'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -47,7 +48,8 @@ router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
       )
       .orderBy(desc(events.created_at))
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -92,7 +94,8 @@ router.get('/featured', optionalAuthenticate, async (req: AuthRequest, res) => {
       .map(({ _score, registration_count, save_count, ...e }) => e)
 
     res.json(scored)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -112,7 +115,8 @@ router.get('/organizer-events', authenticate, async (req: AuthRequest, res) => {
       .where(eq(events.organizer_id, req.user!.id))
       .orderBy(asc(events.date))
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -141,7 +145,8 @@ router.get('/saved-events', authenticate, async (req: AuthRequest, res) => {
       .where(eq(saved_events.user_id, req.user!.id))
       .orderBy(asc(events.date))
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -175,7 +180,8 @@ router.get('/followed-orgs', authenticate, async (req: AuthRequest, res) => {
       )
       .orderBy(desc(events.created_at))
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -188,7 +194,8 @@ router.post('/:id/view', authenticate, async (req: AuthRequest, res) => {
   try {
     await db.insert(event_views).values({ user_id: req.user!.id, event_id: eventId })
     res.status(201).json({ ok: true })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -251,7 +258,8 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
     // server-authoritative ownership flag so the organizer view does not have to compare ids client-side
     const { _owner_pk, ...event } = result[0]
     res.json({ ...event, is_owner: req.user?.role === 'organizer' && _owner_pk === req.user.id })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -270,7 +278,8 @@ router.get('/:id/registration-status', authenticate, async (req: AuthRequest, re
       ))
 
     res.json({ registered: result.length > 0 })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -324,7 +333,8 @@ router.post('/:id/register', authenticate, async (req: AuthRequest, res) => {
     })
 
     res.status(201).json({ message: 'Successfully registered for event' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -352,7 +362,8 @@ router.get('/:id/checkin-token', authenticate, async (req: AuthRequest, res) => 
       { expiresIn }
     )
     res.json({ token })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -367,7 +378,8 @@ router.get('/:id/save-status', authenticate, async (req: AuthRequest, res) => {
       .from(saved_events)
       .where(and(eq(saved_events.user_id, req.user!.id), eq(saved_events.event_id, eventId)))
     res.json({ saved: result.length > 0 })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -389,7 +401,8 @@ router.post('/:id/save-toggle', authenticate, async (req: AuthRequest, res) => {
       await db.insert(saved_events).values({ user_id: req.user!.id, event_id: eventId })
       res.json({ saved: true })
     }
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -478,7 +491,8 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     // never expose the internal integer id / legacy id, the client should only ever see the public uuid
     const { id: _pk, public_id, legacy_numeric_id: _legacy, organizer_id: _org, ...rest } = newEvent
     res.status(201).json({ ...rest, id: public_id })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -567,7 +581,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 
     const { id: _pk, public_id, legacy_numeric_id: _legacy, organizer_id: _org, ...rest } = result[0]
     res.json({ ...rest, id: public_id })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -643,7 +658,8 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
     }
 
     res.json({ message: 'Event cancelled' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -668,7 +684,8 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
 
     await db.update(events).set({ archived_at: new Date() }).where(eq(events.id, id))
     res.json({ message: 'Event archived' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -712,7 +729,8 @@ router.post('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
     }).returning()
 
     res.status(201).json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -741,7 +759,8 @@ router.get('/:id/feedback', authenticate, async (req: AuthRequest, res) => {
       .where(eq(feedback.event_id, eventId))
 
     res.json(result)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -760,7 +779,8 @@ router.patch('/:id/unarchive', authenticate, async (req: AuthRequest, res) => {
 
     await db.update(events).set({ archived_at: null }).where(eq(events.id, id))
     res.json({ message: 'Event unarchived' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

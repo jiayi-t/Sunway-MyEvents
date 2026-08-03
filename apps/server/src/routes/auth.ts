@@ -13,6 +13,7 @@ import { attachUatPastEvent, uatPastEventEnabled } from '../database/uat'
 import { sendEmail, forgotPasswordEmail } from '../email'
 import { createSession, invalidateSession, invalidateAllUserSessions } from '../utils/sessions'
 import { setAuthCookie, clearAuthCookie } from '../utils/cookies'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -115,7 +116,8 @@ router.post('/login', loginLimiter, loginAccountLimiter, async (req, res) => {
       needs_onboarding: user.role === 'student' && !user.faculty,
     })
   } catch (err) {
-    console.error('[auth/login]', err)
+    // captureError falls back to console.error when no DSN is configured, so local dev is unchanged
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -174,6 +176,8 @@ router.post('/register/organizer', registerLimiter, async (req, res) => {
       }
       return res.status(400).json({ error: 'Username already taken' })
     }
+    // only the fallthrough is reported, a duplicate signup is expected and returns above
+    captureError(error, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -227,6 +231,8 @@ router.post('/register/public', registerLimiter, async (req, res) => {
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Email already registered' })
     }
+    // only the fallthrough is reported, a duplicate signup is expected and returns above
+    captureError(error, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -237,7 +243,8 @@ router.patch('/tour-completed', authenticate, async (req: AuthRequest, res) => {
     const tour_completed_at = new Date()
     await db.update(users).set({ tour_completed_at }).where(eq(users.id, req.user!.id))
     res.json({ tour_completed_at })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -248,7 +255,8 @@ router.get('/interests', authenticate, async (req: AuthRequest, res) => {
     const result = await db.select({ interests: users.interests }).from(users).where(eq(users.id, req.user!.id))
     const interests = (result[0]?.interests as string[] | null) ?? []
     res.json({ interests })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -262,7 +270,8 @@ router.put('/interests', authenticate, async (req: AuthRequest, res) => {
   try {
     await db.update(users).set({ interests }).where(eq(users.id, req.user!.id))
     res.json({ interests })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -273,7 +282,8 @@ router.get('/time-preferences', authenticate, async (req: AuthRequest, res) => {
     const result = await db.select({ preferred_time_ranges: users.preferred_time_ranges }).from(users).where(eq(users.id, req.user!.id))
     const preferred_time_ranges = result[0]?.preferred_time_ranges ?? null
     res.json({ preferred_time_ranges })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -291,7 +301,8 @@ router.put('/time-preferences', authenticate, async (req: AuthRequest, res) => {
   try {
     await db.update(users).set({ preferred_time_ranges: timeRange }).where(eq(users.id, req.user!.id))
     res.json({ preferred_time_ranges: timeRange })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -321,7 +332,8 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
     const user = result[0]
     if (!user) return res.status(404).json({ error: 'User not found' })
     res.json(user)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -406,7 +418,8 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
       alumni: users.alumni,
     }).from(users).where(eq(users.id, req.user!.id))
     res.json(updated)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -418,7 +431,8 @@ router.put('/notification-preferences', authenticate, async (req: AuthRequest, r
     const prefs = { email_enabled, email_channel, course_related, interest_related, suggested }
     await db.update(users).set({ notification_preferences: prefs }).where(eq(users.id, req.user!.id))
     res.json({ notification_preferences: prefs })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -444,7 +458,8 @@ router.get('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
     const user = result[0]
     if (!user) return res.status(404).json({ error: 'User not found' })
     res.json(user)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -502,7 +517,8 @@ router.put('/organizer-profile', authenticate, async (req: AuthRequest, res) => 
     }).from(users).where(eq(users.id, req.user!.id))
 
     res.json(updated)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -533,7 +549,8 @@ router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
     const resetUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/reset-password?token=${rawToken}`
     await sendEmail(user.email, 'Reset your Sunway MyEvents password', forgotPasswordEmail(user.name, resetUrl))
   } catch (err) {
-    console.error('[auth] forgot-password error:', err)
+    // the 200 above is deliberate and already sent, it must not become an error response or the endpoint would leak which emails have accounts
+    captureError(err, req)
   }
 })
 
@@ -556,7 +573,9 @@ router.get('/validate-reset-token', async (req, res) => {
 
     // demo accounts still get a working reset link (so a tester who changed the email can walk the flow)
     res.json({ valid: !!row, is_seeded: row ? isSeededOrganizer(row.sunway_id) : false })
-  } catch {
+  } catch (err) {
+    // a genuine server error, the response shape differs from the usual { error }, the client checks a .valid boolean
+    captureError(err, req)
     res.status(500).json({ valid: false })
   }
 })
@@ -599,7 +618,8 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
       .where(eq(users.id, row.user_id))
 
     res.json({ message: 'Password reset successfully.' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -643,7 +663,8 @@ router.post('/change-password', authenticate, async (req: AuthRequest, res) => {
     await invalidateAllUserSessions(req.user!.id)
     clearAuthCookie(res)
     res.json({ message: 'Password changed successfully. Please log in again.' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -676,7 +697,8 @@ router.put('/student-onboarding', authenticate, async (req: AuthRequest, res) =>
 
     const [updated] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.user!.id))
     res.json({ message: 'Profile saved', name: updated.name })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -689,7 +711,8 @@ router.post('/logout', authenticate, async (req: AuthRequest, res) => {
     }
     clearAuthCookie(res)
     res.json({ message: 'Logged out successfully' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })

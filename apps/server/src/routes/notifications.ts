@@ -3,6 +3,7 @@ import { eq, desc, and, isNull } from 'drizzle-orm'
 import { db } from '../db'
 import { notifications } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
+import { captureError } from '../instrument'
 
 const router = Router()
 
@@ -16,7 +17,8 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       .orderBy(desc(notifications.created_at))
       .limit(50)
     res.json(rows)
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
@@ -28,7 +30,8 @@ router.patch('/read-all', authenticate, async (req: AuthRequest, res) => {
       .set({ read_at: new Date() })
       .where(and(eq(notifications.user_id, req.user!.id), isNull(notifications.read_at)))
     res.json({ message: 'All notifications marked as read' })
-  } catch {
+  } catch (err) {
+    captureError(err, req)
     res.status(500).json({ error: 'Server error' })
   }
 })
