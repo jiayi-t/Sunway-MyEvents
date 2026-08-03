@@ -239,19 +239,27 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
       }
     }
 
+    // label general public/alumni
+    const studentOnlyLabel = (column: typeof users.faculty | typeof users.program | typeof users.year_of_study) =>
+      sql<string>`CASE WHEN ${column} IS NOT NULL THEN ${column} WHEN ${users.alumni} THEN 'Alumni' ELSE 'General Public' END`
+
+    const facultyLabel = studentOnlyLabel(users.faculty)
+    const programmeLabel = studentOnlyLabel(users.program)
+    const yearLabel = studentOnlyLabel(users.year_of_study)
+
     const [genderRows, facultyRows, programmeRows, yearRows] = await Promise.all([
       db.select({ gender: users.gender, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
         .where(eq(registrations.event_id, eventId)).groupBy(users.gender),
-      db.select({ faculty: users.faculty, count: sql<number>`COUNT(*)` })
+      db.select({ faculty: facultyLabel, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
-        .where(eq(registrations.event_id, eventId)).groupBy(users.faculty),
-      db.select({ programme: users.program, count: sql<number>`COUNT(*)` })
+        .where(eq(registrations.event_id, eventId)).groupBy(facultyLabel),
+      db.select({ programme: programmeLabel, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
-        .where(eq(registrations.event_id, eventId)).groupBy(users.program),
-      db.select({ year: users.year_of_study, count: sql<number>`COUNT(*)` })
+        .where(eq(registrations.event_id, eventId)).groupBy(programmeLabel),
+      db.select({ year: yearLabel, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
-        .where(eq(registrations.event_id, eventId)).groupBy(users.year_of_study),
+        .where(eq(registrations.event_id, eventId)).groupBy(yearLabel),
     ])
 
     res.json({
