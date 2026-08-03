@@ -246,11 +246,12 @@ router.get('/events/:id', authenticate, async (req: AuthRequest, res) => {
     const facultyLabel = studentOnlyLabel(users.faculty)
     const programmeLabel = studentOnlyLabel(users.program)
     const yearLabel = studentOnlyLabel(users.year_of_study)
+    const genderLabel = sql<string>`COALESCE(${users.gender}, 'Not specified')`
 
     const [genderRows, facultyRows, programmeRows, yearRows] = await Promise.all([
-      db.select({ gender: users.gender, count: sql<number>`COUNT(*)` })
+      db.select({ gender: genderLabel, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
-        .where(eq(registrations.event_id, eventId)).groupBy(users.gender),
+        .where(eq(registrations.event_id, eventId)).groupBy(genderLabel),
       db.select({ faculty: facultyLabel, count: sql<number>`COUNT(*)` })
         .from(registrations).innerJoin(users, eq(registrations.user_id, users.id))
         .where(eq(registrations.event_id, eventId)).groupBy(facultyLabel),
