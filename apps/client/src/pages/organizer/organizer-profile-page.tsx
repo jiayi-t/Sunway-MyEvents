@@ -133,7 +133,7 @@ export default function OrganizerProfilePage() {
                   <div key={i} className="bg-card rounded-xl shadow p-4">
                     <Skeleton className="h-4 w-24" />
                     <div className="flex justify-around mt-4">
-                      {[0, 1, 2].map(j => <Skeleton key={j} className="h-12 w-12 rounded-lg" />)}
+                      {[0, 1, 2, 3].map(j => <Skeleton key={j} className="h-12 w-12 rounded-lg" />)}
                     </div>
                   </div>
                 ))}
