@@ -158,6 +158,8 @@ function OrganizerGroup({ title, organizers, onOpen }: {
                 Following
               </span>
             )}
+
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           </div>
         ))}
       </div>
