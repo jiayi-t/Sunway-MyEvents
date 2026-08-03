@@ -33,18 +33,20 @@ export default function MockPaymentPage() {
 
   if (paid) {
     return (
-      <div className="flex-1 bg-surface flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-          <Check className="w-6 h-6 text-green-500" />
+      <div className="flex-1 bg-surface flex flex-col items-center justify-center px-6">
+        <div className="bg-white rounded-xl shadow p-6 max-w-sm w-full text-center">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4 mx-auto">
+            <Check className="w-6 h-6 text-green-500" />
+          </div>
+          <h2 className="text-foreground font-bold text-lg mb-1">Payment Successful</h2>
+          <p className="text-muted-foreground text-sm mb-6">You're registered for {typedEvent?.name}.</p>
+          <button
+            onClick={() => navigate(`/events/${id}`, { replace: true })}
+            className="w-full bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full cursor-pointer"
+          >
+            Back to Event
+          </button>
         </div>
-        <h2 className="text-foreground font-bold text-lg mb-1">Payment Successful</h2>
-        <p className="text-muted-foreground text-sm mb-6">You're registered for {typedEvent?.name}.</p>
-        <button
-          onClick={() => navigate(`/events/${id}`, { replace: true })}
-          className="bg-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full cursor-pointer"
-        >
-          Back to Event
-        </button>
       </div>
     )
   }

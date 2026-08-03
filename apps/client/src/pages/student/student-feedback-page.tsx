@@ -179,14 +179,23 @@ export default function StudentFeedbackPage() {
 
   if (alreadySubmitted) {
     return (
-      <div className="bg-surface min-h-screen">
+      <div className="bg-surface flex-1 flex flex-col">
         <div className="bg-primary full-bleed-bar py-3 flex items-center gap-3">
           <h1 className="text-white font-bold text-base flex-1 text-center">Feedback</h1>
         </div>
-        <div className="flex flex-col items-center justify-center h-40 gap-3 px-6">
-          <Star className="w-10 h-10 fill-accent text-accent" />
-          <p className="text-foreground font-semibold text-center">You've already submitted feedback for this event.</p>
-          <button onClick={() => navigate(-1)} className="text-primary text-sm font-medium cursor-pointer">Go back</button>
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <div className="bg-white rounded-xl shadow p-6 max-w-sm w-full text-center flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+              <Check className="w-6 h-6 text-green-500" />
+            </div>
+            <p className="text-foreground font-semibold text-center">You have already submitted feedback for this event.</p>
+            <button
+              onClick={() => navigate(-1)}
+              className="w-full bg-primary text-white text-sm font-semibold py-2.5 rounded-full cursor-pointer"
+            >
+              Go back
+            </button>
+          </div>
         </div>
       </div>
     )
