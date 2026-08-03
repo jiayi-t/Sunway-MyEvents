@@ -69,6 +69,9 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
+// TEMPORARY: for manually verifying Sentry reporting on live UAT
+app.get('/api/debug/boom', () => { throw new Error('Sentry server test') })
+
 // last resort for anything the route handlers did not catch themselves, the response shape must stay { error: string } because the client reads .error on every failure
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) return next(err)

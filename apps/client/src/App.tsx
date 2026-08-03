@@ -105,6 +105,11 @@ function CheckinRoute() {
   return user?.role === 'public' ? <PublicCheckinPage /> : <StudentCheckinPage />
 }
 
+// TEMPORARY: for manually verifying the Sentry ErrorBoundary on live UAT
+function DebugBoom(): never {
+  throw new Error('Sentry client test')
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -151,6 +156,7 @@ function AppRoutes() {
           </StudentPublicRoute>
         }
       />
+      <Route path="/debug/boom" element={<DebugBoom />} />
       <Route path="/select-interests"
         element={
           <StudentPublicRoute>
