@@ -34,6 +34,9 @@ export interface Notification {
   message: string
   read_at: string | null
   created_at: string
+  // public uuids, set depending on type: event_id for new_event/event_updated/event_cancelled/event_reminder, organizer_id for organizer_followed
+  event_id: string | null
+  organizer_id: string | null
 }
 
 export interface SocialLinks {

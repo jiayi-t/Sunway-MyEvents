@@ -468,6 +468,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
           type: 'new_event' as const,
           title: `New event by ${organizerName}`,
           message: newEvent.name,
+          related_event_id: newEvent.id,
         }))
       )
 
@@ -559,6 +560,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
             type: 'event_updated' as const,
             title: 'Event Updated',
             message: `"${name}" has been updated. Check the latest details.`,
+            related_event_id: id,
           }))
         )
 
@@ -638,6 +640,7 @@ router.patch('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
           message: registeredIds.has(u.user_id)
             ? `An event you registered for, "${existing[0].name}", has been cancelled.`
             : `An event you saved, "${existing[0].name}", has been cancelled.`,
+          related_event_id: id,
         }))
       )
 

@@ -217,6 +217,7 @@ router.post('/:id/follow-toggle', authenticate, async (req: AuthRequest, res) =>
         type: 'organizer_followed',
         title: `Following ${organizer?.name ?? 'organizer'}`,
         message: `You'll be notified when they post new events.`,
+        related_organizer_id: organizerId,
       })
 
       res.json({ following: true })

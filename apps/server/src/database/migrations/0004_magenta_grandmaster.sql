@@ -1,0 +1,4 @@
+ALTER TABLE "notifications" ADD COLUMN "related_event_id" integer;--> statement-breakpoint
+ALTER TABLE "notifications" ADD COLUMN "related_organizer_id" integer;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_related_event_id_events_id_fk" FOREIGN KEY ("related_event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_related_organizer_id_users_id_fk" FOREIGN KEY ("related_organizer_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;

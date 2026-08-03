@@ -132,6 +132,10 @@ export const notifications = pgTable('notifications', {
   type: varchar('type', { length: 50 }).notNull(),
   title: varchar('title', { length: 255 }).notNull(),
   message: text('message').notNull(),
+  // set for event-related types (new_event/event_updated/event_cancelled/event_reminder) so the client can link to the event
+  related_event_id: integer('related_event_id').references(() => events.id, { onDelete: 'set null' }),
+  // set for organizer_followed so the client can link to the organizer's profile
+  related_organizer_id: integer('related_organizer_id').references(() => users.id, { onDelete: 'set null' }),
   read_at: timestamp('read_at', { withTimezone: true }),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => [

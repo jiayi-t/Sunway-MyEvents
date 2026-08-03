@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { eq, desc, and, isNull } from 'drizzle-orm'
 import { db } from '../db'
-import { notifications } from '../database/schema'
+import { notifications, events, users } from '../database/schema'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { captureError } from '../instrument'
 
@@ -11,8 +11,21 @@ const router = Router()
 router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const rows = await db
-      .select()
+      .select({
+        id: notifications.id,
+        user_id: notifications.user_id,
+        type: notifications.type,
+        title: notifications.title,
+        message: notifications.message,
+        read_at: notifications.read_at,
+        created_at: notifications.created_at,
+        // public uuids only, never the internal integer ids, the client links to /events/:id or /organizers/:id
+        event_id: events.public_id,
+        organizer_id: users.public_id,
+      })
       .from(notifications)
+      .leftJoin(events, eq(notifications.related_event_id, events.id))
+      .leftJoin(users, eq(notifications.related_organizer_id, users.id))
       .where(eq(notifications.user_id, req.user!.id))
       .orderBy(desc(notifications.created_at))
       .limit(50)

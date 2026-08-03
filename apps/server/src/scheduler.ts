@@ -17,6 +17,7 @@ export async function sendEventReminders() {
   const todayRegistrations = await db
     .select({
       user_id: registrations.user_id,
+      event_id: events.id,
       event_name: events.name,
       event_date: events.date,
       event_start_time: events.start_time,
@@ -44,6 +45,7 @@ export async function sendEventReminders() {
         type: 'event_reminder' as const,
         title: 'Event Today',
         message: `"${r.event_name}" is happening today. Don't forget to check in on time!`,
+        related_event_id: r.event_id,
       }))
     )
 

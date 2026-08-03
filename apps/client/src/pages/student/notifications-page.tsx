@@ -1,9 +1,16 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useNotificationsQuery } from '../../api/queries'
 import { useMarkAllNotificationsReadMutation } from '../../api/mutations'
 import { NotificationListSkeleton } from '../../components/skeletons'
 import { toMYT, todayMYT, yesterdayMYT } from '../../utils/datetime.utils'
-import { Ban, Bell, CalendarPlus, CalendarClock, Pencil } from 'lucide-react'
+import { Ban, Bell, CalendarPlus, CalendarClock, ChevronRight, Pencil } from 'lucide-react'
+
+// event-related types link to the event, organizer_followed links to the organizer's profile
+function notificationLink(n: any): string | null {
+  if (n.type === 'organizer_followed') return n.organizer_id ? `/organizers/${n.organizer_id}` : null
+  return n.event_id ? `/events/${n.event_id}` : null
+}
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -43,8 +50,14 @@ function isLast30Days(dateStr: string) {
 }
 
 function NotificationItem({ n }: { n: any }) {
+  const navigate = useNavigate()
+  const link = notificationLink(n)
+
   return (
-    <div className="px-4 py-4 flex items-start gap-3 bg-card">
+    <div
+      className={`px-4 py-4 flex items-start gap-3 bg-card ${link ? 'cursor-pointer' : ''}`}
+      onClick={() => { if (link) navigate(link) }}
+    >
       <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
         n.type === 'event_cancelled' ? 'bg-red-100' :
         n.type === 'organizer_followed' ? 'bg-gray-100' :
@@ -66,6 +79,9 @@ function NotificationItem({ n }: { n: any }) {
       </div>
       {!n.read_at && (
         <div className="w-2 h-2 rounded-full bg-accent flex-shrink-0 mt-1.5" />
+      )}
+      {link && (
+        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 self-center" />
       )}
     </div>
   )
