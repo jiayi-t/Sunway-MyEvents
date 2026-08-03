@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, asc, desc, and, or, isNull, gt, ne, exists } from 'drizzle-orm'
+import { eq, asc, desc, and, or, isNull, isNotNull, gt, ne, exists } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import { db } from '../db'
 import { events, users, registrations, saved_events, feedback, notifications, followed_organizers, event_views } from '../database/schema'
@@ -14,6 +14,7 @@ const router = Router()
 const AUDIENCES = ['everyone', 'students_only']
 // max 5 digits
 const MAX_PRICING = 99999
+const MAX_PINNED_EVENTS = 3
 
 // describe what changed in an event-updated notification
 const joinWithAnd = (items: string[]): string =>
@@ -706,7 +707,8 @@ router.patch('/:id/archive', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Only events that have ended can be archived' })
     }
 
-    await db.update(events).set({ archived_at: new Date() }).where(eq(events.id, id))
+    // archived events are hidden from the public profile, so drop the pin option
+    await db.update(events).set({ archived_at: new Date(), pinned_at: null }).where(eq(events.id, id))
     res.json({ message: 'Event archived' })
   } catch (err) {
     captureError(err, req)
@@ -803,6 +805,62 @@ router.patch('/:id/unarchive', authenticate, async (req: AuthRequest, res) => {
 
     await db.update(events).set({ archived_at: null }).where(eq(events.id, id))
     res.json({ message: 'Event unarchived' })
+  } catch (err) {
+    captureError(err, req)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PATCH /api/events/:id/pin - feature own event on the public profile (organizer only)
+router.patch('/:id/pin', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+    if (existing[0].cancelled_at) {
+      return res.status(400).json({ error: 'Cancelled events cannot be pinned' })
+    }
+    if (existing[0].archived_at) {
+      return res.status(400).json({ error: 'Archived events cannot be pinned' })
+    }
+    // idempotent, so a double click does not pin a second slot
+    if (existing[0].pinned_at) return res.json({ message: 'Event pinned' })
+
+    const pinnedCount = await db.$count(
+      events,
+      and(eq(events.organizer_id, req.user!.id), isNotNull(events.pinned_at))
+    )
+    if (pinnedCount >= MAX_PINNED_EVENTS) {
+      return res.status(400).json({ error: `You can pin up to ${MAX_PINNED_EVENTS} events` })
+    }
+
+    await db.update(events).set({ pinned_at: new Date() }).where(eq(events.id, id))
+    res.json({ message: 'Event pinned' })
+  } catch (err) {
+    captureError(err, req)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// PATCH /api/events/:id/unpin - remove own event from the public profile (organizer only)
+router.patch('/:id/unpin', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.role !== 'organizer') {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+  const id = await resolveEventPk(req.params.id)
+  if (id === null) return res.status(404).json({ error: 'Event not found' })
+  try {
+    const existing = await db.select().from(events).where(eq(events.id, id))
+    if (existing.length === 0) return res.status(404).json({ error: 'Event not found' })
+    if (existing[0].organizer_id !== req.user!.id) return res.status(403).json({ error: 'Forbidden' })
+
+    await db.update(events).set({ pinned_at: null }).where(eq(events.id, id))
+    res.json({ message: 'Event unpinned' })
   } catch (err) {
     captureError(err, req)
     res.status(500).json({ error: 'Server error' })

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, or, isNull, asc, desc, gte, lt, ne, inArray, exists, sql } from 'drizzle-orm'
+import { eq, and, or, isNull, isNotNull, asc, desc, gte, lt, ne, inArray, exists, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { users, events, registrations, followed_organizers, notifications } from '../database/schema'
 import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth'
@@ -150,6 +150,13 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
       .orderBy(desc(events.date))
       .limit(10)
 
+    // upcoming/past events the organizer chose to feature
+    const pinnedEvents = await db
+      .select(eventClientColumns)
+      .from(events)
+      .where(and(...visibleToViewer, isNotNull(events.pinned_at)))
+      .orderBy(desc(events.pinned_at))
+
     const totalCount = await db.$count(events, eq(events.organizer_id, id))
 
     res.json({
@@ -157,6 +164,7 @@ router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
       event_stats: { upcoming: upcomingEvents.length, total: totalCount },
       events: upcomingEvents,
       past_events: pastEvents,
+      pinned_events: pinnedEvents,
     })
   } catch (err) {
     captureError(err, req)

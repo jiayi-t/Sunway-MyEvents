@@ -67,6 +67,7 @@ export interface PublicOrganizerProfile {
   event_stats: { upcoming: number; total: number }
   events: any[]
   past_events: any[]
+  pinned_events: any[]
 }
 
 // seeded demo accounts only
@@ -88,6 +89,8 @@ export const userKeys = {
   organizerAccounts: ['organizer-accounts'] as const,
   notifications: ['notifications'] as const,
   publicOrganizer: (id: string | undefined) => ['organizer', id] as const,
+  // refresh all cached public profiles, used when an organizer pins/unpins an event
+  publicOrganizerAll: ['organizer'] as const,
   organizerNotificationsStatus: (id: string | undefined) => ['organizer-notifications', id] as const,
   followedOrganizers: ['followed-organizers'] as const,
   organizerDirectory: ['organizer-directory'] as const,

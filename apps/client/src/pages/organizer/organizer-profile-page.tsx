@@ -49,7 +49,7 @@ const formatTime = (time?: string) => {
   })
 }
 
-type EventsTab = 'upcoming' | 'past'
+type EventsTab = 'pinned' | 'upcoming' | 'past'
 
 export default function OrganizerProfilePage() {
   const { id } = useParams<{ id?: string }>()
@@ -57,7 +57,8 @@ export default function OrganizerProfilePage() {
   const navigate = useNavigate()
 
   // only used on the student/public view of organizer's profile
-  const [eventsTab, setEventsTab] = useState<EventsTab>('upcoming')
+  // null until the visitor picks a tab
+  const [eventsTab, setEventsTab] = useState<EventsTab | null>(null)
 
   const isOwnProfile = !id
   // own dashboard: prefer the uuid, fall back to the integer id for pre-migration sessions whose stored user has no public_id (resolves via legacy_numeric_id)
@@ -309,8 +310,14 @@ export default function OrganizerProfilePage() {
             </div>
           ) : (
             (() => {
-              const shown = eventsTab === 'upcoming' ? profile.events : (profile.past_events ?? [])
+              const pinned = profile.pinned_events ?? []
+              const activeTab: EventsTab = eventsTab ?? (pinned.length > 0 ? 'pinned' : 'upcoming')
+              const shown = activeTab === 'pinned'
+                ? pinned
+                : activeTab === 'upcoming' ? profile.events : (profile.past_events ?? [])
               const tabs: { key: EventsTab; label: string; count: number }[] = [
+                // hide Featured tab if there are no pinned events
+                ...(pinned.length > 0 ? [{ key: 'pinned' as EventsTab, label: 'Featured', count: pinned.length }] : []),
                 { key: 'upcoming', label: 'Upcoming', count: profile.events.length },
                 { key: 'past', label: 'Past', count: (profile.past_events ?? []).length },
               ]
@@ -324,11 +331,11 @@ export default function OrganizerProfilePage() {
                         key={t.key}
                         onClick={() => setEventsTab(t.key)}
                         className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer
-                          ${eventsTab === t.key ? 'bg-primary border-primary text-white' : 'border-border text-muted-foreground'}`}
+                          ${activeTab === t.key ? 'bg-primary border-primary text-white' : 'border-border text-muted-foreground'}`}
                       >
                         {t.label}
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                          eventsTab === t.key ? 'bg-white/20 text-white' : 'bg-gray-200 text-muted-foreground'
+                          activeTab === t.key ? 'bg-white/20 text-white' : 'bg-gray-200 text-muted-foreground'
                         }`}>
                           {t.count}
                         </span>
@@ -338,7 +345,7 @@ export default function OrganizerProfilePage() {
 
                   {shown.length === 0 ? (
                     <p className="text-muted-foreground text-sm text-center py-8">
-                      No {eventsTab} events.
+                      No {activeTab === 'pinned' ? 'featured' : activeTab} events.
                     </p>
                   ) : (
                     <div className="space-y-3">

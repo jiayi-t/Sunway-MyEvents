@@ -36,7 +36,7 @@ export function startOrganizerTour(navigate: (to: string) => void) {
       element: '[data-tour="manage-events"]',
       popover: {
         title: 'Manage your events',
-        description: 'Open an upcoming event to scan check-in QR codes, view attendees, and edit its feedback form. Open a past event to pin it to your profile.',
+        description: 'Open an upcoming event to scan check-in QR codes, view attendees, and edit its feedback form. Open any event to pin it to your profile.',
         side: 'top',
       },
     },

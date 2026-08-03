@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { useEventQuery } from '../../api/queries'
-import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation } from '../../api/mutations'
+import { useCancelEventMutation, useArchiveEventMutation, useUnarchiveEventMutation, usePinEventMutation, useUnpinEventMutation } from '../../api/mutations'
 import { EventDetailsSkeleton } from '../../components/skeletons'
 import { categoryPillStyle, audiencePillClass, pricingPillClass } from '../../utils/event-colors.utils'
-import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, ScanQrCode, Ticket, Users } from 'lucide-react'
+import { Archive, Ban, BarChart2, Calendar, CalendarClock, Clock, ImageOff, MapPin, MoreVertical, Pencil, Pin, PinOff, ScanQrCode, Ticket, Users } from 'lucide-react'
 
 interface OrganizerEventDetail {
   id: string
@@ -25,6 +25,7 @@ interface OrganizerEventDetail {
   registered_count: number
   cancelled_at: string | null
   archived_at: string | null
+  pinned_at: string | null
   is_owner: boolean
 }
 
@@ -76,6 +77,8 @@ export default function OrganizerEventDetailsPage() {
   const cancelMutation = useCancelEventMutation(id)
   const archiveMutation = useArchiveEventMutation(id)
   const unarchiveMutation = useUnarchiveEventMutation(id)
+  const pinMutation = usePinEventMutation(id)
+  const unpinMutation = useUnpinEventMutation(id)
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -90,7 +93,22 @@ export default function OrganizerEventDetailsPage() {
 
   const isPast = event ? new Date(event.end_time) < new Date() : false
   const isArchived = !!event?.archived_at
+  const isCancelled = !!event?.cancelled_at
+  const isPinned = !!event?.pinned_at
   const processing = cancelMutation.isPending || archiveMutation.isPending || unarchiveMutation.isPending
+  const pinning = pinMutation.isPending || unpinMutation.isPending
+  // a cancelled, non-archived event has no actions left
+  const hasMenuOptions = !isCancelled || isArchived
+
+  // pin is a reversible toggle, so it fires straight from the menu with no confirmation step
+  const handlePinToggle = () => {
+    setActionError('')
+    setMenuOpen(false)
+    const mutation = isPinned ? unpinMutation : pinMutation
+    mutation.mutate(undefined, {
+      onError: (err: any) => setActionError(err?.response?.data?.error || 'Action failed'),
+    })
+  }
 
   const handleAction = () => {
     setActionError('')
@@ -153,6 +171,11 @@ export default function OrganizerEventDetailsPage() {
           This event has been cancelled
         </div>
       )}
+      {actionError && (
+        <div className="bg-red-500 text-white text-sm font-semibold full-bleed-bar py-2.5 text-center">
+          {actionError}
+        </div>
+      )}
 
       <div className="lg:flex lg:items-start lg:gap-6 lg:p-6 lg:pb-0">
         {/* Event Poster */}
@@ -175,15 +198,24 @@ export default function OrganizerEventDetailsPage() {
           {/* Event Info */}
           <div className="bg-card px-4 py-4 lg:rounded-xl">
             <div className="flex items-start justify-between gap-2 mb-3">
-              <h2 className="font-bold text-foreground text-lg leading-tight flex-1">{event.name}</h2>
+              <h2 className="font-bold text-foreground text-lg leading-tight flex-1">
+                {event.name}
+                {isPinned && (
+                  <span className="align-middle ml-2 inline-flex items-center gap-1 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                    <Pin className="w-2.5 h-2.5" /> PINNED
+                  </span>
+                )}
+              </h2>
               <div className="flex gap-2 flex-shrink-0 mt-1 relative" ref={menuRef}>
-                <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground cursor-pointer">
-                  <MoreVertical className="w-5 h-5" />
-                </button>
+                {hasMenuOptions && (
+                  <button onClick={() => setMenuOpen(prev => !prev)} className="text-foreground cursor-pointer">
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                )}
 
                 {menuOpen && (
                   <div className="absolute right-8 top-0 bg-card shadow-lg rounded-lg py-1 z-10 min-w-[130px] border border-border">
-                    {!isPast && (
+                    {!isPast && !isCancelled && (
                       <button
                         onClick={() => { setMenuOpen(false); navigate(`/organizer/events/${id}/edit`) }}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left cursor-pointer"
@@ -191,12 +223,16 @@ export default function OrganizerEventDetailsPage() {
                         <Pencil className="w-4 h-4" /> Edit
                       </button>
                     )}
-                    {isPast && (
+                    {/* archived and cancelled events are hidden from the public profile */}
+                    {!isArchived && !event.cancelled_at && (
                       <button
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left cursor-pointer"
+                        onClick={handlePinToggle}
+                        disabled={pinning}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-surface w-full text-left disabled:opacity-50 cursor-pointer"
                       >
-                        <Pin className="w-4 h-4" /> Pin
+                        {isPinned
+                          ? <><PinOff className="w-4 h-4" /> Unpin</>
+                          : <><Pin className="w-4 h-4" /> Pin</>}
                       </button>
                     )}
                     {isArchived ? (

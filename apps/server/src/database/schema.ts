@@ -52,7 +52,8 @@ export const events = pgTable('events', {
   organizer_id: integer('organizer_id').references(() => users.id),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   cancelled_at: timestamp('cancelled_at', { withTimezone: true }),
-  archived_at: timestamp('archived_at', { withTimezone: true })
+  archived_at: timestamp('archived_at', { withTimezone: true }),
+  pinned_at: timestamp('pinned_at', { withTimezone: true })
 }, (table) => [
   index('events_organizer_id_idx').on(table.organizer_id)
 ])

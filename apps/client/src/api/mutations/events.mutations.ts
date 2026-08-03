@@ -2,6 +2,7 @@ import api from '../../services/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { eventKeys } from '../queries/events.queries'
 import { registrationKeys } from '../queries/registrations.queries'
+import { userKeys } from '../queries/users.queries'
 
 export function useRegisterEventMutation(id: string | undefined) {
   const queryClient = useQueryClient()
@@ -84,6 +85,8 @@ export function useArchiveEventMutation(id: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
+      // archiving an event unpins it
+      queryClient.invalidateQueries({ queryKey: userKeys.publicOrganizerAll })
     },
   })
 }
@@ -95,6 +98,31 @@ export function useUnarchiveEventMutation(id: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
+    },
+  })
+}
+
+export function usePinEventMutation(id: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.patch(`/events/${id}/pin`).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
+      // the organizer's own uuid is not on hand here, so refresh every cached public profile
+      queryClient.invalidateQueries({ queryKey: userKeys.publicOrganizerAll })
+    },
+  })
+}
+
+export function useUnpinEventMutation(id: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.patch(`/events/${id}/unpin`).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: eventKeys.organizer })
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id), exact: true })
+      queryClient.invalidateQueries({ queryKey: userKeys.publicOrganizerAll })
     },
   })
 }

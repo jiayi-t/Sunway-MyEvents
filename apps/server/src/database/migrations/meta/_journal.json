@@ -36,6 +36,13 @@
       "when": 1785747398698,
       "tag": "0004_magenta_grandmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785752069216,
+      "tag": "0005_dark_ultimatum",
+      "breakpoints": true
     }
   ]
 }

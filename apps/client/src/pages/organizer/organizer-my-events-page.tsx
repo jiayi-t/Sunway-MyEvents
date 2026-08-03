@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useOrganizerEventsQuery } from '../../api/queries'
 import { EventListSkeleton } from '../../components/skeletons'
-import { BarChart2, ScanQrCode, Calendar, ChevronRight, Clock, MapPin, ImageOff, Plus } from 'lucide-react'
+import { BarChart2, ScanQrCode, Calendar, ChevronRight, Clock, MapPin, ImageOff, Pin, Plus } from 'lucide-react'
 
-type Tab = 'upcoming' | 'past'
+type Tab = 'pinned' | 'upcoming' | 'past'
 
 interface OrganizerEvent {
   id: string
@@ -21,6 +21,16 @@ interface OrganizerEvent {
   registered_count?: number
   cancelled_at?: string | null
   archived_at?: string | null
+  pinned_at?: string | null
+}
+
+// pinned label
+function PinnedPill() {
+  return (
+    <span className="inline-flex items-center gap-1 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+      <Pin className="w-2.5 h-2.5" /> PINNED
+    </span>
+  )
 }
 
 const formatDateTime = (value?: string, options?: Intl.DateTimeFormatOptions): string => {
@@ -117,6 +127,7 @@ function UpcomingCard({ event, onCheckin, onViewDetails }: { event: OrganizerEve
               )}
             </>
           )}
+          {event.pinned_at && <PinnedPill />}
         </div>
 
         <div className="text-muted-foreground text-xs mt-1.5 flex flex-col gap-1">
@@ -168,13 +179,14 @@ function PastCard({ event, onAnalytics, onViewDetails }: { event: OrganizerEvent
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-foreground text-sm leading-tight line-clamp-2">{event.name}</h3>
 
-        {(event.archived_at || event.cancelled_at) && (
-          <div className="flex items-center gap-1 mt-0.5">
+        {(event.archived_at || event.cancelled_at || event.pinned_at) && (
+          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
             {event.archived_at ? (
               <span className="bg-gray-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">ARCHIVED</span>
-            ) : (
+            ) : event.cancelled_at ? (
               <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">CANCELLED</span>
-            )}
+            ) : null}
+            {event.pinned_at && <PinnedPill />}
           </div>
         )}
 
@@ -218,7 +230,7 @@ export default function OrganizerEventsPage() {
 
   const getTabFromQuery = (): Tab => {
     const tab = searchParams.get('tab')
-    if (tab === 'upcoming' || tab === 'past') return tab
+    if (tab === 'pinned' || tab === 'upcoming' || tab === 'past') return tab
     return 'upcoming'
   }
 
@@ -253,8 +265,16 @@ export default function OrganizerEventsPage() {
   const now = new Date()
   const upcomingEvents = useMemo(() => myEvents.filter(e => new Date(e.end_time || e.date) >= now), [myEvents])
   const pastEvents = useMemo(() => myEvents.filter(e => new Date(e.end_time || e.date) < now), [myEvents])
+  // most recently pinned first, matching the order on the public profile
+  const pinnedEvents = useMemo(
+    () => myEvents
+      .filter(e => e.pinned_at)
+      .sort((a, b) => new Date(b.pinned_at!).getTime() - new Date(a.pinned_at!).getTime()),
+    [myEvents]
+  )
 
   const tabs: { key: Tab; label: string; count: number | null }[] = [
+    { key: 'pinned', label: 'Pinned', count: pinnedEvents.length },
     { key: 'upcoming', label: 'Upcoming', count: upcomingEvents.length },
     { key: 'past', label: 'Past', count: pastEvents.length },
   ]
@@ -289,6 +309,26 @@ export default function OrganizerEventsPage() {
           </button>
         ))}
       </div>
+
+      {/* Pinned tab - featured on the organizer's public profile */}
+      {activeTab === 'pinned' && (
+        <div className="px-4 py-4 space-y-3">
+          {eventsLoading ? (
+            <EventListSkeleton />
+          ) : pinnedEvents.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center">
+              No pinned events yet. Open an event and pin it to feature it on your profile
+            </p>
+          ) : (
+            pinnedEvents.map(event => (
+              // an upcoming pin keeps its Check In action, a past one keeps View Analytics
+              new Date(event.end_time || event.date) < now
+                ? <PastCard key={event.id} event={event} onAnalytics={handleAnalytics} onViewDetails={handleViewDetails} />
+                : <UpcomingCard key={event.id} event={event} onCheckin={handleCheckin} onViewDetails={handleViewDetails} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Upcoming tab */}
       {activeTab === 'upcoming' && (
