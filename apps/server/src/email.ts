@@ -1,6 +1,4 @@
-import nodemailer from 'nodemailer'
-import previewEmail from 'preview-email'
-import open from 'open'
+import nodemailer, { type Transporter } from 'nodemailer'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -9,11 +7,11 @@ import path from 'path'
 const DEV_MODE = !process.env.SMTP_HOST
 const FROM = process.env.SMTP_FROM ?? 'Sunway MyEvents <noreply@sunway-myevents.com>'
 
-// holds the nodemailer connection, so we don't create a new one for every email sent
-let transporter: nodemailer.Transporter | null = null
+// holds the nodemailer connection, so we do not create a new one for every email sent
+let transporter: Transporter | null = null
 
 // for prod, creates / reuses SMTP connection
-async function getTransporter(): Promise<nodemailer.Transporter> {
+async function getTransporter(): Promise<Transporter> {
   if (transporter) return transporter
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -33,6 +31,8 @@ export async function sendEmail(to: string | string[], subject: string, html: st
     }
     // build a temporary HTML file and open it in the browser for preview
     const tmp = path.join(os.tmpdir(), `myevents-email-${Date.now()}.html`)
+    const { default: previewEmail } = await import('preview-email')
+    const { default: open } = await import('open')
     // render the email using preview-email
     const raw = await (previewEmail as any)({ from: FROM, to, subject, html }, { returnHTML: true }) as string
     // override the sandbox attribute to allow popups and top navigation for redirect buttons to work
