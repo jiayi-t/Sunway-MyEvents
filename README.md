@@ -59,7 +59,7 @@ Everything else is a working implementation rather than a mockup, including auth
 
 ### Prerequisites
 
-- Node.js >= 20 (CI runs 22, and Vite 8 does not support Node 18)
+- Node.js 22.23.4 (the security-patched Node.js 22 LTS release)
 - Docker & Docker Compose
 
 ### 1. Install
@@ -128,7 +128,7 @@ npm test --workspace=apps/server
 
 38 assertions across 3 suites, hitting real HTTP endpoints against the database in `apps/server/.env.test`. `auth.test.ts` (8) covers login validation and session issuing, `events.test.ts` (21) covers event CRUD authorization, registration guards, UUID resolution, and organizer pinning, and `ai-summary.test.ts` (9) covers the Gemini endpoint's authorization, caching, and degradation when no API key is set.
 
-CI runs the same suite on every push and PR to `main`, against a throwaway Postgres 16 container built from the committed migrations.
+CI runs Node.js 22.23.4 and the same test suite on every push and PR to `main`, against a throwaway Postgres 16 container built from the committed migrations.
 
 ### Testing on a Phone (LAN)
 
@@ -211,3 +211,5 @@ sunway-myevents/
 ```
 
 All data fetching goes through TanStack Query, so the split between `api/queries/` and `api/mutations/` is where the client's server state lives.
+
+The production service is pinned to Node.js 22.23.4 through Render's `NODE_VERSION` environment variable, matching the version used by GitHub Actions and the root `package.json`.
